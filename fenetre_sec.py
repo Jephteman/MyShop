@@ -1,27 +1,6 @@
 from tkinter import *
 from functions import *
 
-def f_not_modifie(root):
-    """Ouvre la fenetre """
-    x = Toplevel(root)
-    x.geometry('100x100')
-    Message(x,bg='skyblue',text="Vous ne pouvez modifié cette objet").pack(side=TOP)
-    Button(x,bg='blue',text='OK',command=x.destroy).pack(side=BOTTOM)
-
-def piece_is_integer(root):
-    """exige un entier"""
-    x = Toplevel(root)
-    x.geometry('100x100')
-    Message(x,bg='skyblue',text="\"Piece\" doit être un nombre ").pack(side=TOP)
-    Button(x,bg='blue',text='OK',command=x.destroy).pack(side=BOTTOM)
-
-def remplire_tous(root):
-    x = Toplevel(root)
-    x.geometry('100x100')
-    Message(x,bg='red',text="Veillez remplire tous les champs correctement").pack(side=TOP)
-    Button(x,bg='blue',text='OK',command=x.destroy).pack(side=BOTTOM)
-
-
 def f_stock(root):
     def list_select(event):
         item = lc.curselection()
@@ -61,10 +40,16 @@ def f_stock(root):
 
     f2.pack(side=RIGHT)
 
-
-def stock_insuffisant(root,march):
-    f = Toplevel(root,bg='red')
+def stock_insuffisant(root,march:Entry):
+    f = Toplevel(root,bg='red',name="Stock insuffissant")
     p = march.get()
     Label(f,text="Le stock du produit {} n'est pas insuffisant".format(p)).pack()
     Label(f,text="Il ne vous reste {} {}".format(get_stock(p),p)).pack()
     Button(f,text='OK',command=f.destroy).pack()
+
+def f_about(root):
+    f = Toplevel(root,bg="skyblue",name="A propos")
+    c = Canvas(f)
+
+def csv_import(root):
+    f = Message(root)

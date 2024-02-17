@@ -15,7 +15,12 @@ def insert_vente(num,nom,marchandise,piece,type_,date):
     """insert les donnees dans la table ventes"""
     cursor = db.cursor()
     cursor.execute("insert into ventes values (?,?,?,?,?,?)",(str(num),nom,marchandise,piece,type_,date))
-    cursor.execute("update stock set quantite = quantite - ? where marchandise = ?",(piece,marchandise,))
+
+    if type_ == 'achat':
+        cursor.execute("update stock set quantite = quantite - ? where marchandise = ?",(piece,marchandise,))
+    else: 
+        cursor.execute("update stock set quantite = quantite + ? where marchandise = ?",(piece,marchandise,))
+        
     db.commit()
     cursor.close()
 
@@ -38,7 +43,7 @@ def get_prix(march):
     prix = 0
     for p in cursor.execute("select prix from stock where marchandise == (?);",(march,)):
         prix = p[0]
-        
+    cursor.close()
     return prix
 
 def get_stock(march):
@@ -47,7 +52,7 @@ def get_stock(march):
     n = 0
     for i in cursor.execute("select quantite from stock where marchandise == ?",(march,)):
         n = i[0]
-
+    cursor.close()
     return n
 
 def insert_arrivage(marchandise,prix, quantite,date):
@@ -93,8 +98,15 @@ def list_vente(): # je pense qu'il faut s'y prendre autrement
     ventes = []
     for num, nom, marc, piece,type_, date in cursor.execute("select * from ventes"):
         ventes.append([num, nom, marc, piece,type_, date ])
-
+    cursor.close()
     return ventes
+
+def get_vente(i):
+    """renvoi l element vente"""
+    cursor = db.cursor()
+    l = cursor.execute("select * from ventes where num = ?",(i)).fetchall()
+    cursor.close()
+    return l
 
 def list_produits():
     """listes de produits"""
@@ -102,11 +114,8 @@ def list_produits():
     l = []
     for i in cursor.execute("select marchandise from stock"):
         l.append(i[0])
+    cursor.close()
     return l
-
-def presentation_liste(l):
-    """join simplement les elements de la table ventes"""
-    return ' '.join(l)
 
 def ret_prix_int(p):
     """Return le prix entant que nombre"""
@@ -120,6 +129,6 @@ def ret_prix_fourchette(p):
     """retourne la fourchette de prix"""
     f = ''
     for i in p:
-        if i.isalpha():
+        if not i.isnumeric():
             f+=i
     return f
