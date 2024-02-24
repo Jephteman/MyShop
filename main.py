@@ -3,14 +3,23 @@ from tkinter import ttk
 from functions import *
 from fenetre_sec import *
 import time 
+from json import JSONDecoder
 
-create_database()
+creds = is_install()
+if creds:
+    serialise_creds = JSONDecoder().decode(creds)
+    print(serialise_creds)
+    stock_db = Stock(serialise_creds)
+    ventes_db = Ventes(serialise_creds)
+else:
+    setup0()
+    exit()
 
 # definition des fonctions 
 def list_select(event):
     """selection d'un element dans la liste"""
     item = lc.selection()[0]
-    element = get_vente(item)[0]
+    element = ventes_db.get_vente(item)[0]
     var_num.set(element[0])
     var_nom.set(element[1])
     var_marchandise.set(element[2])
@@ -18,14 +27,14 @@ def list_select(event):
     var_type.set(element[4])
     var_date.set(element[5])
 
-    p = get_prix(var_marchandise.get())
+    p = stock_db.get_prix(var_marchandise.get())
     f = ret_prix_fourchette(p)
     p = ret_prix_int(p)*int(var_piece.get())
     var_prix.set(str(p)+f)
 
 def anul_fonc():
     """anulle le entrees utulisateur"""
-    var_num.set(get_last_num()+1)
+    var_num.set(ventes_db.get_last_num()+1)
     var_nom.set('')
     var_date.set(time.ctime())
     var_marchandise.set('')
@@ -34,13 +43,14 @@ def anul_fonc():
 
 def sauv_fonc():
     """rengistre les entrees dans la bd"""
-    if num_exist(var_num.get()):
+    if ventes_db.num_exist(var_num.get()):
         """ouvre une fenetre pour le lui signalez"""
         var_alert.set("Vous ne pouvez modifiez cette entree")
         return
 
-    if not var_piece.get().isnumeric():
-        var_alert.set("L'entrée piece doit être un nombre")
+    if not (var_piece.get().isnumeric() or int(var_piece.get())) > 0:
+        print(var_piece.get())
+        var_alert.set("L'entrée piece doit être un nombre superier à 0")
         return
 
     if var_nom.get() == '' :
@@ -52,49 +62,57 @@ def sauv_fonc():
         var_alert.set("Le champ Marchandise ne peut pas être null")
         return
     
-    if not (var_marchandise.get() in list_produits()):
+    if not (var_marchandise.get() in stock_db.list_produits()):
         var_alert.set("Le produit '{}' n'existe pas dans le stock".format(var_marchandise.get()))
         return
 
     
-    if int(var_piece.get()) > get_stock(var_marchandise.get()):
-        var_alert.set("Le stock pour le produit {} est insuffisant ({} unitès)".format(var_marchandise.get(),get_stock(var_marchandise.get())))
+    if int(var_piece.get()) > stock_db.get_stock(var_marchandise.get()):
+        var_alert.set("Le stock pour le produit {} est insuffisant ({} unitès)".format(var_marchandise.get(),stock_db.get_stock(var_marchandise.get())))
         return
     
-    insert_vente(var_num.get(),var_nom.get(),var_marchandise.get(),var_piece.get(),var_type.get(),var_date.get())
+    ventes_db.insert_vente(var_num.get(),var_nom.get(),var_marchandise.get(),var_piece.get(),var_type.get(),var_date.get())
     lc.insert('','end',iid =var_num.get() ,values = (var_num.get(),var_nom.get(),var_marchandise.get(),var_date.get()))
     nouv_fonc()
         
 def nouv_fonc():
     """reinitialise la valeur des entrees"""
     anul_fonc()
-    var_num.set(get_last_num()+1)
+    var_num.set(ventes_db.get_last_num()+1)
     var_date.set(time.ctime())
 
 def arrivage():
     """Ajout des arrivages (marchandises, piece , prix, date)"""
 
     def insert():
-        if piece.get().isnumeric() and produit.get() != "":
-            insert_arrivage(produit.get(),prix.get(),piece.get(),time.ctime())
-            l_produit.config(values=list_produits())
+        if produit.get().strip() == '':
+            alert.set('Le champ produit ne peut pas être null')
+            return
+
+        if piece.get().isnumeric() and produit.get().strip() != "":
+            stock_db.insert_arrivage(produit.get(),prix.get(),piece.get(),time.ctime())
+            l_produit.config(values=stock_db.list_produits())
             f.destroy()
         else:
-            Label(f,bg='red',text="Piece doit etre un nombre").grid(row=4,column=0)
+            alert.set("Piece doit etre un nombre")
+            return
 
     def p_select(even):
         """Selection d'un element dans la list des produits"""
         p = produit.get()
-        prix.set(get_prix(p))
+        prix.set(stock_db.get_prix(p))
 
     def new_produit():
         def ret():
             """Fonction return"""
-            if not (n_produit.get() in var_produits):
-                var_produits.append(n_produit.get())
-                insert_produit(n_produit.get())
-                l_produit.config(values=list_produits())
-                l_march.config(values=list_produits())
+            if not (n_produit.get().strip() in var_produits):
+                if n_produit.get().strip() == "":
+                    alert.set('Le champ produit ne peut être null')
+                    return
+                var_produits.append(n_produit.get().strip())
+                stock_db.insert_produit(n_produit.get().strip())
+                l_produit.config(values=stock_db.list_produits())
+                l_march.config(values=stock_db.list_produits())
                 alert.set('Ajouter de {} avec success'.format(n_produit.get()))
                 n_produit.set('')
                 return 
@@ -115,7 +133,7 @@ def arrivage():
 
     f = Toplevel(root,width=300,height=300)
     Label(f,text="Produit :").grid(row=0,column=0)
-    l_produit = ttk.Combobox(f,values=list_produits(),textvariable=produit)
+    l_produit = ttk.Combobox(f,values=stock_db.list_produits(),textvariable=produit)
     l_produit.grid(row=0,column=1)
     l_produit.bind("<<ComboboxSelected>>",p_select)
     Button(f,text="Nouveau",command=new_produit).grid(row=0,column=2)
@@ -125,8 +143,8 @@ def arrivage():
 
     Label(f,text='Pieces :').grid(row=2,column=0)
     Entry(f,textvariable=piece).grid(row=2,column=1)
-    Button(f,text="Importer",).grid(row=3,column=0)
-    Button(f,text="Inserer",command=insert).grid(row=3,column=2) 
+    Button(f,text="Inserer",command=insert).grid(row=3,column=1)
+    Label(f,textvariable=alert).grid(row=4,column=0)
     
 def inventaire():
     """Ouvre un fenetre secodaire pour faire l'inventaire"""
@@ -134,7 +152,27 @@ def inventaire():
 
 def stock():
     """Ouvre la fenetre pour le stock"""
-    f_stock(root)
+    master = Toplevel(root,height=100)
+    master.resizable(width=False,height=False)
+
+    f1 = Frame(master,width=300)#,height=300,width=150)
+    tab = ttk.Treeview(f1,columns=('marchandise','quantite','prix'))#,height=300)
+    tab.heading('marchandise',text='Marchandises')
+    tab.heading('quantite',text="Quantités")
+    tab.heading('prix',text="Prix")
+    tab['show']='headings'
+
+    for i in stock_db.get_stock_all():
+        tab.insert('','end',values=(i[0],i[2],i[1]))
+
+    sc=Scrollbar(f1,command=tab.yview)
+    sc.pack(side="right",fill=Y)
+
+    tab.configure(yscrollcommand=sc.set)
+
+    tab.pack(fill=Y)
+
+    f1.pack(side=RIGHT)
 
 def about():
     f_about(root)
@@ -144,9 +182,9 @@ root = Tk(className="myShop") # fenetre princile
 root.resizable(width=False,height=True)
 
 # ces variables sont utiliser pour sauvegarder les entrees utilisateur
-var_produits = list_produits()
+var_produits = stock_db.list_produits()
 var_num = StringVar() # variable qui contient le nm
-var_num.set(get_last_num()+1)
+var_num.set(ventes_db.get_last_num()+1)
 var_nom = StringVar() 
 var_date = StringVar()
 var_date.set(time.ctime())
@@ -184,7 +222,7 @@ lc.heading('date',text='Date')
 lc['show']='headings'
 
 lc.bind('<Double-Button-1>',list_select)
-for i in list_vente():
+for i in ventes_db.list_vente():
     lc.insert('','end',iid=i[0],values=(i[0],i[1],i[2],i[5]))
 
 sc=Scrollbar(f1,command=lc.yview)
@@ -205,7 +243,7 @@ Entry(f2,textvariable=var_nom).grid(row=1,column=1)
 
 Label(f2,text="Marchandise :",border='15',bg='blue').grid(row=2,column=0)
 
-l_march = ttk.Combobox(f2,values=list_produits(),textvariable=var_marchandise)
+l_march = ttk.Combobox(f2,values=stock_db.list_produits(),textvariable=var_marchandise)
 l_march.grid(row=2,column=1)
 #l_march.bind("<<ComboboxSelect>>",m_select)
 
