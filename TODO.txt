@@ -1,0 +1,32 @@
+* reparer la suppression dun element dans le tableau temp.
+* reparer le bon lignement des widget dans la page principale en favorisant l extensibilite
+* nous devons preparer la fonction 'parcourir' qui permet de choisir un fichier dans le system (image)
+* insertion et visualisation de la photo de profil des comptes avec une sorte de canvas
+
+* cree l fenetre de parametrage
+* creer un executable pour lancer le programmes
+
+* la vreification des info fourni durant linstalation et du format des donnees que lutilisateur envoie
+
+
+* debugger correctement le serveur api pour touver les failles
+
+* je dois corriger all pour retourner les donnees sous formaant id:data
+
+*je dois mettre en place la confirmation avant execution des operation sensibles 
+
+
+* insertion dun client etaussi cat par defaut
+
+
+$* tva 16$
+
+
+* benfic
+
+* depense j 
+
+* notion de pt mone
+
+
+
