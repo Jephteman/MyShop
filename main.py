@@ -8,18 +8,17 @@ from json import JSONDecoder
 creds = is_install()
 if creds:
     serialise_creds = JSONDecoder().decode(creds)
-    print(serialise_creds)
     stock_db = Stock(serialise_creds)
     ventes_db = Ventes(serialise_creds)
 else:
-    setup0()
+    setup()
     exit()
 
 # definition des fonctions 
 def list_select(event):
     """selection d'un element dans la liste"""
     item = lc.selection()[0]
-    element = ventes_db.get_vente(item)[0]
+    element = ventes_db.get_vente(item)
     var_num.set(element[0])
     var_nom.set(element[1])
     var_marchandise.set(element[2])
@@ -49,7 +48,6 @@ def sauv_fonc():
         return
 
     if not (var_piece.get().isnumeric() or int(var_piece.get())) > 0:
-        print(var_piece.get())
         var_alert.set("L'entrée piece doit être un nombre superier à 0")
         return
 
@@ -178,7 +176,7 @@ def about():
     f_about(root)
 
 # initialisation des variables
-root = Tk(className="myShop") # fenetre princile
+root = Tk(className="Myshop") # fenetre princile
 root.resizable(width=False,height=True)
 
 # ces variables sont utiliser pour sauvegarder les entrees utilisateur
@@ -209,7 +207,7 @@ f_menu.add_command(label="A propos",command=about)
 f_menu.add_command(label="Quitter",command=root.destroy)
 root.config(menu=menuBar,height=500,width=700)
 
-Label(root,text="MySHop").pack()
+Label(root,text=serialise_creds['name'],background='skyblue').pack(fill='x')
 
 # le frame de droite qui contient la liste 
 f1 = Frame(root,bg="blue",width=400,height=300,padx=10,pady=10)
@@ -245,7 +243,6 @@ Label(f2,text="Marchandise :",border='15',bg='blue').grid(row=2,column=0)
 
 l_march = ttk.Combobox(f2,values=stock_db.list_produits(),textvariable=var_marchandise)
 l_march.grid(row=2,column=1)
-#l_march.bind("<<ComboboxSelect>>",m_select)
 
 Label(f2,text='Piece ',border='15',bg='blue').grid(row=3,column=0)
 Entry(f2,textvariable=var_piece).grid(row=3,column=1)
@@ -266,7 +263,7 @@ Button(f2,text="Annuler",command=anul_fonc).grid(row=7,column=1)
 
 Button(f2,text="Sauvegarder",command=sauv_fonc).grid(row=7,column=2)
 
-f2.pack(side=TOP)#,fill=Y)
+f2.pack()
 
 f0 = Frame(root,height=10,width=100)
 Label(f0,textvariable=var_alert,background='red').pack()

@@ -1,6 +1,5 @@
-import sqlite3
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 def is_install():
     try:
@@ -15,71 +14,81 @@ class database:
     def __init__(self,**arg):
         """Initialisation """
         if len(arg) > 1:
+            self.type = arg['type']
             self.connect(arg)
 
     def check(self,type_,arg:dict):
         """ Verifie si le parametre fournit pourrons tenir pour le fonctionnement du programme """
         if type_ == 'local':
             try:
-                sqlite3.connect(os.path.join(arg['path'],arg['name']))
+                create_engine("sqlite:///{}".format(os.path.join(arg['path'],arg['db_name']))).connect()
                 return True
             except : 
                 return False
         else:
             try:
-                x = create_engine("mysql+mysqlconnector://{}:{}@{}/{}".format(arg['username'],arg['passwd'],arg['host'],arg['db_name'])).connect()
-                return True
+               create_engine("mysql+mysqlconnector://{}:{}@{}/{}".format(arg['username'],arg['passwd'],arg['host'],arg['db_name'])).connect()
+               return True
             except :
                 return False
 
     def connect(self,arg):
         if arg['type'] == 'remove':
+            self.type = 'remove'
             self.db =  create_engine("mysql+mysqlconnector://{}:{}@{}/{}".format(arg['username'],arg['passwd'],arg['host'],arg['db_name']))
         elif arg['type'] == 'local':
-            self.db = sqlite3.connect(os.path.join(arg['path'],arg['db_name']))
+            self.db = create_engine("sqlite:///{}".format(os.path.join(arg['path'],arg['db_name'])))
+            self.type = 'local'
+
+    def cursor(self):
+        return self.db.connect()
 
 class Ventes(database):
     def __init__(self,cred):
         super().__init__()
         self.connect(cred)
-        cursor = self.db.cursor()
-        cursor.execute("create table if not exists ventes(num ,nom ,marchandise, piece,type, date)") #utiliser pour l'inventaire et la journalisation
+        cursor = self.cursor()
+        query = "create table if not exists ventes(num Text,nom Text,marchandise Text, piece Integer,type Text, date Text)"
+        cursor.execute(text(query)) #utiliser pour l'inventaire et la journalisation
         cursor.close()
 
     def insert_vente(self,num,nom,marchandise,piece,type_,date):
         """insert les donnees dans la table ventes"""
-        cursor = self.db.cursor()
-        cursor.execute("insert into ventes values (?,?,?,?,?,?)",(str(num),nom,marchandise,piece,type_,date))
+        data = {'num':num,'nom':nom,'marchandise':marchandise,'piece':piece,'type_':type_,'date':date}
+        cursor = self.cursor()
+        cursor.execute(text("insert into ventes values (:num,:nom,:marchandise,:piece,:type_,:date)"),data)
 
         if type_ == 'achat':
-            cursor.execute("update stock set quantite = quantite - ? where marchandise = ?",(piece,marchandise,))
+            cursor.execute(text("update stock set quantite = quantite - :piece where marchandise = :marchandise;"),{'piece':piece,'marchandise':marchandise})
         else: 
-            cursor.execute("update stock set quantite = quantite + ? where marchandise = ?",(piece,marchandise,))
+            cursor.execute(text("update stock set quantite = quantite + :piece where marchandise = :marchandise;"),{'piece':piece,'marchandise':marchandise})
         
-        self.db.commit()
+        cursor.commit()
         cursor.close()
 
     def get_vente(self,i):
         """renvoi l element vente"""
-        cursor = self.db.cursor()
-        l = cursor.execute("select * from ventes where num = ?",(i)).fetchall()
+        cursor = self.cursor()
+        l = None
+        for i in cursor.execute(text("select * from ventes where num = :num;"),{'num':i}):
+            l = i
         cursor.close()
         return l
 
     def list_vente(self): # je pense qu'il faut s'y prendre autrement
         """renvoi les elements de la tables ventes"""
-        cursor = self.db.cursor()
+        cursor = self.cursor()
         ventes = []
-        for num, nom, marc, piece,type_, date in cursor.execute("select * from ventes"):
+        for num, nom, marc, piece,type_, date in cursor.execute(text("select * from ventes")):
             ventes.append([num, nom, marc, piece,type_, date ])
         cursor.close()
         return ventes
 
     def get_last_num(self):
         """renvoi le num du dernier element dans la table ventes"""
-        cursor = self.db.cursor()
+        cursor = self.cursor()
         n = 0
-        for num in cursor.execute('select num from ventes'):
+        for num in cursor.execute(text('select num from ventes;')):
             n = num
     
         cursor.close()
@@ -91,9 +100,9 @@ class Ventes(database):
 
     def num_exist(self,num):
         """verifie si un num existe deja dans la table ventes"""
-        cursor = self.db.cursor()
+        cursor = self.cursor()
         j = (0,0)
-        for i in cursor.execute("select num from ventes where num = ?",(num)):
+        for i in cursor.execute(text("select num from ventes where num = :num"),{'num':num}):
             j = i
 
         if j[0] == 0:
@@ -104,68 +113,68 @@ class Stock(database):
     def __init__(self,creds):
         super().__init__()
         self.connect(creds)
-        cursor = self.db.cursor()
-        cursor.execute("create table if not exists stock(marchandise, prix, quantite integer)") # 
-        cursor.execute("create table if not exists arrivages(marchandise, prix, quantite integer, date)")
+        cursor = self.cursor()
+        cursor.execute(text("create table if not exists stock(marchandise Text, prix Text, quantite integer);")) # 
+        cursor.execute(text("create table if not exists arrivages(marchandise Text, prix Text, quantite integer, date Text);"))
         cursor.close()
 
     def insert_stock(self,march,prix,n,date):
-        cursor = self.db.cursor()
-        cursor.execute("update stock set prix = ? where marchandise = ?",(prix,march,))
-        cursor.execute("update stock set quantite = quatite + ? where marchandise = ?",(n,march,))
-        self.db.commit()
+        cursor = self.cursor()
+        cursor.execute(text("update stock set prix = :prix where marchandise = :march;"),{'prix':prix,'march':march})
+        cursor.execute(text("update stock set quantite = quatite + :n where marchandise = :march;"),{'n':int(n),'march':march})
+        cursor.execute(text("insert into arrivages(:march , :prix, :q, :date);",{'march':march,'prix':prix,'q':n,'date':date}))
+        cursor.commit()
         cursor.close()
 
     def get_stock_all(self):
         """Nous retourne le stock de marchandise dans la db"""
-        cursor = self.db.cursor()
-        cursor.execute('select * from stock')
-        l = cursor.fetchall()
+        cursor = self.cursor()
+        l = cursor.execute(text('select * from stock'))
         cursor.close()
         return l
     
     def list_produits(self):
         """listes de produits"""
-        cursor = self.db.cursor()
+        cursor = self.cursor()
         l = []
-        for i in cursor.execute("select marchandise from stock"):
+        for i in cursor.execute(text("select marchandise from stock")):
             l.append(i[0])
         cursor.close()
         return l
     
     def get_stock(self,march):
         """retourne le stock d'une marchandise"""
-        cursor = self.db.cursor()
+        cursor = self.cursor()
         n = 0
-        for i in cursor.execute("select quantite from stock where marchandise == ?",(march,)):
+        for i in cursor.execute(text("select quantite from stock where marchandise = :march;"),{'march':march}):
             n = i[0]
         cursor.close()
         return n
 
     def insert_arrivage(self,marchandise,prix, quantite,date):
         """insert le sentree dans la tables arrivages"""
-        cursor = self.db.cursor()
-        cursor.execute("insert into arrivages values (?,?,?,?)",(marchandise,prix,quantite,date))
+        cursor = self.cursor()
+        cursor.execute(text("insert into arrivages values (:march,:prix,:n,:date);"),{'march':marchandise,'prix':prix,'n':int(quantite),'date':date})
         if marchandise in self.list_produits():
-            cursor.execute("update stock set prix = ? where marchandise = ?",(prix,marchandise))
-            cursor.execute("update stock set quantite = quantite + ? where marchandise = ?",(quantite,marchandise))
+            cursor.execute(text("update stock set prix = :prix where marchandise = :march;"),{'prix':prix,'march':marchandise})
+            cursor.execute(text("update stock set quantite = quantite + :q where marchandise = :march;"),{'q':int(quantite),'march':marchandise})
         else:
-            cursor.execute("insert into stock values (?,?,?)",(marchandise,prix,quantite))
-        self.db.commit()
+            cursor.execute(text("insert into stock values (:march,:prix,:q);"),{'march':marchandise,'prix':prix,'q':int(quantite)})
+        cursor.commit()
         cursor.close()
 
     def insert_produit(self,produit):
         """inserer un nouveau produit"""
-        cursor = self.db.cursor()
-        cursor.execute("insert into stock values (?,?,?)",(produit,0,0))
-        self.db.commit()
+        cursor = self.cursor()
+        cursor.execute(text("insert into stock values (:p,0,0)"),{'p':produit})
+        cursor.commit()
         cursor.close()
 
     def get_prix(self,march):
-        cursor = self.db.cursor()
+        cursor = self.cursor()
         prix = 0
-        for p in cursor.execute("select prix from stock where marchandise == (?);",(march,)):
-            prix = p[0]
+        for i in cursor.execute(text("select prix from stock where marchandise = :march;"),{'march':march}):
+            prix = i[0]
         cursor.close()
         return prix
 

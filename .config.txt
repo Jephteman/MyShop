@@ -1,0 +1,1 @@
+{"type": "local", "name": "test", "username": "", "passwd": "", "host": "", "db_name": "", "path": ""}
