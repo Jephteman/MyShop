@@ -7,7 +7,7 @@ class inventaire:
         self.data = {}
         self.exist_item = []
 
-        self.window = Toplevel(class_="inventaire",width=500,padx=5,pady=5)
+        self.window = Toplevel(class_="inventaire",width=500,padx=5,pady=5,background='skyblue')
         self.window.resizable(False,False)
         self.window.bind('<Control-f>',self.seek)
         self.window.bind('<Control-F>',self.seek)
@@ -17,7 +17,7 @@ class inventaire:
         # en-tete  
         self.somme = IntVar()
 
-        f2 = Frame(self.window)
+        f2 = Frame(self.window,background='skyblue')
         self.lc = ttk.Treeview(f2,columns=('id','client_id','march','vendeur','prix'))
         self.lc.heading('id',text="Id")
         self.lc.column('id',width=35)
@@ -37,7 +37,7 @@ class inventaire:
 
         f2.pack(fill=Y,expand=1)
 
-        f3 = Frame(self.window)
+        f3 = Frame(self.window,background='skyblue')
         Label(f3,text='Total : ').pack(side='left')
         Label(f3,textvariable=self.somme).pack(side='left')
         f3.pack()
@@ -90,12 +90,12 @@ class inventaire:
                 self.exist_item.append(item)
 
     def seek(self,event):
-        win = Toplevel()
+        win = Toplevel(background='skyblue')
         win.resizable(False,False)
         Label(win,text='Filtre du resultat',font=('',14)).pack()
 
         for i in ['vendeur','client_id','from','to']:
-            f1 = Frame(win)
+            f1 = Frame(win,background='skyblue')
             StringVar(win,name=i)
             Label(f1,text=i).pack(side='left')
             Entry(f1,textvariable=i).pack(side='right')
@@ -109,14 +109,14 @@ class stock:
         self.name_id_categories = {}
         self.temp_index = []
         
-        self.window = Toplevel(class_='stock')
+        self.window = Toplevel(class_='stock',background='skyblue')
         self.window.resizable(False,False)
         self.window.bind('<Control-F>',self.search)
         self.window.bind('<Control-f>',self.search)
 
         Label(self.window,text="Stock",font=('',15)).pack(padx=5,pady=5)
 
-        f1 = Frame(self.window)
+        f1 = Frame(self.window,background='skyblue')
         self.tab = ttk.Treeview(f1,columns=('id','marchandise','categorie','quantite','prix'))
 
         self.tab.heading('id',text='ID produit')
@@ -136,7 +136,7 @@ class stock:
 
         f1.pack()
 
-        f2 = Frame(self.window,padx=5,pady=5)
+        f2 = Frame(self.window,padx=5,pady=5,background='skyblue')
         Button(f2,text=" Ajouter ",command=self.add,padx=3,pady=3).pack(side='left')
         Button(f2,text=" Voir ",command=self.see,padx=3,pady=3).pack(side='left')
         Button(f2,text=" Supprimmer ",command=self.delete,padx=3,pady=3).pack(side='right')
@@ -186,12 +186,12 @@ class stock:
                 self.tab.insert('','end',iid=produit.get('produit_id'),values=p)
 
 
-        win = Toplevel()
+        win = Toplevel(background='skyblue')
         name = StringVar()
 
         Label(win,text="Recherche produit",font=('',15)).pack()
 
-        f1= Frame(win)
+        f1= Frame(win,background='skyblue')
         Label(f1,text='Label : ').pack(side='left')
         Entry(f1,textvariable=name).pack()
 
@@ -217,7 +217,7 @@ class stock:
             askfile_open(photo,[('Image File','*.png'),('Image File','*.jpg')])
         
         def voir():
-            fen = Toplevel()
+            fen = Toplevel(background='skyblue')
             image_64 = photo.get()
             image = PhotoImage(data=image_64.encode())
             Label(fen,text='Image du produit',image=image,compound=LEFT).pack()
@@ -278,7 +278,7 @@ class stock:
                 alert_wn("Ajouter du produit '{}' avec success".format(n_produit.get()))
                 ff.destroy()
 
-        ff = Toplevel(self.window,name="arrivage")
+        ff = Toplevel(self.window,name="arrivage",background='skyblue')
         ff.resizable(False,False)
 
         Label(ff,text='Information sur le produit ',height=3,font=('Arial',15)).grid(row=0,column=1)
@@ -313,7 +313,7 @@ class stock:
             askfile_open(photo,[('Image File','*.png'),('Image File','*.jpg')])
 
         def voir():
-            fen = Toplevel()
+            fen = Toplevel(background='skyblue')
             image_64 = photo.get()
             image = PhotoImage(data=image_64)
             Label(fen,text='Image du produit',image=image,compound=LEFT).pack()
@@ -366,7 +366,7 @@ class stock:
                 alert_wn("Ajouter du produit '{}' avec success".format(n_produit.get()))
                 ff.destroy()
 
-        ff = Toplevel(self.window,name="arrivage")
+        ff = Toplevel(self.window,name="arrivage",background='skyblue')
         ff.resizable(False,False)
 
         Label(ff,text='Inserer un nouveau produit ',height=3,font=('Arial',15)).grid(row=0,column=1)
@@ -414,7 +414,7 @@ class stock:
                 f.destroy()
 
         label = StringVar()
-        f = Toplevel()
+        f = Toplevel(background='skyblue')
         f.geometry('450x260')
         f.resizable(False,False)
 
@@ -434,14 +434,14 @@ class arrivage:
         self.data = {}
         self.produits = {}
         self.temp_index = []
-        self.window = Toplevel(class_='clients')
+        self.window = Toplevel(class_='clients',background='skyblue')
         self.window.resizable(False,False)
         self.window.bind("<Control-f>",self.search)
         self.window.bind("<Control-F>",self.search)
 
         Label(self.window,text="Arrivages",font=('',15)).pack(padx=5,pady=5)
 
-        f1 = Frame(self.window)
+        f1 = Frame(self.window,background='skyblue')
         self.tab = ttk.Treeview(f1,columns=('id','produit','quantite','date'))
 
         self.tab.heading('id',text='ID ')
@@ -460,7 +460,7 @@ class arrivage:
 
         f1.pack()
 
-        f2 = Frame(self.window,padx=5,pady=5)
+        f2 = Frame(self.window,padx=5,pady=5,background='skyblue')
         Button(f2,text=" Ajouter ",command=self.add,padx=3,pady=3).pack(side='left')
         #Button(f2,text=" Voir ",command=self.see,padx=3,pady=3).pack(side='left')
         Button(f2,text=" Supprimmer ",command=self.delete,padx=3,pady=3).pack(side='right')
@@ -513,13 +513,13 @@ class arrivage:
                 self.temp_index.append(arriv.get('arrivage_id'))
                 self.tab.insert('','end',iid=arriv.get('arrivage_id'),values=p)
 
-        win = Toplevel()
+        win = Toplevel(background='skyblue')
         win.resizable(False,False)
         label = StringVar()
 
         Label(win,text="Recherche Arrivage",font=('',15)).pack()
 
-        f1 = Frame(win)
+        f1 = Frame(win,background='skyblue')
         Label(f1,text='Label : ').pack(side='left')
         Entry(f1,textvariable=label).pack()
         f1.pack()
@@ -594,25 +594,25 @@ class arrivage:
                 self.temp_index.append(data.get('arrivage_id'))
                 self.f.destroy()
 
-        self.f = Toplevel()
+        self.f = Toplevel(background='skyblue')
         self.f.resizable(False,False)
         self.f.geometry("380x240")
         Label(self.f,text="Inserer les arrivages",height=3,font=('Arial',15)).pack()
 
-        f1 = Frame(self.f)
+        f1 = Frame(self.f,background='skyblue')
         Label(f1,text="Produit :").pack(side='left')
         entry = Entry(f1,textvariable=produit)
         entry.bind('<KeyRelease>',check)
         entry.pack(side='right')
         f1.pack()
         
-        f2 = Frame(self.f,border=4)
+        f2 = Frame(self.f,border=4,background='skyblue')
         l_march = Listbox(f2,height=10,width=25)
         l_march.bind('<Double-Button-1>',delete)
         l_march.pack()
         f2.pack()
 
-        f3 = Frame(self.f)
+        f3 = Frame(self.f,background='skyblue')
         Label(f3,text='Pieces :').pack(side='left')
         Entry(f3,textvariable=piece).pack()
         f3.pack()
@@ -636,13 +636,13 @@ class Promotion:
     def __init__(self):
         self.produits = {}
         self.data = {}
-        self.window = Toplevel()
+        self.window = Toplevel(background='skyblue')
         self.window.title('promotion')
         self.window.resizable(False,False)
 
         Label(self.window,text="Promotions",font=('',15)).pack(padx=5,pady=5)
 
-        f1 = Frame(self.window)
+        f1 = Frame(self.window,background='skyblue')
         self.tab = ttk.Treeview(f1,columns=['id','occasion','produits','reduction','fin'])
 
         self.tab.heading('id',text='ID')
@@ -662,7 +662,7 @@ class Promotion:
 
         f1.pack()
 
-        f2 = Frame(self.window,padx=5,pady=5)
+        f2 = Frame(self.window,padx=5,pady=5,background='skyblue')
         Button(f2,text=" Ajouter ",command=self.add,padx=3,pady=3).pack(side='left')
         Button(f2,text=" Voir ",command=self.see,padx=3,pady=3).pack(side='left')
         Button(f2,text=" Supprimmer ",command=self.delete,padx=3,pady=3).pack(side='right')
@@ -728,13 +728,13 @@ class Promotion:
                 update(data)
 
 
-            w = Toplevel(win)
+            w = Toplevel(win,background='skyblue')
             w.title('Selection')
             w.resizable(False,False)
 
             Label(w,text='Selectionner le poduit ',font=('',13),pady=5,padx=5).pack()
 
-            f1 = Frame(w)
+            f1 = Frame(w,background='skyblue')
             Label(f1,text='Produit : ').pack(side='left')
             e = Entry(f1,textvariable=add_entry)
             e.bind('<KeyRelease>',check)
@@ -775,7 +775,7 @@ class Promotion:
                 
                 self.tab.insert('','end',iid=data.get('promotion_id'),values=p)
 
-        win = Toplevel(class_="Ajout",padx=10,pady=10)
+        win = Toplevel(class_="Ajout",padx=10,pady=10,background='skyblue')
         win.resizable(False,False)
         p_id_list = []
 
@@ -787,34 +787,34 @@ class Promotion:
         date_d = StringVar()
 
         
-        f1 = Frame(win,padx=5,pady=5)
+        f1 = Frame(win,padx=5,pady=5,background='skyblue')
         Label(f1,text="Nom : ").pack(side='left')
         Entry(f1,textvariable=name).pack(side='right')
         f1.pack()
 
-        f1 = Frame(win,padx=5,pady=5)
+        f1 = Frame(win,padx=5,pady=5,background='skyblue')
         Label(f1,text="Reduction (%): ").pack(side='left')
         Entry(f1,textvariable=reduction).pack(side='right')
         f1.pack()
 
-        f1 = Frame(win,padx=5,pady=5)
+        f1 = Frame(win,padx=5,pady=5,background='skyblue')
         Label(f1,text="Debut : ").pack(side='left')
         Entry(f1,textvariable=date_d).pack(side='right')
         f1.pack()
 
-        f2 = Frame(win,padx=5,pady=5)
+        f2 = Frame(win,padx=5,pady=5,background='skyblue')
         Label(f2,text="Fin : ").pack(side='left')
         Entry(f2,textvariable=date_f).pack(side='right')
         f2.pack()
 
-        f3 = Frame(win,padx=5,pady=5)
+        f3 = Frame(win,padx=5,pady=5,background='skyblue')
         Label(f3,text="Produits : ").pack(side='left')
         p_list = Listbox(f3,height=8,width=15)
         p_list.pack(side='left')
         Button(f3,padx=5,pady=5,text='Ajouter',command=add).pack()
         f3.pack()
 
-        f5 = Frame(win,padx=5,pady=5)
+        f5 = Frame(win,padx=5,pady=5,background='skyblue')
         Label(f5,text="Descripton : ").pack(side='left')
         desc = Text(f5,width=15,height=8)
         desc.pack(side='right')
@@ -846,7 +846,7 @@ class Promotion:
             return
         
 
-        win = Toplevel(padx=10,pady=10)
+        win = Toplevel(padx=10,pady=10,background='skyblue')
         win.resizable(False,False)
 
         name = StringVar(value=data.get('label'))
@@ -855,27 +855,27 @@ class Promotion:
         date_f = StringVar(value=data.get('date_fin'))
         date_d = StringVar(value=data.get('date_depart'))
 
-        f1 = Frame(win,padx=5,pady=5)
+        f1 = Frame(win,padx=5,pady=5,background='skyblue')
         Label(f1,text="Nom : ").pack(side='left')
         Entry(f1,textvariable=name,state='readonly').pack(side='right')
         f1.pack()
 
-        f1 = Frame(win,padx=5,pady=5)
+        f1 = Frame(win,padx=5,pady=5,background='skyblue')
         Label(f1,text="Reduction : ").pack(side='left')
         Entry(f1,textvariable=reduction,state='readonly').pack(side='right')
         f1.pack()
 
-        f1 = Frame(win,padx=5,pady=5)
+        f1 = Frame(win,padx=5,pady=5,background='skyblue')
         Label(f1,text="Debut : ").pack(side='left')
         Entry(f1,textvariable=date_d,state='readonly').pack(side='right')
         f1.pack()
 
-        f2 = Frame(win,padx=5,pady=5)
+        f2 = Frame(win,padx=5,pady=5,background='skyblue')
         Label(f2,text="Fin : ").pack(side='left')
         Entry(f2,textvariable=date_f,state='readonly').pack(side='right')
         f2.pack()
 
-        f3 = Frame(win,padx=5,pady=5)
+        f3 = Frame(win,padx=5,pady=5,background='skyblue')
         Label(f3,text="Produits : ").pack(side='left')
         p_list = Listbox(f3,height=8,width=15)
         p_list.pack(side='left')
@@ -885,7 +885,7 @@ class Promotion:
             n = self.produits.get(str(i))
             p_list.insert(i,n.get('label'))
 
-        f5 = Frame(win,padx=5,pady=5)
+        f5 = Frame(win,padx=5,pady=5,background='skyblue')
         Label(f5,text="Descripton : ").pack(side='left')
         desc = Text(f5,height=8,width=15,state='disabled')
         desc.insert('end-1c',data.get('description'))

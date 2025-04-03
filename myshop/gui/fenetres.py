@@ -9,7 +9,7 @@ class win_client:
     def __init__(self):
         self.data = {}
         self.temp_index = []
-        self.window = Toplevel(class_='clients')
+        self.window = Toplevel(class_='clients',background='skyblue')
         self.window.resizable(False,False)
 
         self.window.bind('<Control-f>',self.search)
@@ -17,7 +17,7 @@ class win_client:
 
         Label(self.window,text="Clients",font=('',15)).pack(padx=5,pady=5)
 
-        f1 = Frame(self.window)
+        f1 = Frame(self.window,background='skyblue')
         self.tab = ttk.Treeview(f1,columns=['id','noms','point','addr','type','tel'])
 
         self.tab.heading('id',text='ID client')
@@ -38,7 +38,7 @@ class win_client:
 
         f1.pack()
 
-        f2 = Frame(self.window,padx=5,pady=5)
+        f2 = Frame(self.window,padx=5,pady=5,background='skyblue')
         Button(f2,text=" Ajouter ",command=self.add,padx=3,pady=3).pack(side='left')
         Button(f2,text=" Voir ",command=self.see,padx=3,pady=3).pack(side='left')
         Button(f2,text=" Supprimmer ",command=self.delete,padx=3,pady=3).pack(side='right')
@@ -96,7 +96,7 @@ class win_client:
                 self.tab.insert('','end',iid=i_,values=p)
                 self.temp_index.append(i_)
 
-        win = Toplevel(class_="Ajout",padx=10,pady=10)
+        win = Toplevel(class_="Ajout",padx=10,pady=10,background='skyblue')
         win.resizable(False,False)
 
         noms = StringVar()
@@ -107,37 +107,37 @@ class win_client:
         mail = StringVar()
         r_client = StringVar()
 
-        f1 = Frame(win,padx=15,pady=15)
+        f1 = Frame(win,padx=15,pady=15,background='skyblue')
         Label(f1,text="Noms : ",padx=8,font=('',15)).pack(side='left')
         Entry(f1,textvariable=noms).pack(side='right')
         f1.pack()
 
-        f1 = Frame(win,padx=15,pady=15)
+        f1 = Frame(win,padx=15,pady=15,background='skyblue')
         Label(f1,text="Sexe : ",padx=8,font=('',15)).pack(side='left')
         ttk.Combobox(f1,textvariable=sexe,values=['M','F'],validate='focusin').pack(side='right')
         f1.pack()
 
-        f1 = Frame(win,padx=15,pady=15)
+        f1 = Frame(win,padx=15,pady=15,background='skyblue')
         Label(f1,text="Type : ",padx=8,font=('',15)).pack(side='left')
         ttk.Combobox(f1,textvariable=type_,values=['Detaillant','Grossiste'],validate='focusin').pack(side='right')
         f1.pack()
 
-        f2 = Frame(win,padx=15,pady=15)
+        f2 = Frame(win,padx=15,pady=15,background='skyblue')
         Label(f2,text="Adresse : ",padx=8,font=('',15)).pack(side='left')
         Entry(f2,textvariable=addr).pack(side='right')
         f2.pack()
 
-        f3 = Frame(win,padx=15,pady=15)
+        f3 = Frame(win,padx=15,pady=15,background='skyblue')
         Label(f3,text="Code parrain : ",padx=8,font=('',15)).pack(side='left')
         Entry(f3,textvariable=r_client).pack(side='right')
         f3.pack()
 
-        f5 = Frame(win,padx=15,pady=15)
+        f5 = Frame(win,padx=15,pady=15,background='skyblue')
         Label(f5,text="Telephone : ",padx=8,font=('',15)).pack(side='left')
         Entry(f5,textvariable=tel).pack(side='right')
         f5.pack()
 
-        f6 = Frame(win,padx=15,pady=15)
+        f6 = Frame(win,padx=15,pady=15,background='skyblue')
         Label(f6,text="Email : ",padx=8,font=('',15)).pack(side='left')
         Entry(f6,textvariable=mail).pack(side='right')
         f6.pack()
@@ -198,7 +198,7 @@ class win_client:
             alert_wn(e)
         else:
             
-            win = Toplevel(class_="Ajout",padx=10,pady=10)
+            win = Toplevel(class_="Ajout",padx=10,pady=10,background='skyblue')
             win.resizable(False,False)
 
             noms = StringVar(value=data.get('noms'))
@@ -209,37 +209,37 @@ class win_client:
             mail = StringVar(value=data.get('email'))
             point = IntVar(value=data.get('point'))
 
-            f1 = Frame(win,padx=15,pady=15)
+            f1 = Frame(win,padx=15,pady=15,background='skyblue')
             Label(f1,text="Noms : ",padx=8,font=('',15)).pack(side='left')
             Entry(f1,textvariable=noms).pack(side='right')
             f1.pack()
 
-            f1 = Frame(win,padx=15,pady=15)
+            f1 = Frame(win,padx=15,pady=15,background='skyblue')
             Label(f1,text="Sexe : ",padx=8,font=('',15)).pack(side='left')
             ttk.Combobox(f1,textvariable=sexe,values=['M','F'],validate='focusin').pack(side='right')
             f1.pack()
 
-            f1 = Frame(win,padx=15,pady=15)
+            f1 = Frame(win,padx=15,pady=15,background='skyblue')
             Label(f1,text="Type : ",padx=8,font=('',15)).pack(side='left')
             ttk.Combobox(f1,textvariable=type_,values=['Detaillant','Grossiste'],validate='focusin').pack(side='right')
             f1.pack()
 
-            f1 = Frame(win,padx=15,pady=15)
+            f1 = Frame(win,padx=15,pady=15,background='skyblue')
             Label(f1,text="Point : ",padx=8,font=('',15)).pack(side='left')
             Entry(f1,textvariable=point).pack(side='right')
             f1.pack()
 
-            f2 = Frame(win,padx=15,pady=15)
+            f2 = Frame(win,padx=15,pady=15,background='skyblue')
             Label(f2,text="Adresse : ",padx=8,font=('',15)).pack(side='left')
             Entry(f2,textvariable=addr).pack(side='right')
             f2.pack()
 
-            f5 = Frame(win,padx=15,pady=15)
+            f5 = Frame(win,padx=15,pady=15,background='skyblue')
             Label(f5,text="Telephone : ",padx=8,font=('',15)).pack(side='left')
             Entry(f5,textvariable=tel).pack(side='right')
             f5.pack()
 
-            f6 = Frame(win,padx=15,pady=15)
+            f6 = Frame(win,padx=15,pady=15,background='skyblue')
             Label(f6,text="Email : ",padx=8,font=('',15)).pack(side='left')
             Entry(f6,textvariable=mail).pack(side='right')
             f6.pack()
@@ -275,7 +275,7 @@ class win_client:
                 self.tab.insert('','end',iid=d.get('client_id'),values=p)
                 self.temp_index.append(d.get('client_id'))
 
-        window = Toplevel()
+        window = Toplevel(background='skyblue')
         window.resizable(False,False)
         nom = StringVar()
         t = StringVar()
@@ -285,27 +285,27 @@ class win_client:
 
         Label(window,text="Recherche Client",font=('',15)).pack()
 
-        f1 = Frame(window)
+        f1 = Frame(window,background='skyblue')
         Label(f1,text="Noms : ").pack(side='left')
         Entry(f1,textvariable=nom).pack(side='right')
         f1.pack()
 
-        f2 = Frame(window)
+        f2 = Frame(window,background='skyblue')
         Label(f2,text="Type : ").pack(side='left')
         ttk.Combobox(f2,textvariable=t,values=['G','D']).pack(side='right')
         f2.pack()
 
-        f3 = Frame(window)
+        f3 = Frame(window,background='skyblue')
         Label(f3,text="Parrain id : ").pack(side='left')
         Entry(f3,textvariable=ref_c).pack(side='right')
         f3.pack()
 
-        f4 = Frame(window)
+        f4 = Frame(window,background='skyblue')
         Label(f4,text="Telephone : ").pack(side='left')
         Entry(f4,textvariable=tel).pack(side='right')
         f4.pack()
 
-        f5 = Frame(window)
+        f5 = Frame(window,background='skyblue')
         Label(f5,text="Adresse : ").pack(side='left')
         Entry(f5,textvariable=addr).pack(side='right')
         f5.pack()
@@ -378,32 +378,32 @@ class mainframe():
         self.root.config(menu=menuBar)
 
         ##      corps de la page 
-        body = Frame(self.root)
+        body = Frame(self.root,background='skyblue')
 
         # le frame de gauche qui contient la liste
-        f_left = Frame(body,width=20,padx=15,pady=15)
+        f_left = Frame(body,width=20,padx=15,pady=15,background='skyblue')
 
         
-        f4 = Frame(f_left)
+        f4 = Frame(f_left,background='skyblue')
         Label(f4,text="Date :",border='5').pack(side='left')
         Label(f4,textvariable=self.var_date).pack(side='right')
         f4.pack()
 
-        f5 = Frame(f_left)
+        f5 = Frame(f_left,background='skyblue')
         Label(f5,text="Nom du vendeur  :",border='5').pack(side='left')
         Label(f5,text=self.var_vendor).pack(side='right')
         f5.pack()
 
-        f6 = Frame(f_left)
+        f6 = Frame(f_left,background='skyblue')
         Label(f6,text="Id du client  :",border='5').pack(side='left')
         Entry(f6,textvariable=self.client_id).pack(side='left')
         f6.pack()
 
-        f7 = Frame(f_left)
+        f7 = Frame(f_left,background='skyblue')
         Label(f7,text="Marchandises :",border='5').pack(side='left')
         f7.pack()
 
-        f8 = Frame(f_left,height=90,width=135)
+        f8 = Frame(f_left,height=90,width=135,background='skyblue')
         self.lc_temp = ttk.Treeview(f8,columns=('produit','quantite','prix'))#,height=50)
         self.lc_temp.heading('produit',text='Produits')
         self.lc_temp.column('produit',width=80)
@@ -418,26 +418,26 @@ class mainframe():
         self.lc_temp.pack(fill=Y,expand=1)
         f8.pack()
 
-        f9 = Frame(f_left,border=5)
+        f9 = Frame(f_left,border=5,background='skyblue')
         Label(f9,text='Total :').pack(side='left')
         Label(f9,textvariable=self.var_t_prix).pack(side='right')
         f9.pack()
         
-        f10_ = Frame(f_left,border=4)
+        f10_ = Frame(f_left,border=4,background='skyblue')
         Label(f10_,text="Produit : ").pack(side='left')
         self.entry = Entry(f10_)
         self.entry.pack(side='right')
         self.entry.bind('<KeyRelease>',self.check)
         f10_.pack()
 
-        f10 = Frame(f_left,border=4)
+        f10 = Frame(f_left,border=4,background='skyblue')
         self.l_march = Listbox(f10,height=10,width=25)
         self.l_march.pack(side='left')
         Entry(f10,textvariable=self.var_piece,width=10).pack(side='left')
         Button(f10,text='Valider',command=self.insert_tab).pack(side='right')
         f10.pack()
         
-        f11 = Frame(f_left,border=3)
+        f11 = Frame(f_left,border=3,background='skyblue')
         Button(f11,text="Nouveau",command=self.nouv_fonc).pack(side='left')
         Button(f11,text="Annuler",command=self.anul_fonc).pack(side='left')
         Button(f11,text="Sauvegarder",command=self.sauv_fonc).pack(side='right')
@@ -446,7 +446,7 @@ class mainframe():
         f_left.pack(fill=Y,side='left',padx=5,pady=5)
 
         # frame de droite 
-        f_right = Frame(self.root,padx=10,pady=10)
+        f_right = Frame(self.root,padx=10,pady=10,background='skyblue')
 
         self.lc = ttk.Treeview(f_right,columns=('name','vendor','produit','prix','date'))
         self.lc.heading('name',text='Id client')

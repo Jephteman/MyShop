@@ -1,4 +1,10 @@
-database.db
-mylocaldb.db
-__pycache__/functions.cpython-310.pyc
-__pycache__/fenetre_sec.cpython-310.pyc
+myshop/__pycache__/
+dist/
+build/
+myshop.e*
+myenv/
+.*.txt
+*.pyc
+gui/__pycache__/
+design/
+test/

@@ -91,6 +91,7 @@ def login_wn():
             setting.set('uname',u.get())
 
     root = Tk()
+    root.config(background='skyblue')
     logo = pkg_resources.resource_filename('myshop','logo.ico')
     root.iconbitmap(logo)
     u = StringVar()
@@ -99,12 +100,12 @@ def login_wn():
     root.resizable(False,False)
     Label(root,text="Connection au serveur",font=('',15),wraplength=540,padx=10,pady=10).pack()
     
-    f1 = Frame(root,padx=8,pady=8)
+    f1 = Frame(root,padx=8,pady=8,background='skyblue')
     Label(f1,text="Nom d'utilisateur : ").pack(side='left')
     Entry(f1,textvariable=u).pack(side='right')
     f1.pack()
 
-    f2 = Frame(root,padx=8,pady=8)
+    f2 = Frame(root,padx=8,pady=8,background='skyblue')
     Label(f2,text="Mot de passe   : ").pack(side='left')
     Entry(f2,textvariable=p,show='*').pack(side='right')
     f2.pack()
@@ -114,7 +115,7 @@ def login_wn():
     root.mainloop()
 
 def about():
-    f = Toplevel()
+    f = Toplevel(background='skyblue')
     f.geometry('500x550')
     f.resizable(width=False,height=False)
     Label(f,text='\nCe programme a été developpé sous license GNU/Linux \n').pack()
@@ -132,12 +133,13 @@ class setup:
         self.root = Tk(className=f"Installation MyShop {version}")
         self.root.geometry('720x520')
         self.root.resizable(height=False,width=False)
+        self.root.config(background='skyblue')
 
         # le frame rotatif , qui peu changer des text ou delement 
-        self.p_frame = Frame(self.root,width=700,height=500,padx=10,pady=10)
+        self.p_frame = Frame(self.root,width=700,height=500,padx=10,pady=10,background='skyblue')
 
 
-        f_both = Frame(self.root)
+        f_both = Frame(self.root,background='skyblue')
 
         self.b_prev = Button(f_both,text="Precedent",command=self.prev)
         self.b_prev.pack(side="left")
@@ -166,7 +168,7 @@ class setup:
     def setup0(self):
         """Message de bienvenu et un bref message """
         self.b_prev.configure(state='disabled')
-        self.frame = Frame(self.p_frame,width=700,height=500,padx=10,pady=10)
+        self.frame = Frame(self.p_frame,width=700,height=500,padx=10,pady=10,background='skyblue')
         Label(self.frame,text="\n BIENVENU \n",font=('',21)).pack()
         text = """
             Ce programme a été concu pour faciliter la gestion d'une boutique  \n
@@ -182,11 +184,11 @@ class setup:
 
         self.b_prev.configure(state='active')
 
-        self.frame = Frame(self.p_frame,padx=10,pady=10)
+        self.frame = Frame(self.p_frame,padx=10,pady=10,background='skyblue')
         Label(self.frame,font= ('',23) ,text="CONFIGURATION \n").pack(side='top')
         Label(self.frame,text="Veillez remplir ce formulaire ",font=('',12)).pack()
 
-        f1 = Frame(self.frame)
+        f1 = Frame(self.frame,background='skyblue')
         StringVar(self.root,name='url')
         Label(f1,text=f"Url du serveur : ",height=3).pack(side='left')
         Entry(f1,textvariable='url').pack(side="right")
@@ -231,7 +233,7 @@ class setup:
         else:
             text = "Echec de l'insatllation "
 
-        self.frame = Frame(self.p_frame)
+        self.frame = Frame(self.p_frame,background='skyblue')
         Label(self.frame,font= ('',23) ,text=" Resultat \n").pack(side='top')
         Label(self.frame,text=text,font=('',20)).pack()
 
@@ -240,12 +242,12 @@ class setup:
 
 class Notes:
     def __init__(self):
-        self.win = Toplevel(pady=5,padx=5)
+        self.win = Toplevel(pady=5,padx=5,background='skyblue')
         self.notes = {}
         self.win.resizable(False,False)
         Label(self.win,text='Notes',padx=5,pady=5,font=('',13)).pack()
 
-        f1 = Frame(self.win,padx=3,pady=3)
+        f1 = Frame(self.win,padx=3,pady=3,background='skyblue')
 
         self.tab = ttk.Treeview(f1,columns=('id','sujet','user','date'))#,height=30)
         self.tab.heading('id',text="Id")
@@ -264,7 +266,7 @@ class Notes:
 
         f1.pack()
 
-        f2 = Frame(self.win)
+        f2 = Frame(self.win,background='skyblue')
 
         Button(f2,text='Ajouter',padx=4,pady=4,command=self.add,width=10).pack(side='left')
         Button(f2,text='Voir',padx=4,pady=4,command=self.see,width=10).pack(side='left')
@@ -302,17 +304,17 @@ class Notes:
                 p = (n_id,d.get('sujet'),d.get('username'),d.get('date'))
                 self.tab.insert('','end',iid=n_id,values=p)
 
-        win = Toplevel(self.win,padx=5,pady=5)
+        win = Toplevel(self.win,padx=5,pady=5,background='skyblue')
         win.resizable(False,False)
         var_sujet = StringVar()
 
-        f1 = Frame(win,padx=5,pady=5)
+        f1 = Frame(win,padx=5,pady=5,background='skyblue')
         Label(f1,text='Sujet : ').pack(side='left')
         Entry(f1,textvariable=var_sujet).pack(side='right')
         f1.pack()
 
 
-        f3 = Frame(win)
+        f3 = Frame(win,background='skyblue')
         Label(f3,text='Contenu : ').pack(side='left')
         var_contenu = Text(f3,width=30,height=15)
         var_contenu.pack(side='right')
@@ -327,23 +329,23 @@ class Notes:
         except Exception as e:
             pass
         else:
-            win = Toplevel(self.win,padx=5,pady=5)
+            win = Toplevel(self.win,padx=5,pady=5,background='skyblue')
             win.resizable(False,False)
             var_sujet = StringVar(value=data.get('sujet'))
             contenu = data.get('description')
             var_auth = StringVar(value=data.get('username'))
 
-            f1 = Frame(win,padx=3,pady=3)
+            f1 = Frame(win,padx=3,pady=3,background='skyblue')
             Label(f1,text='Sujet : ').pack(side='left')
             Entry(f1,textvariable=var_sujet,state='readonly').pack(side='right')
             f1.pack()
 
-            f2 = Frame(win,padx=3,pady=3)
+            f2 = Frame(win,padx=3,pady=3,background='skyblue')
             Label(f2,text='Auteur : ').pack(side='left')
             Entry(f2,textvariable=var_auth,state='readonly').pack(side='right')
             f2.pack()
 
-            f3 = Frame(win,padx=4,pady=4)
+            f3 = Frame(win,padx=4,pady=4,background='skyblue')
             Label(f3,text='Contenu : ').pack(side='left')
             t = Text(f3,width=35,height=20)
             t.insert('end-1c',contenu)
@@ -367,7 +369,7 @@ class Notes:
 
 class monitoring:
     def __init__(self):
-        win = Toplevel(name='monitoring',pady=5,padx=5,height=300,width=250)
+        win = Toplevel(name='monitoring',pady=5,padx=5,height=300,width=250,background='skyblue')
         Label(win,text='Monitoring',font=('',24)).pack(padx=5,pady=5)
 
         self.tab = ttk.Treeview(win,columns=('id','action','message','date'),height=30)
@@ -410,7 +412,7 @@ class Graphique:
             file_t = [('File text','*.pdf')]
             askfile_save(self.path,file_t)
 
-        self.window = Toplevel(width=500,padx=5,pady=5)
+        self.window = Toplevel(width=500,padx=5,pady=5,background='skyblue')
         self.window.title('Graphique')
         self.window.resizable(False,False)
         
@@ -421,7 +423,7 @@ class Graphique:
 
         Label(self.window,text="Graphique",font=('',15)).pack()
 
-        f1 = Frame(self.window)
+        f1 = Frame(self.window,background='skyblue')
         Label(f1,text='A partir du ').pack(side='left')
         Entry(f1,textvariable=self.origine,).pack(side='left')
         Label(f1,text="Au ").pack(side='left')
@@ -429,7 +431,7 @@ class Graphique:
         
         f1.pack()
 
-        f2 = Frame(self.window)
+        f2 = Frame(self.window,background='skyblue')
         Label(f2,text='Emplacement : ').pack(side='left')
         Entry(f2,textvariable=self.path,state='readonly').pack(side='left')
         Button(f2,text='parcourir',command=set_file).pack(side='right')
@@ -482,7 +484,7 @@ class Graphique:
 
 class Exporte:
     def __init__(self):
-        win = Toplevel()
+        win = Toplevel(background='skyblue')
         win.resizable(False,False)
 
         self.res = StringVar()
@@ -494,19 +496,19 @@ class Exporte:
         #win.title('Exportation des donnees')
         Label(win,text='Exportation des donnees',font=('',17),padx=5,pady=5).pack()
 
-        f1 = Frame(win)
+        f1 = Frame(win,background='skyblue')
         Label(f1,text='Ressource : ').pack(side='left')
         ttk.Combobox(f1,textvariable=self.res,values=('ventes','logs','arrivages','produits','notes','sessions')).pack(side='right')
         f1.pack()
 
-        f2 = Frame(win)
+        f2 = Frame(win,background='skyblue')
         Label(f2,text='A partir du ').pack(side='left')
         Entry(f2,textvariable=self.origine,).pack(side='left')
         Label(f2,text="Au ").pack(side='left')
         Entry(f2,textvariable=self.fin).pack(side='right')
         f2.pack()
 
-        f3 = Frame(win)
+        f3 = Frame(win,background='skyblue')
         Label(f3,text='Emplacement : ').pack(side='left')
         Entry(f3,textvariable=self.path,state='readonly').pack(side='left')
         Button(f3,text='Parcourir',command=self.set_file).pack(side='right')
@@ -548,7 +550,7 @@ class Exporte:
 class Parametre:
     def __init__(self) -> None:
         self.config = Config()
-        self.window = Toplevel()
+        self.window = Toplevel(background='skyblue')
         self.window.geometry('720x520')
         self.window.resizable(False,False)
 
@@ -556,11 +558,11 @@ class Parametre:
 
         Label(self.window,text='Parametre',font=('',24)).pack(padx=5,pady=5)
 
-        f_dev = Frame(self.window)
+        f_dev = Frame(self.window,background='skyblue')
 
         for i in self.list_var :
             v = StringVar(self.window,name=i,value=self.config.get(i))
-            f_ = Frame(f_dev)
+            f_ = Frame(f_dev,background='skyblue')
             Label(f_,text=f'{i.upper()} : ').pack(side='left')
             Entry(f_,textvariable=v).pack()
             f_.pack(padx=5,pady=5)
@@ -586,7 +588,7 @@ class Parametre:
 
         f_dev.pack()
 
-        f_botton = Frame(self.window)
+        f_botton = Frame(self.window,background='skyblue')
         Button(f_botton,text='Annuler',command=self.quit).pack(side='right')
         Button(f_botton,text='Appliquer',command=self.save).pack(side='left')
         f_botton.pack(side=BOTTOM,padx=3)
@@ -609,23 +611,23 @@ class Parametre:
 class Printer:
     def __init__(self,data):
         
-        self.window = Toplevel()
+        self.window = Toplevel(background='skyblue')
         self.window.geometry('720x520')
         self.window.resizable(False,False)
         self.data = data
 
-        Label(self.window,text="Vente",font=('',24),width=24).pack(side=TOP,padx=5,pady=5)
+        Label(self.window,text="Vente",font=('',24),width=24,background='skyblue').pack(side=TOP,padx=5,pady=5)
 
-        f_dev = Frame(self.window)
+        f_dev = Frame(self.window,background='skyblue')
         for name , value in data.items():
             if name in ('marchandises') :
                 continue
-            f = Frame(f_dev)
+            f = Frame(f_dev,background='skyblue')
             Label(f,text=f"{name.capitalize()} : ",font=('',15)).pack(side='left')
             Label(f,text=value,font=('',15)).pack()
             f.pack(padx=3,pady=3)
 
-        f8 = Frame(f_dev,height=100,width=155)
+        f8 = Frame(f_dev,height=100,width=155,background='skyblue')
         lc_temp = ttk.Treeview(f8,columns=('produit','quantite','prix'))#,height=50)
         lc_temp.heading('produit',text='Produits')
         lc_temp.column('produit',width=80)
@@ -643,7 +645,7 @@ class Printer:
 
         f_dev.pack()
 
-        f_foot = Frame(self.window)
+        f_foot = Frame(self.window,background='skyblue')
         Button(f_foot,text='OK',width=5,command=self.close).pack(side='left')
         Button(f_foot,text='Imprimer',width=5,command=self.formantage).pack(side='left')
         f_foot.pack(side='bottom',padx=5,pady=5)
@@ -660,6 +662,7 @@ class Printer:
         return imprimantes
     """
     def imprimer_pdf(self,fichier_pdf, nom_imprimante=None):
+        raise NotImplementedError()
         """
         os.system(f"cp {fichier_pdf} /home/oem/Documents ")
         if os.name == 'posix':

@@ -10,12 +10,12 @@ class users_admin:
         self.tab_index = {}
         self.data = {}
 
-        self.window = Toplevel(class_='utilisateurs')
+        self.window = Toplevel(class_='utilisateurs',background='skyblue')
         self.window.resizable(False,False)
 
         Label(self.window,text="Utilisateurs",font=('',15)).pack(padx=5,pady=5)
 
-        f1 = Frame(self.window,padx=10,pady=10)
+        f1 = Frame(self.window,padx=10,pady=10,background='skyblue')
         self.lc = ttk.Treeview(f1,columns=('id','usernames','noms','role','statut'))
         self.lc.heading('id',text="Id")
         self.lc.heading('usernames',text='Usernames')
@@ -33,7 +33,7 @@ class users_admin:
 
         f1.pack()
 
-        f_both = Frame(self.window,padx=10,pady=10)
+        f_both = Frame(self.window,padx=10,pady=10,background='skyblue')
         Button(f_both,text='Ajouter',command=self.add).pack(side='left')
         Button(f_both,text='Change',command=self.change).pack(side='left')
         Button(f_both,text="Changer le mdp",command=self.reset_passwd).pack(side='left')
@@ -100,7 +100,7 @@ class users_admin:
                     'actif'))
                 alert_wn("Le compte a été crée avec success")
         
-        window = Toplevel(self.window)
+        window = Toplevel(self.window,background='skyblue')
         window.geometry('600x400')
         window.resizable(False,False)
 
@@ -115,42 +115,42 @@ class users_admin:
 
         Label(window,text="Création d'un compte",font=('',29),pady=15).pack()
 
-        f_noms = Frame(window)
+        f_noms = Frame(window,background='skyblue')
         Label(f_noms,text="Noms : ",font=('',15)).pack(side='left')
         Entry(f_noms,textvariable=var_noms).pack(side='right')
         f_noms.pack()
 
-        f_uname = Frame(window)
+        f_uname = Frame(window,background='skyblue')
         Label(f_uname,text="Nom d'utilisateur : ",font=('',15)).pack(side='left')
         Entry(f_uname,textvariable=var_uname).pack(side='right')
         f_uname.pack()
 
-        f_pass = Frame(window)
+        f_pass = Frame(window,background='skyblue')
         Label(f_pass,text="Mot de passe : ",font=('',15)).pack(side='left')
         Entry(f_pass,textvariable=var_passwd).pack(side='right')
         f_pass.pack()
 
-        f_role = Frame(window)
+        f_role = Frame(window,background='skyblue')
         Label(f_role,text="Role : ",font=('',15)).pack(side='left')
         ttk.Combobox(f_role,textvariable=var_role,values=('admin','vendeur','moniteur')).pack(side='right')
         f_role.pack()
 
-        f_addr = Frame(window)
+        f_addr = Frame(window,background='skyblue')
         Label(f_addr,text="Addrese : ",font=('',15)).pack(side='left')
         Entry(f_addr,textvariable=var_addr).pack(side='right')
         f_addr.pack()
 
-        f_num = Frame(window)
+        f_num = Frame(window,background='skyblue')
         Label(f_num,text="Numero : ",font=('',15)).pack(side='left')
         Entry(f_num,textvariable=var_tel).pack(side='right')
         f_num.pack()
 
-        f_mail = Frame(window)
+        f_mail = Frame(window,background='skyblue')
         Label(f_mail,text="Email : ",font=('',15)).pack(side='left')
         Entry(f_mail,textvariable=var_email).pack(side='right')
         f_mail.pack()
 
-        f_photo = Frame(window)
+        f_photo = Frame(window,background='skyblue')
         Label(f_photo,text="Photo : ",font=('',15)).pack(side='left')
         Button(f_photo,text='parcourir',command=self.set_file).pack(side='right') #   parcourir nest pas implementer
         Entry(f_photo,textvariable=self.var_photo,state='readonly').pack(side='right')
@@ -181,12 +181,12 @@ class users_admin:
         
         user_id = i[0]
         
-        window = Toplevel(self.window,height=100,width=100)
+        window = Toplevel(self.window,height=100,width=100,background='skyblue')
         window.resizable(False,False)
 
         Label(window,text=f"Voullez-vous supprimer l'utilisateur {self.data[user_id].get('username')} ?",padx=10,font=('',13),).pack()
 
-        f1 = Frame(window)
+        f1 = Frame(window,background='skyblue')
         Button(f1,text="  OUI  ",font=('',9),command=ret,pady=6,width=10).pack(side=LEFT)
         Button(f1,text='  NON  ',command=window.destroy,font=('',9),pady=6,width=10).pack(side=RIGHT)
         f1.pack()
@@ -230,7 +230,7 @@ class users_admin:
         login_id = i[0]
         user_info = self.data.get(login_id)
         
-        window = Toplevel(self.window)
+        window = Toplevel(self.window,background='skyblue')
         window.geometry('600x400')
         window.resizable(False,False)
 
@@ -243,32 +243,32 @@ class users_admin:
 
         Label(window,text="Modification d'un compte",font=('',29),pady=15).pack()
 
-        f_noms = Frame(window)
+        f_noms = Frame(window,background='skyblue')
         Label(f_noms,text="Noms : ",font=('',15)).pack(side='left')
         Entry(f_noms,textvariable=var_noms).pack(side='right')
         f_noms.pack()
 
-        f_role = Frame(window)
+        f_role = Frame(window,background='skyblue')
         Label(f_role,text="Role : ",font=('',15)).pack(side='left')
         ttk.Combobox(f_role,textvariable=var_role,values=('admin','vendeur','moniteur')).pack(side='right')
         f_role.pack()
 
-        f_addr = Frame(window)
+        f_addr = Frame(window,background='skyblue')
         Label(f_addr,text="Addrese : ",font=('',15)).pack(side='left')
         Entry(f_addr,textvariable=var_addr).pack(side='right')
         f_addr.pack()
 
-        f_num = Frame(window)
+        f_num = Frame(window,background='skyblue')
         Label(f_num,text="Numero : ",font=('',15)).pack(side='left')
         Entry(f_num,textvariable=var_tel).pack(side='right')
         f_num.pack()
 
-        f_mail = Frame(window)
+        f_mail = Frame(window,background='skyblue')
         Label(f_mail,text="Email : ",font=('',15)).pack(side='left')
         Entry(f_mail,textvariable=var_email).pack(side='right')
         f_mail.pack()
 
-        f_photo = Frame(window)
+        f_photo = Frame(window,background='skyblue')
         Label(f_photo,text="Photo : ",font=('',15)).pack(side='left')
         Button(f_photo,text='parcourir').pack(side='right') #   parcourir nest pas implementer
         Entry(f_photo,textvariable=var_photo,state='readonly').pack(side='right')
@@ -300,15 +300,15 @@ class users_admin:
         
         login_id = i[0]
 
-        window = Toplevel(self.window)
+        window = Toplevel(self.window,background='skyblue')
         var_passwd = StringVar(window)
         var_confim_passwd = StringVar(window)
         Label(window,text="Changement de mot de passe",font=('',15)).pack()
-        f1 = Frame(window)
+        f1 = Frame(window,background='skyblue')
         Label(f1,text="Mot de passe :").pack(side='left')
         Entry(f1,textvariable=var_passwd,show='*').pack(side='right')
         f1.pack()
-        f2 = Frame(window)
+        f2 = Frame(window,background='skyblue')
         Label(f2,text="Confirmer le :").pack(side='left')
         Entry(f2,textvariable=var_confim_passwd,show='*').pack(side='right')
         f2.pack()
@@ -318,12 +318,12 @@ class session_admin:
     def __init__(self):
         self.users = {}
 
-        window = Toplevel(class_='sessions')
+        window = Toplevel(class_='sessions',background='skyblue')
         window.resizable(False,False)
 
         Label(window,text="Sessions",font=('',15)).pack(padx=5,pady=5)
 
-        f1 = Frame(window,padx=10,pady=10)
+        f1 = Frame(window,padx=10,pady=10,background='skyblue')
         self.lc = ttk.Treeview(f1,columns=('id','usernames','date','statut','ip'))
         self.lc.heading('id',text="Id")
         self.lc.heading('usernames',text='Usernames')
@@ -342,7 +342,7 @@ class session_admin:
 
         f1.pack()
 
-        f_both = Frame(window,padx=10,pady=10)
+        f_both = Frame(window,padx=10,pady=10,background='skyblue')
         Button(f_both,text='Bloquer',command=self.block).pack(side='left')
         Button(f_both,text='Supprimer',command=self.delete).pack(side='right')
 

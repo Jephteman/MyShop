@@ -1,3 +1,8 @@
 sqlalchemy
 configparser
 flask
+matplotlib
+reportlab
+waitress
+setuptools
+pywin32

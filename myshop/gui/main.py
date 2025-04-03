@@ -13,6 +13,7 @@ def run(arg=None):
     else:
         root = tk.Tk()
         root.title(client._cred.get('boutique'))
+        root.config(background='skyblue')
         logo = pkg_resources.resource_filename('myshop','logo.ico')
         
         root.iconbitmap(logo)

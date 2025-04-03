@@ -42,7 +42,7 @@ def login():
         instance = environment.get('instance')
         config = environment.get('configurations')
         res = Users(instance,config=config).login(data)
-    except NotImplementedError as e:
+    except Exception as e:
         return error(e)
     else:
         return message(res)
