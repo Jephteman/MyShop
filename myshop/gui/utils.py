@@ -12,8 +12,6 @@ import platform
 import pathlib
 import tempfile
 import datetime
-import subprocess
-
 import matplotlib.pyplot as plt 
 
 from reportlab.lib import colors
@@ -60,9 +58,9 @@ class Config:
 
 def askfile_save(var,file_type):
     x = asksaveasfile(filetypes=file_type)
-    if x.name:
+    if x:
         var.set(x.name)
-    x.close()
+        x.close()
 
 def askfile_open(var,file_type):
     # [('Image File','*.png'),('Image File','*.jpg')]
@@ -151,7 +149,6 @@ class setup:
 
         self.setup0()
         self.p_frame.pack()
-
 
         self.root.mainloop()
 

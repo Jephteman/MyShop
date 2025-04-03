@@ -370,7 +370,6 @@ class mainframe():
 
         #       menu  outils
         menu_outils = Menu(menuBar,tearoff=0)
-        menu_outils.add_command(label="calculatrice *") # no implemeter
         menu_outils.add_command(label="Graphique",command=Graphique) 
         menu_outils.add_command(label="Notes",command=Notes)
         menuBar.add_cascade(menu=menu_outils,label="Outils")

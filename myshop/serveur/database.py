@@ -195,11 +195,9 @@ class Loginsdb():
                 cursor.execute(text(query))
                 cursor.commit()
 
-            try: # pour fuire lexception sur la contraite d'unitarité
+            if not self.all():
                 p = {'username':'MyShop','password':'MyShop','role':'admin'}
                 self.add(p)
-            except :
-                pass
 
     def check(self,param):
         salt = self.config.get('salt')
