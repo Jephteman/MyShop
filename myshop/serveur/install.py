@@ -18,7 +18,8 @@ entry = {
     'db_username':'',
     'db_password':'',
     'connetion_type':'',
-    'salt':os.urandom(64).hex()
+    'salt':os.urandom(64).hex(),
+    'back_action_time':18000
     }
 
 def create_table(instance:database):

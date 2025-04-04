@@ -314,3 +314,13 @@ class Promotions(ModeleDB):
 class Notes(ModeleDB):
     """ Sert de couche d'abstraction pour communiquer avec notes """    
     namedb = 'Notes'
+
+def cleaner(instance,config={}):
+    """
+        S'occupe de faire le netoyage en arriere plan pour supprimmer les sessions invalides et d'autres actions
+    """
+    while True:
+        Sessionsdb(instance=instance).del_expire_cookie()
+        
+        sleep_time = config.get('back_action_time',18000)
+        time.sleep(sleep_time)

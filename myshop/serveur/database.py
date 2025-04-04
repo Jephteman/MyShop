@@ -72,6 +72,7 @@ class Settingsdb:
                     value Text
                 )"""
                 cursor.execute(text(query))
+                cursor.execute(text("create index if not exists idx_settings on Settings(label)"))
                 cursor.commit()
 
     def add(self,param):
@@ -134,8 +135,9 @@ class Logsdb():
                     ip_addr  varchar(19)    
                 )""".format(instance.autoincrement)
                 cursor.execute(text(query))
+                cursor.execute(text("create index if not exists idx_log on Logs(log_id)"))
                 cursor.commit()
-            #cursor.close()
+            
 
     def add(self,param):
         """ajout d'un nouveau log"""
@@ -146,7 +148,7 @@ class Logsdb():
                 """
             cursor.execute(text(query),param)
             cursor.commit()
-        #cursor.close()
+        
 
     def get(self,param):
         data = {}
@@ -155,7 +157,7 @@ class Logsdb():
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
 
-        #cursor.close()
+        
         return data
     
     def all(self,param):
@@ -175,7 +177,7 @@ class Logsdb():
                 d = i._asdict()
                 data[d.get('log_id')] = d
         
-        #cursor.close()
+        
         return data
 
 class Loginsdb():
@@ -193,6 +195,7 @@ class Loginsdb():
                     statut integer(1) not null default 1)
                 """.format(instance.autoincrement)
                 cursor.execute(text(query))
+                cursor.execute(text("create index if not exists idx_login on Logins(login_id,username)"))
                 cursor.commit()
 
             if not self.all():
@@ -233,7 +236,7 @@ class Loginsdb():
                 """
             cursor.execute(text(query),param)
             cursor.commit()
-        #cursor.close()
+        
 
     def add(self,param:dict):
         salt = self.config.get('salt')
@@ -250,7 +253,7 @@ class Loginsdb():
                 data.update(i._asdict())
 
             cursor.commit()
-        #cursor.close()
+        
         return data
 
     def change(self,param):
@@ -265,7 +268,7 @@ class Loginsdb():
                 data.update(i._asdict())
 
             cursor.commit()
-        #cursor.close()
+        
         return data
     
     def delete(self,param):
@@ -273,7 +276,7 @@ class Loginsdb():
             query = "delete from Logins where login_id == :login_id;"
             cursor.execute(text(query),param)
             cursor.commit()
-        #cursor.close()
+        
     
     def all(self,param=None):
         data = {}
@@ -287,7 +290,7 @@ class Loginsdb():
                 d = i._asdict()
                 data[d.get('login_id')] = d
 
-        #cursor.close()
+        
         return data
     
     def get(self,param):
@@ -301,7 +304,7 @@ class Loginsdb():
             for i in cursor.execute(text(query),param):
                 res.update(i._asdict())
 
-        #cursor.close()
+        
         return res
 
 class Sessionsdb():
@@ -320,9 +323,9 @@ class Sessionsdb():
                     foreign key (login_id) references Logins(login_id) )
                     """.format(instance.autoincrement)
                 cursor.execute(text(query))
+                cursor.execute(text("create index if not exists idx_session on Sessions(session_id)"))
                 cursor.commit()
-            #cursor.close()
-
+            
     def add(self,param):
         param['cookies'] = get_cookie()
         with self.db_instance.cursor() as cursor:
@@ -355,7 +358,7 @@ class Sessionsdb():
                 d = i._asdict()
                 data[d.get('session_id')] = d
 
-        #cursor.close()
+        
         return data
     
     def delete(self,param):
@@ -365,8 +368,7 @@ class Sessionsdb():
                 """
             cursor.execute(text(query),param)
             cursor.commit()
-        #cursor.close()
-
+        
     def change(self,param): # ou encore bloquer
         with self.db_instance.cursor() as cursor:
             query = """
@@ -374,8 +376,7 @@ class Sessionsdb():
                 """
             cursor.execute(text(query),param)
             cursor.commit()
-        #cursor.close()
-
+        
     def check(self,cookie:dict):
         user_id = {}
         with self.db_instance.cursor() as cursor:
@@ -384,8 +385,17 @@ class Sessionsdb():
             for i in cursor.execute(text(query),cookie):
                 user_id.update(i._asdict())
 
-        #cursor.close()
+        
         return user_id
+
+    def del_expire_cookie(self):
+        for id_,values in self.all().items():
+            now_timestamp = datetime.datetime.now().timestamp()
+            cookie_timestamp =datetime.datetime.strptime(values.get('date'),"%Y-%m-%d %H:%M:%S")
+            cookie_timestamp = cookie_timestamp.timestamp()
+            diff = int(now_timestamp - cookie_timestamp)
+            if diff >= 604800:
+                self.delete({'session_id':id_})
 
 class Agentsdb():
     def __init__(self, instance:database,first=False,config={}):
@@ -403,6 +413,7 @@ class Agentsdb():
                     foreign key (login_id) references Logins(login_id))
                     """.format(instance.autoincrement)
                 cursor.execute(text(query))
+                cursor.execute(text("create index if not exists idx_agents on Agents(noms)"))
                 cursor.commit()
             
                 try:
@@ -422,7 +433,7 @@ class Agentsdb():
                 data.update(i._asdict())
 
             cursor.commit()
-        #cursor.close()
+        
         return data
 
     def delete(self,param):
@@ -433,8 +444,7 @@ class Agentsdb():
             cursor.execute(text(query),param)
             cursor.commit()
         Loginsdb(self.instance).delete(param)
-        #cursor.close()
-
+        
     def change(self,param):
         data = {}
         with self.instance.cursor() as cursor:
@@ -446,7 +456,7 @@ class Agentsdb():
                 data.update(i._asdict())
             
             cursor.commit()
-        #cursor.close()
+        
         return data
 
     def all(self,param={}):
@@ -457,7 +467,7 @@ class Agentsdb():
                 d = i._asdict()
                 data[d.get('login_id')] = d
 
-        #cursor.close()
+        
         return data
     
     def get(self,param):
@@ -469,7 +479,7 @@ class Agentsdb():
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
 
-        #cursor.close()
+        
         return data
 
 class Clientsdb(): 
@@ -491,8 +501,9 @@ class Clientsdb():
                     derniere_activite datetime
                     )""".format(instance.autoincrement)
                 cursor.execute(text(query))
+                cursor.execute(text("create index if not exists idx_client on Clients(client_id,noms)"))
                 cursor.commit()
-            #cursor.close()
+            
 
     def add(self,param:dict):
         data = {}
@@ -519,7 +530,7 @@ class Clientsdb():
                 data.update(i._asdict())
 
             cursor.commit()
-        #cursor.close()
+        
         return data
 
     def change(self,param):
@@ -534,7 +545,7 @@ class Clientsdb():
                 data.update(i._asdict())
 
             cursor.commit()
-        #cursor.close()
+        
         return data
 
     def delete(self,param):
@@ -542,7 +553,7 @@ class Clientsdb():
             query = "delete from Clients where client_id == :client_id;"
             cursor.execute(text(query),param)
             cursor.commit()
-        #cursor.close()
+        
 
     def all(self,param={}):
         param.update(my_objects.Client(param).map())
@@ -562,7 +573,7 @@ class Clientsdb():
                 d = i._asdict()
                 data[d.get('client_id')] = d
 
-        #cursor.close()
+        
         return data
 
     def get(self,param):
@@ -573,7 +584,7 @@ class Clientsdb():
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
 
-        #cursor.close()
+        
         return data
 
 class Categoriesdb():
@@ -588,8 +599,8 @@ class Categoriesdb():
                     description Text
                     )""".format(instance.autoincrement)
                 cursor.execute(text(query))
-            #cursor.close()
-        
+                cursor.execute(text("create index if not exists idx_categorie on Categories(label)"))
+      
     def add(self,param):
         data = {}
         with self.instance.cursor() as cursor:
@@ -601,7 +612,7 @@ class Categoriesdb():
                 data.update(i._asdict())
 
             cursor.commit()
-        #cursor.close()
+        
         return data
         
     def change(self,param):
@@ -614,7 +625,7 @@ class Categoriesdb():
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
             cursor.commit()
-        #cursor.close()
+        
         return data
 
     def delete(self,param):
@@ -622,7 +633,7 @@ class Categoriesdb():
             query = "delete Categories where categorie_id == :categorie_id;"
             cursor.execute(text(query),param)
             cursor.commit()
-        #cursor.close()
+        
 
     def get(self,param):
         data = {}
@@ -631,7 +642,7 @@ class Categoriesdb():
             for l in cursor.execute(text(query),param):
                 data.update(l._asdict())
 
-        #cursor.close()
+        
         return data
 
     def all(self,param={}):
@@ -643,7 +654,7 @@ class Categoriesdb():
                 d = l._asdict()
                 data[d.get('categorie_id')] = d
 
-        #cursor.close()
+        
         return data
 
 class Ventesdb():
@@ -663,7 +674,7 @@ class Ventesdb():
                     foreign key (login_id) references  Agents(login_id));
                     """.format(instance.autoincrement)
                 cursor.execute(text(query)) 
-            #cursor.close()
+                cursor.execute(text("create index if not exists idx_vente_id on Ventes(vente_id)"))
 
     def add(self,data):
         marchandises = data['marchandises']
@@ -746,7 +757,7 @@ class Ventesdb():
             cursor.commit()
 
         cursor.commit()
-        #cursor.close()
+        
         return resp
 
     def get(self,param):
@@ -761,7 +772,7 @@ class Ventesdb():
                 d['marchandises'] = JSONDecoder().decode(d.get('marchandises'))
                 l.update(d)
             
-        #cursor.close()
+        
         return l
 
     def all(self,param={}): 
@@ -794,14 +805,14 @@ class Ventesdb():
                 d['marchandises'] = JSONDecoder().decode(d.get('marchandises'))
                 ventes[d.get('vente_id')] = d
 
-        #cursor.close()
+        
         return ventes
     
     def delete(self,param):
         with self.instance.cursor() as cursor:
             cursor.execute(text('drop from Ventes where vente_id == :vente_id'),param)
             cursor.commit()
-        #cursor.close()
+        
 
     def change(self,param): 
         raise MessagePersonnalise("Cette fonctionnalite n est pas implemmentee")
@@ -823,6 +834,8 @@ class Produitsdb():
                 foreign key (categorie_id) references Categories(categorie_id))
             """.format(instance.autoincrement)
             cursor.execute(text(query))
+            cursor.execute(text("create index if not exists idx_produit on Produits(label)"))
+
             cursor.commit()
             cursor.close()
 
@@ -858,7 +871,7 @@ class Produitsdb():
                 data.update(i._asdict())
 
             cursor.commit()
-        #cursor.close()
+        
         return data
 
     def delete(self,param):
@@ -866,7 +879,6 @@ class Produitsdb():
             query = "delete from Produits where produit_id == :produit_id;"
             cursor.execute(text(query),param)
             cursor.commit()
-        #cursor.close()
 
     def get(self,param):
         data = {}
@@ -882,7 +894,7 @@ class Produitsdb():
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
 
-        #cursor.close()
+        
         return data
 
     def all(self,param={}):
@@ -913,6 +925,8 @@ class Arrivagesdb:
                     date datetime, 
                     foreign key (produit_id) references Produits(produit_id))""".format(instance.autoincrement)
                 cursor.execute(text(query))
+                cursor.execute(text("create index if not exists idx_arrivage on Arrivage(arrivage_id)"))
+
                 cursor.commit()
 
     def add(self,param):
@@ -931,7 +945,7 @@ class Arrivagesdb:
                 """
             cursor.execute(text(query),param)
             cursor.commit()
-        #cursor.close()
+        
         return data
 
     def all(self,param={}):
@@ -961,7 +975,7 @@ class Arrivagesdb:
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
 
-        #cursor.close()
+        
         return data
 
     def delete(self,param):
@@ -971,7 +985,7 @@ class Arrivagesdb:
                 """
             cursor.execute(text(query),param)
             cursor.commit()
-        #cursor.close()
+        
 
     def change(self,param):
         raise MessagePersonnalise('Cette fonctionnalite n est pas implementer ')
@@ -992,8 +1006,10 @@ class Promotionsdb:
                     description Text)
                     """.format(self.instance.autoincrement)
                 cursor.execute(text(query))
+                cursor.execute(text("create index if not exists idx_promo on Promotions(label)"))
+
                 cursor.commit()
-            #cursor.close()
+            
 
     def add(self,param):
         data = {}
@@ -1017,7 +1033,7 @@ class Promotionsdb:
                 data.update(d)
         
             cursor.commit()
-        #cursor.close()
+        
         return data
 
     def delete(self,param):
@@ -1027,7 +1043,7 @@ class Promotionsdb:
                  """
             cursor.execute(text(query),param)
             cursor.commit()
-        #cursor.close()
+        
 
     def all(self,param={}):
         data = {}
@@ -1053,7 +1069,7 @@ class Promotionsdb:
                 d['produits_label'] = ps
                 data[d.get('promotion_id')] = d
 
-        #cursor.close()
+        
         return data
     
     def get(self,param):
@@ -1076,7 +1092,7 @@ class Promotionsdb:
                 data[d.get('promotion_id')] = d
                 data.update(d)
 
-        #cursor.close()
+        
         return data
     
     def change(self,param):
@@ -1103,7 +1119,7 @@ class Promotionsdb:
                 d['produits_ids'] = JSONDecoder().decode(d['produits_ids'])
                 data[d.get('promotion_id')] = d
 
-        #cursor.close()
+        
         return data
 
 class Notesdb:
@@ -1121,8 +1137,9 @@ class Notesdb:
                     foreign key (login_id) references Logins(login_id))
                     """.format(self.instance.autoincrement)
                 cursor.execute(text(query))
+                cursor.execute(text("create index if not exists idx_note on Notes(sujet)"))
                 cursor.commit()
-            #cursor.close()
+            
 
     def add(self,param):
         data = {}
@@ -1134,7 +1151,7 @@ class Notesdb:
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
             cursor.commit()
-        #cursor.close()
+        
         return data
 
     def delete(self,param):
@@ -1142,7 +1159,7 @@ class Notesdb:
             query = """delete from Notes where note_id == :note_id """
             cursor.execute(text(query),param)
             cursor.commit()
-        #cursor.close()
+        
 
     def all(self,param={}):
         data = {}
@@ -1159,7 +1176,7 @@ class Notesdb:
                 d = i._asdict()
                 data[d.get('note_id')] = d
 
-        #cursor.close()
+        
         return data
     
     def get(self,param):
@@ -1172,7 +1189,7 @@ class Notesdb:
             for i in cursor.execute(text(query),param):
                 d.update(i)
 
-        #cursor.close()
+        
         return d
     
     def change(self,param):

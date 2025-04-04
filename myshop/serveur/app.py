@@ -253,6 +253,8 @@ def prepare():
     environment['configurations'] = config
     environment['instance'] = db_instance
 
+    start_new_thread(cleaner,(db_instance,config))
+
 def run(arg=None):
     prepare()
     if arg:

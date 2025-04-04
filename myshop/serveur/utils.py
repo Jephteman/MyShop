@@ -2,6 +2,7 @@ from json import JSONEncoder, JSONDecoder
 from hashlib import sha3_256 as sha256
 from pathlib import Path
 import datetime, platform
+from _thread import *
 import os
 import re
 
