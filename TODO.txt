@@ -1,2 +1,2 @@
-- [ ] Parametrage coté client
+
 - [ ] Optimser le code

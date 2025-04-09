@@ -155,8 +155,14 @@ class Users:
         except KeyError as e:
             raise AbsenceParametreException(e)
 
-    def is_login(self):
-        return Sessionsdb(self.db_instance).check(self.cookie)
+    def is_login(self,first:bool=False):
+        """
+            la methode permet de savoir si le cookie de session est valide
+            si first est vrai alors il considere que c'est une tentative pour verifier le cookie 
+                quand l'option auto_login est activé côte client
+        """
+        info = Sessionsdb(self.db_instance).check(self.cookie,first=first)
+        return info
         
     def login(self,param):
         try:

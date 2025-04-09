@@ -46,7 +46,7 @@ class win_client:
 
 
         try:
-            api = client.API('clients')
+            api = client.API(setting.get('url'),'clients',cookie=temp_setting.cookie)
             self.data.update(api.all())
         except Exception as e:
             alert_wn(e)
@@ -76,7 +76,7 @@ class win_client:
                 param['client_id'] = tel.get()
 
             try:
-                api = client.API('clients')
+                api = client.API(setting.get('url'),'clients',cookie=temp_setting.cookie)
                 data = api.add(param)
             except Exception as e:
                 alert_wn(e)
@@ -147,7 +147,7 @@ class win_client:
     def delete(self): # je dois implementer la confirmation
         try:
             id_ = self.tab.selection()[0]
-            api = client.API('clients')
+            api = client.API(setting.get('url'),'clients',cookie=temp_setting.cookie)
             api.delete(id_)
         except IndexError:
             pass
@@ -171,7 +171,7 @@ class win_client:
             }
 
             try:
-                api = client.API('clients')
+                api = client.API(setting.get('url'),'clients',cookie=temp_setting.cookie)
                 data = api.change(param)
             except InterruptedError as e:
                 alert_wn(e)
@@ -256,7 +256,7 @@ class win_client:
                     'addr':addr.get(),
                     'telephone':tel.get()
                 }
-                cli = client.API('clients').all(param=param)
+                cli = client.API(setting.get('url'),'clients',cookie=temp_setting.cookie).all(param=param)
             except Exception as e:
                 alert_wn(e)
                 return
@@ -334,8 +334,7 @@ class mainframe():
         self.var_piece = IntVar()
         self.var_piece.set(1)
         self.var_prix = StringVar()
-        self.var_vendor = client._cred.get('uname',None)
-
+        self.var_vendor = temp_setting.get('username')
         self.var_t_prix = StringVar()
 
         self.error = StringVar()
@@ -476,8 +475,8 @@ class mainframe():
 
     def actualiser(self):
         try:
-            self.promotions = client.API('promotions').all({'valide':True})
-            api = client.API('produits')
+            self.promotions = client.API(setting.get('url'),'promotions',cookie=temp_setting.cookie).all({'valide':True})
+            api = client.API(setting.get('url'),'produits',cookie=temp_setting.cookie)
             data = api.all()
         except InterruptedError as e:
             alert_wn(e)
@@ -507,7 +506,7 @@ class mainframe():
             return
 
         try:
-            api = client.API('ventes')
+            api = client.API(setting.get('url'),'clients',cookie=temp_setting.cookie)
             data = api.add(param)
         except Exception as e:
             alert_wn(e)

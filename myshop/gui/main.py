@@ -8,11 +8,11 @@ def run(arg=None):
     else:
         login_wn()
         
-    if not client._cred.get('cookie',None):
+    if not temp_setting.get('is_login') == 'yes':
         exit(302)
     else:
         root = tk.Tk()
-        root.title(client._cred.get('boutique'))
+        root.title(temp_setting.get('boutique'))
         root.config(background='skyblue')
         logo = pkg_resources.resource_filename('myshop','logo.ico')
         

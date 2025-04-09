@@ -237,7 +237,6 @@ class Loginsdb():
             cursor.execute(text(query),param)
             cursor.commit()
         
-
     def add(self,param:dict):
         salt = self.config.get('salt')
         data = {}
@@ -276,8 +275,7 @@ class Loginsdb():
             query = "delete from Logins where login_id == :login_id;"
             cursor.execute(text(query),param)
             cursor.commit()
-        
-    
+          
     def all(self,param=None):
         data = {}
         with self.instance.cursor() as cursor:
@@ -341,7 +339,7 @@ class Sessionsdb():
         for i in need:
             value = self.db_instance.settings.get(i)
             info.update({i:value})
-        
+        info.update({'username':param.get('username')})
         return info
     
     def all(self,param={}):
@@ -377,15 +375,19 @@ class Sessionsdb():
             cursor.execute(text(query),param)
             cursor.commit()
         
-    def check(self,cookie:dict):
+    def check(self,cookie:dict,first=False):
         user_id = {}
         with self.db_instance.cursor() as cursor:
-            query = "select login_id from Sessions where cookies == :cookie"
+            query = "select Sessions.login_id as login_id, username from Sessions join Logins where cookies == :cookie"
         
             for i in cursor.execute(text(query),cookie):
                 user_id.update(i._asdict())
+        if first:
+            need = ['logo','description','boutique','contact']
+            for i in need:
+                value = self.db_instance.settings.get(i)
+                user_id.update({i:value})
 
-        
         return user_id
 
     def del_expire_cookie(self):

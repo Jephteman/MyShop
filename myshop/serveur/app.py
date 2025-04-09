@@ -28,6 +28,26 @@ def page_not_found(err):
     m =  message(("page not found",404))
     return m
 
+@app.route('/api/v1/check_cookie',methods=['GET'])
+def check_cookie():
+    try:
+        data = request.form.to_dict()
+        ##param =  serialise(param)
+        data['ip_addr'] = request.access_route[0]
+        data['action'] = 'connection'
+        data['date'] = get_timestamp()
+        cookie = request.cookies.to_dict()
+
+        valide_data(data)
+        
+        instance = environment.get('instance')
+        config = environment.get('configurations')
+        res = Users(instance,config=config,cookie=cookie).is_login(first=True)
+    except Exception as e:
+        return error(e)
+    else:
+        return message((res,200))
+
 @app.route('/api/v1/login',methods=['POST'])
 def login():
     try:
@@ -258,7 +278,7 @@ def prepare():
 def run(arg=None):
     prepare()
     if arg:
-        app.run(host=arg.host,port=arg.port)
+        app.run(host=arg.host,port=arg.port,debug=True)
     else:
         app.run()
 

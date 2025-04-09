@@ -28,19 +28,22 @@ except:
 
 
 class Config:
-    def __init__(self):
-        if platform.system() == "Windows":
-            config_dir = os.path.join(os.path.expanduser("~"), "AppData", "Roaming", "myshop")
+    def __init__(self,temp_file=False):
+        if temp_file:
+            self.conf_file= tempfile.TemporaryFile('+a')
+            config_file = self.conf_file.name
         else:
-            config_dir = os.path.expanduser("~/.config/myshop")
+            if platform.system() == "Windows":
+                config_dir = os.path.join(os.path.expanduser("~"), "AppData", "Roaming", "myshop")
+            else:
+                config_dir = os.path.expanduser("~/.config/myshop")
 
-        config_file = os.path.join(config_dir, "config.txt")
-
-        self.conf_file = pathlib.Path(config_file)
-        self.config = ConfigParser()
-        self.config.read(self.conf_file.__str__())
-
-        client._cred['url'] = self.get('url')
+            config_file = os.path.join(config_dir, "config.txt")
+            self.conf_file = pathlib.Path(config_file)
+        
+        self.config = ConfigParser(allow_no_value=True)
+        self.config.read(config_file)
+        self.cookie = {}
     
     def is_installed(self):
         return True if self.get('url') != '' else False
@@ -54,7 +57,16 @@ class Config:
         return self.config.get('CLIENT',param) if self.config.has_option('CLIENT',param) else ''
 
     def set(self,param,value):
+        if not self.config.has_section('CLIENT'):
+            self.config['CLIENT'] = {}
         self.config["CLIENT"][param] = value
+
+    def all(self): # retourne tous les parametres du clients
+        return self.config['CLIENT']
+
+    def update_cookie(self):
+        cookie = self.get('cookie')
+        self.cookie = JSONDecoder().decode(cookie)
 
 def askfile_save(var,file_type):
     x = asksaveasfile(filetypes=file_type)
@@ -77,17 +89,45 @@ def alert_wn(message):
     Button(f,text='OK',command=f.destroy).pack(side='bottom')
 
 def login_wn():
+    temp_setting.set('is_login','no')
     def check():
         data = {'username':u.get(),'password':p.get()}
-        resp = client.API()
+        resp = client.API(setting.get('url'),'')
         try:
-            resp.connect(data)
+            config_serv = resp.connect(data)
+            for label, value in config_serv.items():
+                if type(value) is dict:
+                    value = JSONEncoder().encode(value)
+                if value == None:
+                    value = ''
+                temp_setting.set(label,value)
             root.destroy()
         except Exception as e:
             alert_wn(e)
         else:
-            setting.set('uname',u.get())
-
+            temp_setting.set('is_login','yes')
+            temp_setting.update_cookie()
+    
+    cookie = setting.get('cookie')
+    if (setting.get('auto_login') == 'OUI') and cookie:
+        setting.update_cookie()
+        is_valid = client.API(setting.get('url'),'',cookie=setting.cookie).check_cookie()
+        if is_valid:
+            for label, value in is_valid.items():
+                if type(value) is dict:
+                    value = JSONEncoder().encode(value)
+                elif value == None:
+                    value = ''
+                else :
+                    value = str(value)
+                print(label)
+                print(value)
+                print(dir(value))
+                temp_setting.set(label,value)
+            temp_setting.set('is_login','yes')
+            temp_setting.cookie = setting.cookie
+            return 
+        
     root = Tk()
     root.config(background='skyblue')
     logo = pkg_resources.resource_filename('myshop','logo.ico')
@@ -123,10 +163,14 @@ def about():
     Label(f,text="Disponible sur : https://github.com/Jephteman/MyShop").pack(side='bottom')
     Label(f,text=f"Version : {version}").pack(side='bottom')
 
+def save_cookie(): # save cookie in permenante setting
+    setting.set('cookie',temp_setting.get('cookie'))
+
 """Setup process"""
 class setup:
     def __init__(self):
         self.list_wind = {0:self.setup0,1:self.setup1,2:self.setup2}
+        self.config = ConfigParser()
         self.etape = 0
         self.root = Tk(className=f"Installation MyShop {version}")
         self.root.geometry('720x520')
@@ -190,15 +234,36 @@ class setup:
         Label(f1,text=f"Url du serveur : ",height=3).pack(side='left')
         Entry(f1,textvariable='url').pack(side="right")
         f1.pack()
+
+        f1 = Frame(self.frame,background='skyblue')
+        StringVar(self.root,name='proxy')
+        Label(f1,text=f"Proxy : ",height=3).pack(side='left')
+        Entry(f1,textvariable='proxy').pack(side="right")
+        f1.pack()
+
+        f1 = Frame(self.frame,background='skyblue')
+        StringVar(self.root,name='theme')
+        Label(f1,text=f"Theme : ",height=3).pack(side='left')
+        ttk.Combobox(f1,textvariable='theme',values=['Jour','Nuit'],validate='focusin',).pack(side='right')
+        f1.pack()
+
+        f1 = Frame(self.frame,background='skyblue')
+        StringVar(self.root,name='login_auto')
+        Label(f1,text=f"Connection automatique : ",height=3).pack(side='left')
+        Radiobutton(f1,text='OUI',variable='auto_login',value='OUI').pack(side='right')
+        Radiobutton(f1,text='NON',variable='auto_login',value='NON',state='active').pack(side='right')
+        f1.pack()
                 
         self.frame.pack()
         
     def install(self):
-        config = ConfigParser()
-        if not config.has_section('CLIENT'):
-            config['CLIENT'] = {}
+        if not self.config.has_section('CLIENT'):
+            self.config['CLIENT'] = {}
         
-        config['CLIENT']['url'] = self.root.getvar('url')
+        self.config['CLIENT']['url'] = self.root.getvar('url')
+        self.config['CLIENT']['proxy'] = self.root.getvar('proxy')
+        self.config['CLIENT']['auto_login'] = self.root.getvar('auto_login')
+        self.config['CLIENT']['theme'] = self.root.getvar('theme')
         # Détecter le système d'exploitation
         if platform.system() == "Windows":
             config_dir = os.path.join(os.path.expanduser("~"), "AppData", "Roaming", "myshop")
@@ -212,7 +277,7 @@ class setup:
 
         try:
             with open(config_file,'a') as f:
-                config.write(f)
+                self.config.write(f)
         except Exception as e:
             alert_wn(e)
         else:
@@ -272,7 +337,7 @@ class Notes:
         f2.pack(side='bottom')
 
         try:
-            api = client.API('notes')
+            api = client.API(setting.get('url'),'notes',cookie=temp_setting.cookie)
             self.notes.update(api.all())
         except Exception as e:
             alert_wn(e)
@@ -289,7 +354,7 @@ class Notes:
                 'description' : var_contenu.get('1.0','end-1c')
             }
             try:
-                api = client.API('notes')
+                api = client.API(setting.get('url'),'notes',cookie=temp_setting.cookie)
                 d = api.add(param)
             except Exception  as e:
                 alert_wn(e)
@@ -353,7 +418,7 @@ class Notes:
     def delete(self):
         try:
             id_ = self.tab.selection()[0]
-            api = client.API('notes')
+            api = client.API(setting.get('url'),'notes',cookie=temp_setting.cookie)
             api.delete(id_)
         except Exception as e:
             alert_wn(e)
@@ -391,7 +456,7 @@ class monitoring:
 
     def actualise(self,event):
         try:
-            api = client.API('logs')
+            api = client.API(setting.get('url'),'logs',cookie=temp_setting.cookie)
             data = api.all()
         except Exception as e:
             alert_wn(e)
@@ -446,7 +511,7 @@ class Graphique:
             if from_ and to:
                 param = {'from':from_,'to':to,"isform":True}
 
-            api = client.API('ventes')
+            api = client.API(setting.get('url'),'ventes',cookie=temp_setting.cookie)
             data_raw = api.all(param=param)
         except IndentationError as e:
             alert_wn(e)
@@ -524,7 +589,8 @@ class Exporte:
                 'to':self.fin.get(),
                 'isreport':True
                 }
-            api = client.API(self.res.get())
+            res = self.res.get()
+            api = client.API(setting.get('url'),res,cookie=temp_setting.cookie)
             data = api.all(param)
         except Exception as e:
             alert_wn(e)
@@ -546,40 +612,32 @@ class Exporte:
             
 class Parametre:
     def __init__(self) -> None:
-        self.config = Config()
         self.window = Toplevel(background='skyblue')
         self.window.geometry('720x520')
         self.window.resizable(False,False)
 
-        self.list_var = ['url']
+        self.list_var = {
+            'url':'str','proxy':'str',
+            'theme':'choice',
+            'auto_login':'radio_bouton' ,
+            }
 
         Label(self.window,text='Parametre',font=('',24)).pack(padx=5,pady=5)
 
         f_dev = Frame(self.window,background='skyblue')
 
-        for i in self.list_var :
-            v = StringVar(self.window,name=i,value=self.config.get(i))
+        for i, type_ in self.list_var.items():
+            v = StringVar(self.window,name=i,value=setting.get(i))
             f_ = Frame(f_dev,background='skyblue')
-            Label(f_,text=f'{i.upper()} : ').pack(side='left')
-            Entry(f_,textvariable=v).pack()
+            Label(f_,text=f'{i.capitalize()} : ').pack(side='left')
+            if type_ == 'str':
+                Entry(f_,textvariable=v).pack()
+            elif type_ == 'choice':
+                ttk.Combobox(f_,textvariable=v,values=['Jour','Nuit'],validate='key').pack(side='right')
+            elif type_ == 'radio_bouton':
+                Radiobutton(f_,text='OUI',variable=v,value='OUI',state='active' if v.get() == 'OUI' else 'normal').pack(side='left')
+                Radiobutton(f_,text='NON',variable=v,value='NON', state = 'active' if v.get() == 'NON' else 'normal').pack(side='left')
             f_.pack(padx=5,pady=5)
-        """
-        f_theme = Frame(f_dev)
-        v_theme = StringVar(self.window,name='theme',value=self.config.get('theme'))
-        self.list_var.append('theme')
-        Label(f_theme,text='THEME :').pack(side='left')
-        Radiobutton(f_theme,text='Jour',value='jour',variable=v_theme).pack(side='left')
-        Radiobutton(f_theme,text='Sombre',value='sombre',variable=v_theme).pack(side='right')
-        f_theme.pack(padx=5,pady=5)
-
-        v_desc = StringVar(self.window,name='description',value=self.config.get('description'))
-        self.list_var.append('description')
-        f_desc = Frame(f_dev,height=60,width=80)
-        t = Text(f_desc,width=35,height=20,name='description')
-        t.insert('end-1c',v_desc.get())
-        t.pack()
-        f_desc.pack()
-        """
 
         Button(f_dev,text='imprimantes',width=15,command=self.printer).pack()
 
@@ -600,9 +658,11 @@ class Parametre:
     def save(self):
         """Enregistrement dans le fichier de configuration"""
         for name in self.list_var:
-            self.config.set(name,self.window.getvar(name))
+            setting.set(name,self.window.getvar(name))
 
-        self.config.save()
+        if setting.get('auto_login') == 'OUI':
+            save_cookie()
+        setting.save()
         self.window.destroy()
 
 class Printer:
@@ -680,7 +740,7 @@ class Printer:
 
     def formantage(self):
         param = self.data
-        param.update(client._cred)
+        param.update(setting.all())
         
         # Création du PDF en mémoire
         pdf_buffer = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
@@ -757,6 +817,7 @@ class Printer:
 
 
 setting = Config()
+temp_setting = Config(temp_file=True)
 version = '0.0.1-alpha'
 
 
