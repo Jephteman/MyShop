@@ -47,6 +47,8 @@ def create_table(instance:database):
     Notesdb(instance,first=True)
     print(Fore.BLUE + "     Creation de la table Notes ")
 
+    initiale_action(instance=entry)
+
     print(Fore.BLUE + "[+] Tables crees avec success ")
 
 def insert_tb(instance,param):
@@ -167,7 +169,7 @@ def run(**arg):
     else:
         print("[+] Installation terminée avec success")
 
-    exit(0)
+    exit()
 
 if __name__ == '__main__':
     run()

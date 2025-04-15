@@ -278,7 +278,7 @@ def prepare():
 def run(arg=None):
     prepare()
     if arg:
-        app.run(host=arg.host,port=arg.port,debug=True)
+        app.run(host=arg.host,port=arg.port)
     else:
         app.run()
 

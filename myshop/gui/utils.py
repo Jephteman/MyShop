@@ -120,9 +120,6 @@ def login_wn():
                     value = ''
                 else :
                     value = str(value)
-                print(label)
-                print(value)
-                print(dir(value))
                 temp_setting.set(label,value)
             temp_setting.set('is_login','yes')
             temp_setting.cookie = setting.cookie

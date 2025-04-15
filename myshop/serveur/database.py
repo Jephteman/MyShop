@@ -198,10 +198,6 @@ class Loginsdb():
                 cursor.execute(text("create index if not exists idx_login on Logins(login_id,username)"))
                 cursor.commit()
 
-            if not self.all():
-                p = {'username':'MyShop','password':'MyShop','role':'admin'}
-                self.add(p)
-
     def check(self,param):
         salt = self.config.get('salt')
         idt = {}
@@ -927,7 +923,7 @@ class Arrivagesdb:
                     date datetime, 
                     foreign key (produit_id) references Produits(produit_id))""".format(instance.autoincrement)
                 cursor.execute(text(query))
-                cursor.execute(text("create index if not exists idx_arrivage on Arrivage(arrivage_id)"))
+                cursor.execute(text("create index if not exists idx_arrivage on Arrivages(arrivage_id)"))
 
                 cursor.commit()
 

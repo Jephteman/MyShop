@@ -328,5 +328,13 @@ def cleaner(instance,config={}):
     while True:
         Sessionsdb(instance=instance).del_expire_cookie()
         
-        sleep_time = config.get('back_action_time',18000)
-        time.sleep(sleep_time)
+        sleep_time = config.get('back_action_time')
+        time.sleep(int(sleep_time))
+
+def initiale_action(instance:database,config={}): # effectue les actions d'initialisation
+    logins = Loginsdb(database,config=config)
+    if not logins.all():
+        p = {'username':'MyShop','password':'MyShop','role':'admin'}
+        logins.add(p)
+
+    

@@ -1,5 +1,6 @@
-![Logo](https://i.ibb.co/NdjHFXJq/unnamed-2.png)
-
+<center>
+    ![Logo](https://i.ibb.co/NdjHFXJq/unnamed-2.png)
+</center>
 
 # MyShop
 

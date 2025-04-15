@@ -1,0 +1,15 @@
+site_name: My Shop documentation
+repo_url: https://github.com/Jephteman/MyShop
+site_description: Ce programme est idéal pour les entreprises cherchant à améliorer leur gestion des ventes tout en bénéficiant de la sécurité et de la flexibilité offertes par une solution moderne basée sur l'architecture client/serveur.
+site_author: Jephteman
+theme:
+  name: readthedocs
+nav:
+  - Accuiel : 'index.md'
+  - Guide d'installation : 'installation.md'
+  - Mode d'emploi : 'usage.md'
+  - Deployement : 'deploy.md'
+  - Developpeurs : 'dev.md'
+  - FAQ : 'faq.md'
+  - A propos : 'about.md'
+
