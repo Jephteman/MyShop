@@ -81,6 +81,7 @@ def askfile_open(var,file_type):
         var.set(x)
 
 def alert_wn(message):
+    print(message)
     f = Toplevel()
     f.title("Alert")
     f.geometry("550x100")

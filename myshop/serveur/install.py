@@ -1,176 +1,95 @@
-import os
+import os 
+import socket
 import platform
-import base64, pathlib
-from .backends import *
-from colorama import init, Fore
+import base64
+import secrets
+from pathlib import Path
 from configparser import ConfigParser
+from colorama import init, Fore
+from getpass import getpass
 
 init()
 
-db_settings = database()
-db_settings.connect(db='settings.db')
+def validate_ip(ip):
+    try:
+        socket.inet_aton(ip)
+        return True
+    except socket.error:
+        return False
 
-db_settings_instance =  Settingsdb(db_settings,first=True)
+def get_secure_input(prompt, is_password=False):
+    if is_password:
+        return getpass(prompt)
+    return input(prompt).strip()
 
-entry = {
-    'host':'',
-    'db_name':'MyShop.db',
-    'db_username':'',
-    'db_password':'',
-    'connetion_type':'',
-    'salt':os.urandom(64).hex(),
-    'back_action_time':18000
+def create_config_file(config, config_file):
+    try:
+        with open(config_file, 'w') as f:
+            config.write(f)
+        os.chmod(config_file, 0o600)  # Restrict permissions
+    except Exception as e:
+        print(Fore.RED + f"Erreur lors de la création du fichier de configuration : {e}")
+        return False
+    return True
+
+def run():
+    print(Fore.BLUE + "Bienvenue dans l'installation de MyShop")
+
+    entry = {
+        'host': '',
+        'db_name': 'MyShop.db',
+        'db_username': '',
+        'db_password': '',
+        'connection_type': '',
+        'salt': secrets.token_hex(64),
+        'back_action_time': 18000
     }
 
-def create_table(instance:database):
-    print(Fore.BLUE + "[-] Creation des tables sur la base de donnees ")
-    Logsdb(instance,first=True)
-    print(Fore.BLUE + "     Creation de la table Logs ")
-    Loginsdb(instance,first=True, config=entry)
-    print(Fore.BLUE + "     Creation de la table Logins ")
-    Sessionsdb(instance,first=True)
-    print(Fore.BLUE + "     Creation de la table Sessions ")
-    Agentsdb(instance,first=True)
-    print(Fore.BLUE + "     Creation de la table Agents ")
-    Clientsdb(instance,first=True)
-    print(Fore.BLUE + "     Creation de la table Clients ")
-    Categoriesdb(instance,first=True)
-    print(Fore.BLUE + "     Creation de la table Categories ")
-    Produitsdb(instance,first=True)
-    print(Fore.BLUE + "     Creation de la table Produits ")
-    Ventesdb(instance,first=True)
-    print(Fore.BLUE + "     Creation de la table Ventes ")
-    Arrivagesdb(instance,first=True)
-    print(Fore.BLUE + "     Creation de la table Arrivages ")
-    Promotionsdb(instance,first=True)
-    print(Fore.BLUE + "     Creation de la table Promotions ")
-    Notesdb(instance,first=True)
-    print(Fore.BLUE + "     Creation de la table Notes ")
+    # Mode de fonctionnement
+    while entry['connection_type'] not in ['local', 'distant']:
+        entry['connection_type'] = get_secure_input("Mode de fonctionnement (local, distant) : ").lower()
 
-    initiale_action(instance=entry)
+    # Nom de la base de données
+    db_name = get_secure_input("Nom de la base de données (default: MyShop) : ")
+    if db_name:
+        entry['db_name'] = db_name
 
-    print(Fore.BLUE + "[+] Tables crees avec success ")
+    # Configuration distante
+    if entry['connection_type'] == 'distant':
+        while not validate_ip(entry['host']):
+            entry['host'] = get_secure_input("IP/Nom de domaine de la DB : ")
+        entry['db_username'] = get_secure_input("Nom d'utilisateur de la DB : ")
+        entry['db_password'] = get_secure_input("Mot de passe de la DB : ", is_password=True)
 
-def insert_tb(instance,param):
-    try:
-        instance.add(param)
-    except :
-        instance.change(param)
+    # Configuration de la boutique
+    entry['boutique'] = get_secure_input("Nom de la boutique (obligatoire) : ")
+    entry['description'] = get_secure_input("Description de la boutique : ")
+    entry['contact'] = get_secure_input("Contact de la boutique : ")
 
-    print(Fore.BLUE + f"[-] Insertion du {param.get('label')} dans la  base de donnees ")
+    # Logo
+    logo_path = get_secure_input("Chemin vers le logo de la boutique (optionnel) : ")
+    if logo_path and Path(logo_path).is_file():
+        with open(logo_path, 'rb') as f:
+            entry['logo'] = base64.b64encode(f.read()).decode()
 
-def message():
-    print(Fore.BLUE + """ 
-        Vous etes sur le point d'installer la partie serveur du programme MyShop
-        Ce serveur gereré tous ce qui concerne la base de donnee, les comptes utilisateurs,les permissions ainsi que les ressources
-        """)
-
-def run(**arg):
-    message()
-
-    print('Veillez selectionner le mode de fonctionnement (local, distant) : ',end='')
-    t = ''
-    while t not in ['local','distant']:
-        t = input('').lower()
-        entry.update({'connection_type':t})
-
-    d = input('le nom de la base de donne (default: MyShop) : ')
-
-    if d:
-        entry.update({'db_name':d})
-
-    if t == 'distant':
-        host = input('IP/Nom de domaine de la db :')
-        entry.update({'host':host})
-        user = input("nom d'utilisateur de la db : ")
-        entry.update({'db_username':user})
-        passwd = input('Mot de pass de la db : ')
-        entry.update({'db_password':passwd})
-    
-    print('Veillez entrer le nom de la bourtique (obligatoire)')
-    name = input('Nom :' )
-    if not name:
-        name = input('Nom :' )
-    entry.update({'boutique':name})
-
-    print('Veillez entrer la description de la bourtique')
-    desc = input('Description  :' )
-    entry.update({'description':desc})
-
-    print('Veillez entrer le contact de la boutique')
-    contact = input('Contact :' )
-    entry.update({'contact':contact})
-
-    print('Veillez entrer le chemin vers le logo de la bourtique (optionel)')
-    logo = input('Chemin du logo  :' )
-    if logo:
-        with open(logo,'rb') as f:
-            logo = f.read()
-            logo = base64.encodebytes(logo)
-            logo = logo.decode()
-    entry.update({'logo':logo})
-
-    print(Fore.BLUE + '[+] Enregistrement de donnéé dans la db')
-    for label, value in entry.items():
-        if not value:
-            continue
-
-        param = {'label':label,'value':value}
-        insert_tb(db_settings_instance,param)
-
-    print('[+] Test des informatios fournit')
-    db_instance = database()
-
-    try:
-        db_instance.settings.update(db_settings_instance.all())
-        db_instance.connect(db=entry.get('db_name'))
-    except FileNotFoundError as e:
-        print("[+] Le fichier de configuration n'a pas etre creer")
-        exit(302)
-    except Exception as e:
-        print('Une exeption inconnu a lever')
-    else:
-        print("[+] Connection avec success a la db")
-
-
-    create_table(db_instance)
-
+    # Configuration du serveur
     config = ConfigParser()
-    if not config.has_section('SERVEUR'):
-        config['SERVEUR'] = {}
-        
+    config['SERVEUR'] = {
+        'network': get_secure_input("Adresse du serveur (default: 127.0.0.1) : ") or '127.0.0.1',
+        'port': get_secure_input("Port (default: 8000) : ") or '8000',
+        'IS_INSTALLED': 'yes'
+    }
+
     # Détecter le système d'exploitation
     if platform.system() == "Windows":
-        config_dir = os.path.join(os.path.expanduser("~"), "AppData", "Roaming", "myshop")
+        config_dir = Path(os.getenv('APPDATA')) / "myshop"
     else:
-        config_dir = os.path.expanduser("~/.config/myshop")
+        config_dir = Path.home() / ".config" / "myshop"
 
-    config_file = os.path.join(config_dir, "config.txt")
+    config_dir.mkdir(parents=True, exist_ok=True)
+    config_file = config_dir / "config.txt"
 
-    # Créer le dossier de configuration s'il n'existe pas
-    os.makedirs(config_dir, exist_ok=True)
-
-    print("Veilez entrer l'addresse vers du serveur ")
-    config['SERVEUR']['network'] = input("Addresse (127.0.0.1): ")
-    if not config['SERVEUR']['network']:
-        config['SERVEUR']['network'] = '127.0.0.1'
-
-    print("Veilez entrer le port ")
-    config['SERVEUR']['port'] = input("Port (8000): ")
-    if not config['SERVEUR']['port']:
-        config['SERVEUR']['port'] = '8000'
-
-    try:
-        config['SERVEUR']['IS_INSTALLED'] = 'yes'
-        with open(config_file,'a') as f:
-            config.write(f)
-    except Exception as e:
-        print("Une erreur est survenue")
+    if create_config_file(config, config_file):
+        print(Fore.GREEN + "[+] Installation terminée avec succès")
     else:
-        print("[+] Installation terminée avec success")
-
-    exit()
-
-if __name__ == '__main__':
-    run()
-
+        print(Fore.RED + "[-] Échec de l'installation")

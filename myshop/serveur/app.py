@@ -1,6 +1,8 @@
 from flask import Flask, request
-from .backends import *
-from .utils import *
+from .backends import Logs, Sessions, Users, Agents, Clients, Categories, Notes, Produits, Ventes, Arrivages, Promotions, Settingsdb, database, cleaner
+from .utils import *  # Ensure utils contains the definition of `message` or import it explicitly
+from .utils import message  # Explicitly import `message` if it's defined in utils
+import threading
 app = Flask(__name__)
 
 list_ressource = {
@@ -18,7 +20,7 @@ def error(e:Exception):
     """
         S'occupe d'appeller la methode ^message^ de la classe de l'exception
     """
-    return e.message() if 'message' in dir(e) else SystemException().message()
+    return e.message() if 'message' in dir(e) else str(e)
 
 @app.errorhandler(404)
 def page_not_found(err):
@@ -74,6 +76,7 @@ def reset_passwd():
             il attend comme parametre ['username','password','password_confirmation']
     """
     try:
+        param = request.data.decode()
         param = JSONDecoder().decode(param)
         ##param =  serialise(param)
         param['ip_addr'] = request.access_route[0]
@@ -135,7 +138,10 @@ def add(ressource):
         
         instance = environment.get('instance')
         config = environment.get('configurations')
-        req = list_ressource.get(ressource)(instance,config=config,cookie=cookie).add(param)
+        resource_class = list_ressource.get(ressource)
+        if resource_class is None:
+            raise MessagePersonnalise(("Resource not found", 404))
+        req = resource_class(instance, cookie=cookie, config=config).add(param)
     except Exception as e:
         return error(e)
     else:
@@ -165,8 +171,11 @@ def all(ressource):
         
         instance = environment.get('instance')
         config = environment.get('configurations')
-        req = list_ressource.get(ressource)(instance,config=config,cookie=cookie).all(param=param)
-    except KeyboardInterrupt as e:
+        resource_class = list_ressource.get(ressource)
+        if resource_class is None:
+            raise MessagePersonnalise(("Resource not found", 404))
+        req = resource_class(instance, cookie=cookie, config=config).all(param)
+    except Exception as e:
         return error(e)
     else:
         return message(req)
@@ -191,7 +200,10 @@ def get(ressource,id):
         
         instance = environment.get('instance')
         config = environment.get('configurations')
-        req = list_ressource.get(ressource)(instance,config=config,cookie=cookie).get(param)
+        resource_class = list_ressource.get(ressource)
+        if resource_class is None:
+            raise MessagePersonnalise(("Resource not found", 404))
+        req = resource_class(instance, cookie=cookie, config=config).get(param)
     except Exception as e:
         return error(e)
     else:
@@ -219,8 +231,11 @@ def change(ressource,id_):
         
         instance = environment.get('instance')
         config = environment.get('configurations')
-        req = list_ressource.get(ressource)(instance,config=config,cookie=cookie).change(param)
-    except InterruptedError as e:
+        resource_class = list_ressource.get(ressource)
+        if resource_class is None:
+            raise MessagePersonnalise(("Resource not found", 404))
+        req = resource_class(instance, cookie=cookie, config=config).change(param)
+    except Exception as e:
         return error(e)
     else:
         return message(req)
@@ -243,7 +258,10 @@ def delete(ressource,id):
         cookie = request.cookies.to_dict()
         instance = environment.get('instance')
         config = environment.get('configurations')
-        req = list_ressource.get(ressource)(instance,cookie=cookie,config=config).delete(param)
+        resource_class = list_ressource.get(ressource)
+        if resource_class is None:
+            raise MessagePersonnalise(("Resource not found", 404))
+        req = resource_class(instance, cookie=cookie, config=config).delete(param)
     except Exception as e:
         return error(e)
     else:
@@ -262,9 +280,7 @@ def prepare():
     config = db_settings_instance.all()
     
     if not config:
-        #install.run()
-        print("Veillez relancer le programme")
-        exit()
+        RuntimeError("Veillez relancer le programme")
     
     db_instance.settings.update(config)
 
@@ -274,11 +290,10 @@ def prepare():
     environment['instance'] = db_instance
 
     start_new_thread(cleaner,(db_instance,config))
-
 def run(arg=None):
     prepare()
-    if arg:
-        app.run(host=arg.host,port=arg.port)
+    if arg and hasattr(arg, 'host') and hasattr(arg, 'port'):
+        app.run(host=arg.host, port=arg.port)
     else:
         app.run()
 

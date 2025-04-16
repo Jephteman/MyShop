@@ -19,7 +19,7 @@ jobs:
         uses: squidfunk/mkdocs-material-insiders/actions/deploy@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          repository: <Jephteman>/<MyShop> # Remplacez <USERNAME> par votre nom d'utilisateur GitHub et <REPOSITORY> par le nom de votre dépôt
+          repository: Jephteman/MyShop # Remplacez <USERNAME> par votre nom d'utilisateur GitHub et <REPOSITORY> par le nom de votre dépôt
           branch: gh-pages
           plugins: search # Si vous utilisez le plugin de recherche
           # google_analytics: UA-XXXXX-Y # Si vous utilisez Google Analytics
