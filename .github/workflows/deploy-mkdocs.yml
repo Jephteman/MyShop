@@ -16,7 +16,7 @@ jobs:
         run: |
           pip install mkdocs mkdocs-material # Ajoutez d'autres thèmes ou plugins si nécessaire
       - name: Deploy to GitHub Pages
-        uses: squidfunk/mkdocs-material-insiders/actions/deploy@master
+        uses: squidfunk/mkdocs-material/actions/deploy@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           repository: jephteman/myshop # Remplacez <USERNAME> par votre nom d'utilisateur GitHub et <REPOSITORY> par le nom de votre dépôt
