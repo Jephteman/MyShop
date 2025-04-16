@@ -2,7 +2,7 @@ name: Deploy MkDocs
 
 on:
   push:
-    branches: [ "main" ] # Remplacez "main" par le nom de votre branche principale si nécessaire
+    branches: [ "master" ] # Remplacez "main" par le nom de votre branche principale si nécessaire
 
 jobs:
   deploy:
