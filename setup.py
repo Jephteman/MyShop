@@ -18,7 +18,7 @@ setup(
         'matplotlib',
         'win32print',
         'reportlab',
-        'gunicorn'
+        'waitress'
     ],
     entry_points={
         "console_scripts": [
