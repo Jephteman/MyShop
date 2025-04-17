@@ -1,2 +1,3 @@
-
+- [ ] changer de protocole de hashage pour la comparaison du mot de passe
 - [ ] Optimser le code
+- [ ] tester l'interface graphique completement (surtout les actions supplementaire)

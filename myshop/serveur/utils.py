@@ -61,14 +61,14 @@ def message(data: tuple) -> tuple:
 
 def is_permited(role: str, action: str) -> bool:
     """
-    Vérifie si un rôle donné a la permission d'effectuer une action spécifique.
+        Vérifie si un rôle donné a la permission d'effectuer une action spécifique.
 
-    Args:
-        role (str): Rôle de l'utilisateur (ex: 'admin', 'vendeur').
-        action (str): Action à vérifier au format 'Base.Action'.
+        Args:
+            role (str): Rôle de l'utilisateur (ex: 'admin', 'vendeur').
+            action (str): Action à vérifier au format 'Base.Action'.
 
-    Returns:
-        bool: True si l'action est permise, False sinon.
+        Returns:
+            bool: True si l'action est permise, False sinon.
     """
     perm_list = {
         "vendeur": {

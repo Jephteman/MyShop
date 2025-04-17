@@ -62,6 +62,35 @@ class database:
         return self.db.connect()
 
 class Settingsdb:
+    """
+    Settingsdb Class
+    This class provides an interface to manage a "Settings" table in a database. 
+    It allows for creating, reading, updating, and deleting settings stored in the database.
+    Attributes:
+        instance (database): The database instance used for executing queries.
+    Methods:
+        __init__(instance: database, first=False, config={}):
+            Initializes the Settingsdb class. If `first` is True, it creates the "Settings" table 
+            and an index on the "label" column if they do not already exist.
+        add(param: dict):
+            Adds a new setting to the "Settings" table. The `param` dictionary must contain 
+            'label' and 'value' keys.
+        get(param: dict):
+            Retrieves the value of a setting based on the provided label. The `param` dictionary 
+            must contain a 'label' key. Returns a dictionary with the retrieved data.
+        all(param: dict = {}):
+            Retrieves all settings from the "Settings" table. Returns a dictionary where keys 
+            are labels and values are the corresponding settings' values.
+        change(param: dict):
+            Updates the value of a setting based on the provided label. The `param` dictionary 
+            must contain 'label' and 'value' keys. Returns a dictionary with the updated data.
+        delete(param: dict):
+            Deletes a setting from the "Settings" table based on the provided label. The `param` 
+            dictionary must contain a 'label' key.
+        save():
+            Placeholder method for saving parameters in the database for restoration. 
+            Not yet implemented.
+    """
     def __init__(self,instance:database,first=False,config={}):
         self.instance = instance
         if first:
@@ -76,6 +105,7 @@ class Settingsdb:
                 cursor.commit()
 
     def add(self,param):
+        param = my_objects.SettingObject(param)
         with self.instance.cursor() as cursor:
             query = """
                 insert into Settings(label,value) 
@@ -85,9 +115,10 @@ class Settingsdb:
             cursor.commit()
 
     def get(self,param):
+        param = my_objects.SettingObject(param)
         data = {}
         with self.instance.cursor() as cursor :
-            query = """select value from Settings where label == :label"""
+            query = """select value from Settings where label = :label"""
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
 
@@ -104,6 +135,7 @@ class Settingsdb:
         return data
 
     def change(self,param):
+        param = my_objects.SettingObject(param)
         data = {}
         with self.instance.cursor() as cursor:
             query = "update Settings set value = :value where label = :label returning *"
@@ -113,13 +145,14 @@ class Settingsdb:
         return data
 
     def delete(self,param):
+        param = my_objects.SettingObject(param)
         with self.instance.cursor() as cursor:
-            query = "delete from Settings where label == :label"
+            query = "delete from Settings where label = :label"
             cursor.execute(text(query),param)        
 
     def save(self):
         """  Enregistre les paramtres dans la db pour une restoration  """
-        raise NotImplemented
+        raise NotImplementedError()
 
 class Logsdb():
     def __init__(self,instance:database,first=False,config={}):
@@ -138,8 +171,8 @@ class Logsdb():
                 cursor.execute(text("create index if not exists idx_log on Logs(log_id)"))
                 cursor.commit()
             
-
     def add(self,param):
+        param = my_objects.LogObject(param)
         """ajout d'un nouveau log"""
         with self.instance.cursor() as cursor:
             query = """
@@ -149,15 +182,14 @@ class Logsdb():
             cursor.execute(text(query),param)
             cursor.commit()
         
-
     def get(self,param):
+        param = my_objects.LoginObject(param)
         data = {}
         with self.instance.cursor() as cursor :
-            query = """select * from Logs where log_id == :log_id"""
+            query = """select * from Logs where log_id = :log_id"""
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
 
-        
         return data
     
     def all(self,param):
@@ -176,7 +208,6 @@ class Logsdb():
             for i in cursor.execute(text(query),param):
                 d = i._asdict()
                 data[d.get('log_id')] = d
-        
         
         return data
 
@@ -199,41 +230,41 @@ class Loginsdb():
                 cursor.commit()
 
     def check(self,param):
+        param = my_objects.LoginObject(param)
         salt = self.config.get('salt')
         idt = {}
         param['password'] = sha256(bytes(salt+param['password'],'utf-8')).hexdigest()
 
         with self.instance.cursor() as cursor:
             query = """
-                select login_id,statut from Logins where username == :username and password == :password
+                select login_id,statut from Logins where username = :username and password = :password
                 """
-        
             for i in cursor.execute(text(query),param):
                 idt = i._asdict()
-
             cursor.close()
-
         if idt:
             if idt['statut'] == 0:
                 raise UtilisateurBloquerException(param.get('username'))
         return idt
     
     def reset_passwd(self,param):
+        param = my_objects.LoginObject(param)
         salt = self.config.get('salt')
         if not param.get('password','invalid1') == param.get('confirm_password','invalid'):
-            raise MessagePersonnalise('les mots de passes doivent etre identiques')
+            raise MessagePersonnalise('les mots des passes doivent etre identiques')
         
         param['password'] = sha256(bytes(salt+param['password'],'utf-8')).hexdigest()
         param['confirm_password'] = sha256(bytes(salt+param['confirm_password'],'utf-8')).hexdigest()
 
         with self.instance.cursor() as cursor:
             query = """
-                update Logins set password == :password where login_id == :login_id
+                update Logins set password = :password where login_id = :login_id
                 """
             cursor.execute(text(query),param)
             cursor.commit()
         
     def add(self,param:dict):
+        param = my_objects.LoginObject(param)
         salt = self.config.get('salt')
         data = {}
         param['password'] = bytes(salt+param['password'],'utf-8')
@@ -253,52 +284,50 @@ class Loginsdb():
 
     def change(self,param):
         data = {}
+        param = my_objects.LoginObject(param)
         with self.instance.cursor() as cursor:
             query = """
                 update Logins set role = :role where login_id == :login_id 
                 returning login_id, username, role;
                 """
-        
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
-
             cursor.commit()
         
         return data
     
     def delete(self,param):
+        param = my_objects.LoginObject(param)
         with self.instance.cursor() as cursor :
             query = "delete from Logins where login_id == :login_id;"
             cursor.execute(text(query),param)
             cursor.commit()
           
-    def all(self,param=None):
+    def all(self,param={}):
+        param = my_objects.LoginObject(param)
         data = {}
         with self.instance.cursor() as cursor:
             query = """
                 select Logins.login_id as login_id ,username, role, statut from Logins join 
                 Agents where logins.login_id == Agents.login_id
                 """
-        
             for i in cursor.execute(text(query)):
                 d = i._asdict()
                 data[d.get('login_id')] = d
 
-        
         return data
     
     def get(self,param):
+        param = my_objects.LoginObject(param)
         res = {}
         with self.instance.cursor() as cursor:
             query = """
                 select Logins.login_id as login_id ,username, role, statut from Logins join 
                 Agents where logins.login_id == Agents.login_id and Agents.login_id == :login_id
             """
-        
             for i in cursor.execute(text(query),param):
                 res.update(i._asdict())
 
-        
         return res
 
 class Sessionsdb():
@@ -321,6 +350,7 @@ class Sessionsdb():
                 cursor.commit()
             
     def add(self,param):
+        param = my_objects.SessionObject(param)
         param['cookies'] = get_cookie()
         with self.db_instance.cursor() as cursor:
             query = """
@@ -338,8 +368,9 @@ class Sessionsdb():
         info.update({'username':param.get('username')})
         return info
     
-    def all(self,param={}):
+    def all(self,param:dict={}):
         data = {}
+        param.update(my_objects.SessionObject(param))
         with self.db_instance.cursor() as cursor:
             query = """
                 select session_id,date,Sessions.statut as statut,username,ip_addr from Sessions 
@@ -356,6 +387,7 @@ class Sessionsdb():
         return data
     
     def delete(self,param):
+        param = my_objects.SessionObject(param)
         with self.db_instance.cursor() as cursor:
             query = """
                 delete from Sessions where session_id == :session_id
@@ -364,6 +396,7 @@ class Sessionsdb():
             cursor.commit()
         
     def change(self,param): # ou encore bloquer
+        param = my_objects.SessionObject(param)
         with self.db_instance.cursor() as cursor:
             query = """
                 update Sessions set statut = 0 where session_id == :session_id return session_id,statut
@@ -421,6 +454,7 @@ class Agentsdb():
                     pass
 
     def add(self,param):
+        param = my_objects.AgentObject(param)
         data  = {}
         with self.instance.cursor() as cursor:
             query = """
@@ -429,12 +463,12 @@ class Agentsdb():
                 """
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
-
             cursor.commit()
         
         return data
 
     def delete(self,param):
+        param = my_objects.AgentObject(param)
         with self.instance.cursor() as cursor:
             query = """
                 delete from Agents where login_id == :login_id
@@ -444,6 +478,7 @@ class Agentsdb():
         Loginsdb(self.instance).delete(param)
         
     def change(self,param):
+        param = my_objects.AgentObject(param)
         data = {}
         with self.instance.cursor() as cursor:
             query = """
@@ -452,24 +487,24 @@ class Agentsdb():
                 """
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
-            
             cursor.commit()
         
         return data
 
     def all(self,param={}):
         data = {}
+        param = my_objects.AgentObject(param)
         with self.instance.cursor() as cursor:
             query = "select * from Agents"
             for i in cursor.execute(text(query)):
                 d = i._asdict()
                 data[d.get('login_id')] = d
-
         
         return data
     
     def get(self,param):
         data = {}
+        param = my_objects.AgentObject(param)
         with self.instance.cursor() as cursor:
             query = """
                 select * from Agents where login_id == :login_id
@@ -477,7 +512,6 @@ class Agentsdb():
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
 
-        
         return data
 
 class Clientsdb(): 
@@ -502,8 +536,8 @@ class Clientsdb():
                 cursor.execute(text("create index if not exists idx_client on Clients(client_id,noms)"))
                 cursor.commit()
             
-
     def add(self,param:dict):
+        param.update(my_objects.ClientObject(param))
         data = {}
         if not param.get('isform'):
             query = """
@@ -532,6 +566,7 @@ class Clientsdb():
         return data
 
     def change(self,param):
+        param = my_objects.ClientObject(param)
         data = {}
         with self.instance.cursor() as cursor:
             query = """
@@ -547,14 +582,14 @@ class Clientsdb():
         return data
 
     def delete(self,param):
+        param = my_objects.ClientObject(param)
         with self.instance.cursor() as cursor:
             query = "delete from Clients where client_id == :client_id;"
             cursor.execute(text(query),param)
             cursor.commit()
-        
 
     def all(self,param={}):
-        param.update(my_objects.Client(param).map())
+        param.update(my_objects.ClientObject(param).to_like())
         data = {}
         with self.instance.cursor() as cursor:
             query = """
@@ -571,10 +606,10 @@ class Clientsdb():
                 d = i._asdict()
                 data[d.get('client_id')] = d
 
-        
         return data
 
     def get(self,param):
+        param = my_objects.ClientObject(param)
         data = {}
         with self.instance.cursor() as cursor:
             query = "select * from Clients where client_id == :client_id;"
@@ -582,7 +617,6 @@ class Clientsdb():
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
 
-        
         return data
 
 class Categoriesdb():
@@ -601,6 +635,7 @@ class Categoriesdb():
       
     def add(self,param):
         data = {}
+        param = my_objects.CategorieObject(param)
         with self.instance.cursor() as cursor:
             query = """
                 insert into Categories(label,description) values (:label,:description) returning *
@@ -615,6 +650,7 @@ class Categoriesdb():
         
     def change(self,param):
         data = {}
+        param = my_objects.CategorieObject(param)
         with self.instance.cursor() as cursor:
             query = """
                 alter Categories set label = :label , description = :description where categorie_id == :categorie_id 
@@ -627,23 +663,24 @@ class Categoriesdb():
         return data
 
     def delete(self,param):
+        param = my_objects.CategorieObject(param)
         with self.instance.cursor() as cursor:
             query = "delete Categories where categorie_id == :categorie_id;"
             cursor.execute(text(query),param)
             cursor.commit()
         
-
     def get(self,param):
         data = {}
+        param = my_objects.CategorieObject(param)
         with self.instance.cursor() as cursor:
             query = "select * from Categories where categorie_id == :categorie_id;"  
             for l in cursor.execute(text(query),param):
                 data.update(l._asdict())
 
-        
         return data
 
     def all(self,param={}):
+        param = my_objects.CategorieObject(param)
         data = {}
         with self.instance.cursor() as cursor:
             query = "select * from Categories;"
@@ -652,7 +689,6 @@ class Categoriesdb():
                 d = l._asdict()
                 data[d.get('categorie_id')] = d
 
-        
         return data
 
 class Ventesdb():
@@ -675,6 +711,7 @@ class Ventesdb():
                 cursor.execute(text("create index if not exists idx_vente_id on Ventes(vente_id)"))
 
     def add(self,data):
+        data = my_objects.ProduitObject(data)
         marchandises = data['marchandises']
         
         data['marchandises'] = {}
@@ -769,13 +806,11 @@ class Ventesdb():
                 d = i._asdict()
                 d['marchandises'] = JSONDecoder().decode(d.get('marchandises'))
                 l.update(d)
-            
-        
         return l
 
-    def all(self,param={}): 
+    def all(self,param:dict={}): 
         """ renvoi les elements de la tables ventes """
-        param.update(my_objects.Vente(param).map())
+        param.update(my_objects.VenteObject(param))
         ventes = {}
         
         if param.get('isform',False) == False:
@@ -803,15 +838,14 @@ class Ventesdb():
                 d['marchandises'] = JSONDecoder().decode(d.get('marchandises'))
                 ventes[d.get('vente_id')] = d
 
-        
         return ventes
     
     def delete(self,param):
+        param = my_objects.VenteObject(param)
         with self.instance.cursor() as cursor:
             cursor.execute(text('drop from Ventes where vente_id == :vente_id'),param)
             cursor.commit()
         
-
     def change(self,param): 
         raise MessagePersonnalise("Cette fonctionnalite n est pas implemmentee")
 
@@ -838,6 +872,7 @@ class Produitsdb():
             cursor.close()
 
     def add(self,param):
+        param = my_objects.ProduitObject(param)
         data = {}
         prix , devise = sep_prix(param.get('prix'))
         param['prix'] = f'{prix} {devise}'
@@ -854,6 +889,7 @@ class Produitsdb():
         return data
 
     def change(self,param):
+        param = my_objects.ProduitObject(param)
         data = {}
         prix , devise = sep_prix(param.get('prix'))
         param['prix'] = f'{prix} {devise}'
@@ -864,21 +900,21 @@ class Produitsdb():
                 photo = :photo,description = :description,code_barre = :code_barre 
                 where produit_id == :produit_id returning *
                 """
-        
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
-
             cursor.commit()
         
         return data
 
     def delete(self,param):
+        param = param = my_objects.ProduitObject(param)
         with self.instance.cursor() as cursor:
             query = "delete from Produits where produit_id == :produit_id;"
             cursor.execute(text(query),param)
             cursor.commit()
 
     def get(self,param):
+        param = my_objects.ProduitObject(param)
         data = {}
         with self.instance.cursor() as cursor:
             query = """
@@ -891,8 +927,6 @@ class Produitsdb():
         
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
-
-        
         return data
 
     def all(self,param={}):
@@ -928,6 +962,7 @@ class Arrivagesdb:
                 cursor.commit()
 
     def add(self,param):
+        param = my_objects.ArrivageObject(param)
         data = {}
         param['date'] = get_timestamp()
         with self.instance.cursor() as cursor:
@@ -946,8 +981,8 @@ class Arrivagesdb:
         
         return data
 
-    def all(self,param={}):
-        param = my_objects.Arrivage(param).map()
+    def all(self,param:dict={}):
+        param.update(my_objects.ArrivageObject(param))
         data = {}
         with self.instance.cursor() as cursor:
             query = """
@@ -963,6 +998,7 @@ class Arrivagesdb:
         return data
 
     def get(self,param):
+        param = my_objects.PromotionObject(param)
         data = {}
         with self.instance.cursor() as cursor:
             query = """
@@ -972,11 +1008,10 @@ class Arrivagesdb:
                 """
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
-
-        
         return data
 
     def delete(self,param):
+        param = param = my_objects.PromotionObject(param)
         with self.instance.cursor() as cursor:
             query = """
                 delete from Arrivages where arrivage_id == :arrivage_id 
@@ -984,7 +1019,6 @@ class Arrivagesdb:
             cursor.execute(text(query),param)
             cursor.commit()
         
-
     def change(self,param):
         raise MessagePersonnalise('Cette fonctionnalite n est pas implementer ')
 
@@ -1008,8 +1042,8 @@ class Promotionsdb:
 
                 cursor.commit()
             
-
     def add(self,param):
+        param = my_objects.PromotionObject(param)
         data = {}
         param['produits_ids'] = JSONEncoder().encode(param.get('produits_ids',[]))
         with self.instance.cursor() as cursor:
@@ -1035,6 +1069,7 @@ class Promotionsdb:
         return data
 
     def delete(self,param):
+        param = my_objects.PromotionObject(param)
         with self.instance.cursor() as cursor:
             query = """
                 delete from Promotions where promotion_id == :promotion_id
@@ -1042,8 +1077,8 @@ class Promotionsdb:
             cursor.execute(text(query),param)
             cursor.commit()
         
-
-    def all(self,param={}):
+    def all(self,param:dict={}):
+        param.update(my_objects.PromotionObject(param))
         data = {}
         if param.get('valide',False) == True:
             query = """ 
@@ -1051,7 +1086,7 @@ class Promotionsdb:
                  where date(:date) between date(date_depart) and date(date_fin)"""
         else:
             query = "select * from Promotions"
-            if param.get('isreport'):
+            if param.get('isreport'):          ##### A supprimer ou examiner
                 #query += "  and "
                 pass
         with self.instance.cursor() as cursor:
@@ -1066,13 +1101,11 @@ class Promotionsdb:
 
                 d['produits_label'] = ps
                 data[d.get('promotion_id')] = d
-
-        
         return data
     
     def get(self,param):
         data = {}
-
+        param = my_objects.PromotionObject(param)
         with self.instance.cursor() as cursor:
             query = """
                 select * from Promotions where promotion_id == :promotion_id
@@ -1089,11 +1122,10 @@ class Promotionsdb:
                 d['produits_label'] = ps
                 data[d.get('promotion_id')] = d
                 data.update(d)
-
-        
         return data
     
     def change(self,param):
+        param = my_objects.PromotionObject(param)
         data = {}
         param['produits_ids'] = JSONEncoder().encode(param.get('produits_ids'))
         cursor = self.instance.cursor()
@@ -1106,6 +1138,7 @@ class Promotionsdb:
         return data
     
     def valide(self,param): 
+        param = my_objects.PromotionObject(param)
         data = {}
         with self.instance.cursor() as cursor:
             query = """
@@ -1121,6 +1154,22 @@ class Promotionsdb:
         return data
 
 class Notesdb:
+    """
+    Une classe pour gérer les opérations sur la table Notes de la base de données.
+    Méthodes :
+        __init__(instance: database, first: bool = False, config: dict = {}):
+            Initialise l'instance Notesdb et crée éventuellement la table Notes.
+        add(param: dict) -> dict:
+            Ajoute une nouvelle note à la table Notes et retourne les données insérées.
+        delete(param: dict):
+            Supprime une note de la table Notes en fonction des paramètres fournis.
+        all(param: dict = {}) -> dict:
+            Récupère toutes les notes, éventuellement filtrées par plage de dates si 'isreport' est spécifié.
+        get(param: dict) -> dict:
+            Récupère une note spécifique en fonction de l'identifiant note_id fourni.
+        change(param: dict):
+            La méthode n'est pas implémentée.
+    """
     def __init__(self,instance:database,first=False,config={}):
         self.instance = instance
         if first:
@@ -1138,9 +1187,9 @@ class Notesdb:
                 cursor.execute(text("create index if not exists idx_note on Notes(sujet)"))
                 cursor.commit()
             
-
     def add(self,param):
         data = {}
+        param = my_objects.NoteObject(param)
         with self.instance.cursor() as cursor:
             query = """
                 insert into Notes(login_id,sujet,description,date) 
@@ -1153,13 +1202,14 @@ class Notesdb:
         return data
 
     def delete(self,param):
+        param = my_objects.NoteObject(param)
         with self.instance.cursor() as cursor:
             query = """delete from Notes where note_id == :note_id """
             cursor.execute(text(query),param)
             cursor.commit()
         
-
     def all(self,param={}):
+        param = my_objects.NoteObject(param)
         data = {}
         with self.instance.cursor() as cursor:
             query = """
@@ -1169,37 +1219,26 @@ class Notesdb:
             if param.get('isreport'):
                 param['from'] = to_date(param.get('from'))
                 param['to'] = to_date(param.get('to'))
-                query += " and date betwenn date(:from) and date(:to) "
+                query += " and date between date(:from) and date(:to) "
             for i in cursor.execute(text(query),param):
                 d = i._asdict()
                 data[d.get('note_id')] = d
 
-        
         return data
     
     def get(self,param):
+        param = my_objects.NoteObject(param)
         d = {}
         with self.instance.cursor() as cursor:
             query = """
                 select note_id , username , sujet , date , description from Notes 
-                join Logins where Notes.login_id == Logins.login_id note_id == :note_id
+                join Logins where Notes.login_id == Logins.login_id and note_id == :note_id
                 """
             for i in cursor.execute(text(query),param):
-                d.update(i)
-
-        
+                d.update(i._asdict())
+    
         return d
     
     def change(self,param):
-        raise MessagePersonnalise('Fonctionnement non implementer')
-        data = {}
-        cursor = self.instance.cursor()
-        query = """update Notes set sujet = :sujet, date = :date, description = :description, login_id = :login_id where note_id == :note_id returning * """
-
-        for i in cursor.execute(text(query),param):
-            data.update(i._asdict())
-
-        cursor.commit()
-        cursor.close()
-        return data
+        raise MessagePersonnalise('Fonctionnalité non implémentée')
 

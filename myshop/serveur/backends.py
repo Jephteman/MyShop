@@ -321,7 +321,7 @@ class Notes(ModeleDB):
     """ Sert de couche d'abstraction pour communiquer avec notes """    
     namedb = 'Notes'
 
-def cleaner(instance,config={}):
+def cleaner(instance:database,config={}):
     """
         S'occupe de faire le netoyage en arriere plan pour supprimmer les sessions invalides et d'autres actions
     """
@@ -332,9 +332,21 @@ def cleaner(instance,config={}):
         time.sleep(int(sleep_time))
 
 def initiale_action(instance:database,config={}): # effectue les actions d'initialisation
-    logins = Loginsdb(database,config=config)
-    if not logins.all():
+    logins = Loginsdb(instance,config=config)
+    if not logins.all(): # cree le 1er compte sur le serveur
         p = {'username':'MyShop','password':'MyShop','role':'admin'}
         logins.add(p)
+
+    ### d'autres actions
+
+def pass_like(param:dict):
+    """
+        prepare les données pour etre passer à l'operateur LIKE dans SQL
+    """
+    for label , value in param.items():
+        param.set({label:f"%{value}%"})
+
+    return param
+
 
     
