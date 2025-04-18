@@ -171,6 +171,7 @@ class stock:
                 self.tab.delete(n)
 
             self.temp_index.clear()
+            print(self.data.items())
             for i, produit in self.data.items():
                 if not name.get().upper() in produit.get('label').upper():
                     continue
@@ -672,10 +673,11 @@ class Promotion:
             api = client.API(setting.get('url'),'promotions',cookie=temp_setting.cookie)
             data = api.all()
 
-            api = client.API(setting.get('url'),'promotions',cookie=temp_setting.cookie)
+            api = client.API(setting.get('url'),'produits',cookie=temp_setting.cookie)
             dt = api.all()
             self.produits.update(dt)
-            
+            print(data)
+            print(dt)
         except Exception as e:
             alert_wn(e)
         else:

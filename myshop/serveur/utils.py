@@ -170,7 +170,7 @@ def valide_data(donnees: dict) -> bool:
         "username": {'type': str, 'max': 32, 'min': 3, 'required': True},
         "password": {'type': str, 'min': 6, 'required': True},
         "noms": {"type": str, "max": 62},
-        "telephone": {"type": int, 'max': 24},
+        "telephone": {"type": int, 'max': 15},
         "email": {"type": str, "regex": r"^[^@]+@[^@]+\.[^@]+$"},
         "from": {'type': str, "regex": r'[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$'},
         "to": {'type': str, "regex": r"[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$"}

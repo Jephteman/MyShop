@@ -337,6 +337,11 @@ def initiale_action(instance:database,config={}): # effectue les actions d'initi
         p = {'username':'MyShop','password':'MyShop','role':'admin'}
         logins.add(p)
 
+    clients = Clientsdb(instance,config=config)
+    if not clients.all(): # creation du 1er client (client par defaut)
+        p = {'noms': 'Client par defaut','date':get_timestamp()}
+        clients.add(p)
+
     ### d'autres actions
 
 def pass_like(param:dict):

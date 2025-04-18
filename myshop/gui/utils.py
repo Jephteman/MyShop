@@ -238,12 +238,13 @@ class setup:
         Label(f1,text=f"Proxy : ",height=3).pack(side='left')
         Entry(f1,textvariable='proxy').pack(side="right")
         f1.pack()
-
+        """
         f1 = Frame(self.frame,background='skyblue')
         StringVar(self.root,name='theme')
         Label(f1,text=f"Theme : ",height=3).pack(side='left')
         ttk.Combobox(f1,textvariable='theme',values=['Jour','Nuit'],validate='focusin',).pack(side='right')
         f1.pack()
+        """
 
         f1 = Frame(self.frame,background='skyblue')
         StringVar(self.root,name='login_auto')
@@ -261,7 +262,7 @@ class setup:
         self.config['CLIENT']['url'] = self.root.getvar('url')
         self.config['CLIENT']['proxy'] = self.root.getvar('proxy')
         self.config['CLIENT']['auto_login'] = self.root.getvar('auto_login')
-        self.config['CLIENT']['theme'] = self.root.getvar('theme')
+        #self.config['CLIENT']['theme'] = self.root.getvar('theme')
         # Détecter le système d'exploitation
         if platform.system() == "Windows":
             config_dir = os.path.join(os.path.expanduser("~"), "AppData", "Roaming", "myshop")
@@ -616,7 +617,6 @@ class Parametre:
 
         self.list_var = {
             'url':'str','proxy':'str',
-            'theme':'choice',
             'auto_login':'radio_bouton' ,
             }
 
@@ -630,8 +630,6 @@ class Parametre:
             Label(f_,text=f'{i.capitalize()} : ').pack(side='left')
             if type_ == 'str':
                 Entry(f_,textvariable=v).pack()
-            elif type_ == 'choice':
-                ttk.Combobox(f_,textvariable=v,values=['Jour','Nuit'],validate='key').pack(side='right')
             elif type_ == 'radio_bouton':
                 Radiobutton(f_,text='OUI',variable=v,value='OUI',state='active' if v.get() == 'OUI' else 'normal').pack(side='left')
                 Radiobutton(f_,text='NON',variable=v,value='NON', state = 'active' if v.get() == 'NON' else 'normal').pack(side='left')

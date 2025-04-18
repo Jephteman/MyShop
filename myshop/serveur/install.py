@@ -1,14 +1,29 @@
-import os 
+import os
 import socket
-import platform
 import base64
-import secrets
-from pathlib import Path
-from configparser import ConfigParser
-from colorama import init, Fore
+import platform
+from .backends import *
+from .utils import get_timestamp
 from getpass import getpass
+from colorama import init, Fore
+from configparser import ConfigParser
 
 init()
+
+db_settings = database()
+db_settings.connect(db='settings.db')
+
+db_settings_instance =  Settingsdb(db_settings,first=True)
+
+entry = {
+    'host':'',
+    'db_name':'MyShop.db',
+    'db_username':'',
+    'db_password':'',
+    'connection_type':'',
+    'salt':os.urandom(64).hex(),
+    'back_action_time':18000
+    }
 
 def validate_ip(ip):
     try:
@@ -22,29 +37,70 @@ def get_secure_input(prompt, is_password=False):
         return getpass(prompt)
     return input(prompt).strip()
 
-def create_config_file(config, config_file):
+def create_table(instance:database):
+    print(Fore.BLUE + "[-] Creation des tables sur la base de donnees ")
+    Logsdb(instance,first=True)
+    print(Fore.BLUE + "     Creation de la table Logs ")
+    Loginsdb(instance,first=True, config=entry)
+    print(Fore.BLUE + "     Creation de la table Logins ")
+    Sessionsdb(instance,first=True)
+    print(Fore.BLUE + "     Creation de la table Sessions ")
+    Agentsdb(instance,first=True)
+    print(Fore.BLUE + "     Creation de la table Agents ")
+    Clientsdb(instance,first=True)
+    print(Fore.BLUE + "     Creation de la table Clients ")
+    Categoriesdb(instance,first=True)
+    print(Fore.BLUE + "     Creation de la table Categories ")
+    Produitsdb(instance,first=True)
+    print(Fore.BLUE + "     Creation de la table Produits ")
+    Ventesdb(instance,first=True)
+    print(Fore.BLUE + "     Creation de la table Ventes ")
+    Arrivagesdb(instance,first=True)
+    print(Fore.BLUE + "     Creation de la table Arrivages ")
+    Promotionsdb(instance,first=True)
+    print(Fore.BLUE + "     Creation de la table Promotions ")
+    Notesdb(instance,first=True)
+    print(Fore.BLUE + "     Creation de la table Notes ")
+
+    initiale_action(instance,config=entry)
+
+    print(Fore.BLUE + "[+] Tables crees avec success ")
+
+def insert_tb(instance,param):
     try:
-        with open(config_file, 'w') as f:
-            config.write(f)
-        os.chmod(config_file, 0o600)  # Restrict permissions
-    except Exception as e:
-        print(Fore.RED + f"Erreur lors de la création du fichier de configuration : {e}")
-        return False
-    return True
+        instance.add(param)
+    except :
+        instance.change(param)
 
-def run():
-    print(Fore.BLUE + "Bienvenue dans l'installation de MyShop")
+    print(Fore.BLUE + f"[-] Insertion du {param.get('label')} dans la  base de donnees ")
 
-    entry = {
-        'host': '',
-        'db_name': 'MyShop.db',
-        'db_username': '',
-        'db_password': '',
-        'connection_type': '',
-        'salt': secrets.token_hex(64),
-        'back_action_time': 18000
-    }
+def message():
+    print(Fore.BLUE + """ 
+        Vous etes sur le point d'installer la partie serveur du programme MyShop
+        Ce serveur gereré tous ce qui concerne la base de donnee, les comptes utilisateurs,les permissions ainsi que les ressources
+        """)
 
+def run(**arg):
+    config = ConfigParser()
+    if platform.system() == "Windows":
+        config_dir = Path(os.getenv('APPDATA')) / "myshop"
+    else:
+        config_dir = Path.home() / ".config" / "myshop"
+
+    config_file = os.path.join(config_dir, "config.txt")
+
+    config_file = config_dir / "config.txt"
+    if config_file.exists():
+        config.read(config_file._pattern_str)
+        if config.has_section('SERVEUR'):
+            if config.get('SERVEUR','IS_INSTALLED'): # nous sortons puisque l'installation a deja etait faite
+                return
+        else:
+           config['SERVEUR'] = {}
+           
+    message()
+
+    print('Veillez selectionner le mode de fonctionnement (local, distant) : ',end='')
     # Mode de fonctionnement
     while entry['connection_type'] not in ['local', 'distant']:
         entry['connection_type'] = get_secure_input("Mode de fonctionnement (local, distant) : ").lower()
@@ -73,23 +129,56 @@ def run():
             entry['logo'] = base64.b64encode(f.read()).decode()
 
     # Configuration du serveur
-    config = ConfigParser()
+    
     config['SERVEUR'] = {
         'network': get_secure_input("Adresse du serveur (default: 127.0.0.1) : ") or '127.0.0.1',
         'port': get_secure_input("Port (default: 8000) : ") or '8000',
         'IS_INSTALLED': 'yes'
     }
 
-    # Détecter le système d'exploitation
-    if platform.system() == "Windows":
-        config_dir = Path(os.getenv('APPDATA')) / "myshop"
-    else:
-        config_dir = Path.home() / ".config" / "myshop"
+    print(Fore.BLUE + '[+] Enregistrement de donnéé dans la db')
+    for label, value in entry.items():
+        if not value:
+            continue
 
-    config_dir.mkdir(parents=True, exist_ok=True)
-    config_file = config_dir / "config.txt"
+        param = {'label':label,'value':value}
+        insert_tb(db_settings_instance,param)
 
-    if create_config_file(config, config_file):
-        print(Fore.GREEN + "[+] Installation terminée avec succès")
+    print('[+] Test des informatios fournit')
+    db_instance = database()
+
+    try:
+        db_instance.settings.update(db_settings_instance.all())
+        db_instance.connect(db=entry.get('db_name'))
+    except FileNotFoundError as e:
+        print("[+] Le fichier de configuration n'a pas etre creer")
+        exit(302)
+    except Exception as e:
+        print('Une exeption inconnu a lever')
     else:
-        print(Fore.RED + "[-] Échec de l'installation")
+        print("[+] Connection avec success a la db")
+
+
+    create_table(db_instance)
+
+    if not config.has_section('SERVEUR'):
+        config['SERVEUR'] = {}
+           
+
+    # Créer le dossier de configuration s'il n'existe pas
+    os.makedirs(config_dir, exist_ok=True)
+
+    try:
+        config['SERVEUR']['IS_INSTALLED'] = 'yes'
+        with open(config_file,'a') as f:
+            config.write(f)
+    except Exception as e:
+        print("Une erreur est survenue")
+    else:
+        print("[+] Installation terminée avec success")
+
+    exit()
+
+if __name__ == '__main__':
+    run()
+

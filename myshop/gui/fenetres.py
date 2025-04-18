@@ -501,12 +501,8 @@ class mainframe():
             param['marchandises'].update({p_id:qprod_idtab['quantite']})
             str_march += f"{n_produit} ({qprod_idtab['quantite']}) || "
 
-        if  not self.client_id.get().isnumeric():
-            alert_wn("Veillez inserer le num du client")
-            return
-
         try:
-            api = client.API(setting.get('url'),'clients',cookie=temp_setting.cookie)
+            api = client.API(setting.get('url'),'ventes',cookie=temp_setting.cookie)
             data = api.add(param)
         except Exception as e:
             alert_wn(e)

@@ -526,7 +526,7 @@ class Clientsdb():
                     point int default 0,
                     type char(1) default 'D',
                     noms char(32) not null,
-                    telephone integer(15) default 0000000000 ,
+                    telephone integer ,
                     addr char(32) default '',
                     sexe char(12) default '',
                     email char(24) default '',
@@ -539,34 +539,24 @@ class Clientsdb():
     def add(self,param:dict):
         param.update(my_objects.ClientObject(param))
         data = {}
-        if not param.get('isform'):
-            query = """
-                insert into Clients(client_id,telephone,point,noms,derniere_activite) 
-                values(:client_id, :client_id,10,"aucun nom",:date) returning * 
-                """
-
-        else:
-            if param.get('telephone') and param.get('telephone') != '':
-                query = f"""
-                    insert into Clients(client_id,noms, addr,sexe ,type, refer_client ,telephone , email, derniere_activite)
-                    values(:client_id,:noms, :addr, :sexe, :type, :refer_client ,:telephone ,:email,:date) returning * 
-                """
-            else:
-                query = f"""
-                    insert into Clients(noms, addr,sexe ,type, refer_client , email, derniere_activite)
-                    values(:noms, :addr, :sexe, :type, :refer_client ,:email,:date) returning * 
-                """
+        if not param.get('client_id'):
+            param['client_id'] = 0
+        if param.get('telephone'):
+            param['client_id'] = param.get('telephone')
         
+        query = """
+            insert into Clients(client_id,noms, addr,sexe ,type, refer_client ,telephone , email, derniere_activite)
+            values(:client_id,:noms, :addr, :sexe, :type, :refer_client ,:telephone ,:email,:date) returning * 
+            """
         with self.instance.cursor() as cursor:
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
 
             cursor.commit()
-        
         return data
 
     def change(self,param):
-        param = my_objects.ClientObject(param)
+        param.update(my_objects.ClientObject(param))
         data = {}
         with self.instance.cursor() as cursor:
             query = """
@@ -711,7 +701,10 @@ class Ventesdb():
                 cursor.execute(text("create index if not exists idx_vente_id on Ventes(vente_id)"))
 
     def add(self,data):
-        data = my_objects.ProduitObject(data)
+        data = my_objects.VenteObject(data)
+        if not data.get('client_id'):
+            data['client_id'] = 0
+
         marchandises = data['marchandises']
         
         data['marchandises'] = {}
@@ -1138,7 +1131,7 @@ class Promotionsdb:
         return data
     
     def valide(self,param): 
-        param = my_objects.PromotionObject(param)
+        #param = my_objects.PromotionObject(param)
         data = {}
         with self.instance.cursor() as cursor:
             query = """

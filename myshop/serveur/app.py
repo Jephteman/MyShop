@@ -1,8 +1,9 @@
 from flask import Flask, request
-from .backends import Logs, Sessions, Users, Agents, Clients, Categories, Notes, Produits, Ventes, Arrivages, Promotions, Settingsdb, database, cleaner
+from .backends import Logs, Sessions, Users, Agents, Clients, Categories, Notes, Produits, Ventes, Arrivages, Promotions, Settingsdb, database, cleaner, initiale_action
+from .install import run 
 from .utils import *  # Ensure utils contains the definition of `message` or import it explicitly
 from .utils import message  # Explicitly import `message` if it's defined in utils
-import threading
+
 app = Flask(__name__)
 
 list_ressource = {
@@ -269,6 +270,7 @@ def prepare():
     """
         Prepare le lancement du serveur
     """
+    
     db_settings = database()
     db_settings.connect(db='settings.db')
 
@@ -283,10 +285,11 @@ def prepare():
     db_instance.settings.update(config)
 
     db_instance.connect()
+    
+    initiale_action(db_instance,config)
 
     environment['configurations'] = config
     environment['instance'] = db_instance
-
     start_new_thread(cleaner,(db_instance,config))
 
 def run(arg=None):

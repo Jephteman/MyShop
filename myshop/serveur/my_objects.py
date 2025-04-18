@@ -1,8 +1,13 @@
+from .utils import get_timestamp
+
 class ModelObject(dict):
     def __init__(self,attributs:list,param:dict={}):
         args = {}
         for i in attributs:
             args.update({i:param.get(i,'')})
+        if 'date' in attributs and not param.get('date'):
+            param['date'] = get_timestamp()
+
         super().__init__(args)
     
     def to_like(self):
