@@ -233,11 +233,11 @@ class Loginsdb():
         param = my_objects.LoginObject(param)
         salt = self.config.get('salt')
         idt = {}
-        param['password'] = sha256(bytes(salt+param['password'],'utf-8')).hexdigest()
-
+        passwd = sha256(bytes(salt+param.get('password'),'utf-8')).hexdigest()
+        param.update({'password':passwd})
         with self.instance.cursor() as cursor:
             query = """
-                select login_id,statut from Logins where username = :username and password = :password
+                select login_id,statut from Logins where username == :username and password == :password
                 """
             for i in cursor.execute(text(query),param):
                 idt = i._asdict()
@@ -982,7 +982,7 @@ class Arrivagesdb:
         return data
 
     def all(self,param:dict={}):
-        param.update(my_objects.ArrivageObject(param))
+        param.update(my_objects.ProduitObject(param).to_like())
         data = {}
         with self.instance.cursor() as cursor:
             query = """

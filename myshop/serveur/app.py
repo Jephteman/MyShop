@@ -135,7 +135,6 @@ def add(ressource):
         valide_data(param)
 
         cookie = request.cookies.to_dict()
-        
         instance = environment.get('instance')
         config = environment.get('configurations')
         resource_class = list_ressource.get(ressource)
@@ -168,7 +167,6 @@ def all(ressource):
         valide_data(param)
 
         cookie = request.cookies.to_dict()
-        
         instance = environment.get('instance')
         config = environment.get('configurations')
         resource_class = list_ressource.get(ressource)
@@ -290,6 +288,7 @@ def prepare():
     environment['instance'] = db_instance
 
     start_new_thread(cleaner,(db_instance,config))
+
 def run(arg=None):
     prepare()
     if arg and hasattr(arg, 'host') and hasattr(arg, 'port'):
@@ -297,5 +296,3 @@ def run(arg=None):
     else:
         app.run()
 
-if __name__ == '__main__':
-    run()

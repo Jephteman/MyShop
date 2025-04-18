@@ -3,8 +3,7 @@ dist/
 build/
 myshop.e*
 myenv/
-.*.txt
 *.pyc
-gui/__pycache__/
 design/
-test/
+runtest.py
+.vscode/

@@ -32,7 +32,9 @@ def run(arg=None):
     serve(
         app,
         host=config.get('SERVEUR','network'),
-        port=config.get('SERVEUR','port')
+        port=config.get('SERVEUR','port'),
         )
+    
+
 if __name__ == '__main__':
     run()

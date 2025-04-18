@@ -18,7 +18,7 @@ class NoteObject(ModelObject):
     """
     def __init__(self, param):
         super().__init__(
-            ['note_id','login_id',' sujet','date','description'],
+            ['note_id','login_id','sujet','date','description'],
             param
         )
     def __repr__(self):
