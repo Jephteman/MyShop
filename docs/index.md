@@ -1,8 +1,6 @@
 # Bienvenue sur documentation officielle de MyShop
 
-<center>
-    ![Logo](img/logo.png)
-</center>
+![Logo](img/logo.png)
 
 ## Description du Programme
 
