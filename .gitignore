@@ -5,5 +5,5 @@ myshop.e*
 myenv/
 *.pyc
 design/
-runtest.py
+runtest*.py
 .vscode/

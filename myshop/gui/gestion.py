@@ -68,7 +68,7 @@ class inventaire:
             else:
                 param['isform'] = True
 
-            api = client.API(setting.get('url'),'ventes',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'ventes',cookie=temp_setting.cookie)
             data = api.all(param=param)
         except Exception as e:
             alert_wn(e)
@@ -144,8 +144,8 @@ class stock:
 
 
         try:
-            data_cat = client.API(setting.get('url'),'categories',cookie=temp_setting.cookie).all()
-            api = client.API(setting.get('url'),'produits',cookie=temp_setting.cookie)
+            data_cat = API(setting.get('url'),'categories',cookie=temp_setting.cookie).all()
+            api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
             self.data.update(api.all())
         except Exception as e:
             alert_wn(e)
@@ -203,7 +203,7 @@ class stock:
     def delete(self): # je dois implementer la confirmation
         try:
             id_ = self.tab.selection()[0]
-            api = client.API(setting.get('url'),'produits',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
             api.delete(id_)
         except IndexError:
             pass
@@ -250,7 +250,7 @@ class stock:
                 return
 
             try:
-                api = client.API(setting.get('url'),'produits',cookie=temp_setting.cookie)
+                api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
                 cat_id = self.name_id_categories.get(categorie.get())
                 param = {
                     'label':name,'prix':prix.get(),'categorie_id':cat_id,'produit_id':p_id,
@@ -336,7 +336,7 @@ class stock:
                 return
 
             try:
-                api = client.API(setting.get('url'),'produits',cookie=temp_setting.cookie)
+                api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
                 cat_id = self.name_id_categories.get(categorie.get())
                 param = {
                     'label':name,'prix':prix.get(),'categorie_id':cat_id,
@@ -403,7 +403,7 @@ class stock:
                 return
             
             try:
-                api = client.API(setting.get('url'),'categories',cookie=temp_setting.cookie)
+                api = API(setting.get('url'),'categories',cookie=temp_setting.cookie)
                 param = {'label':label.get(),'description':desc.get('1.0','end-1c')}
                 data = api.add(param)
             except Exception as e:
@@ -469,10 +469,10 @@ class arrivage:
 
 
         try:
-            api = client.API(setting.get('url'),'arrivages',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'arrivages',cookie=temp_setting.cookie)
             self.data.update(api.all())
 
-            api = client.API(setting.get('url'),'produits',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
             produits = api.all()
         except Exception as e:
             alert_wn(e)
@@ -493,7 +493,7 @@ class arrivage:
                 param = {
                     'label':label.get(),
                 }
-                arrivages = client.API(setting.get('url'),'arrivages',cookie=temp_setting.cookie).all(param=param)
+                arrivages = API(setting.get('url'),'arrivages',cookie=temp_setting.cookie).all(param=param)
             except Exception as e:
                 alert_wn(e)
                 return
@@ -533,7 +533,7 @@ class arrivage:
         produits = {}
 
         try:
-            api = client.API(setting.get('url'),'produits',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
         except Exception as e:
             alert_wn(e)
         else:
@@ -578,7 +578,7 @@ class arrivage:
 
             try:
                 p = {'produit_id':produit_id,'quantite':piece.get()}
-                api = client.API(setting.get('url'),'arrivages',cookie=temp_setting.cookie)
+                api = API(setting.get('url'),'arrivages',cookie=temp_setting.cookie)
                 data = api.add(p)
                 alert_wn(f"{p.get('quantite')} pieces du produit '{produit.get()}' ont été ajouté")
             except Exception as e:
@@ -623,7 +623,7 @@ class arrivage:
     def delete(self): # je dois implementer la confirmation
         try:
             id_ = self.tab.selection()[0]
-            api = client.API(setting.get('url'),'arrivages',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'arrivages',cookie=temp_setting.cookie)
             api.delete(id_)
         except IndexError:
             pass
@@ -670,10 +670,10 @@ class Promotion:
         f2.pack(side='bottom')
 
         try:
-            api = client.API(setting.get('url'),'promotions',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'promotions',cookie=temp_setting.cookie)
             data = api.all()
 
-            api = client.API(setting.get('url'),'produits',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
             dt = api.all()
             self.produits.update(dt)
             print(data)
@@ -759,7 +759,7 @@ class Promotion:
             }
 
             try:
-                api = client.API(setting.get('url'),'promotions',cookie=temp_setting.cookie)
+                api = API(setting.get('url'),'promotions',cookie=temp_setting.cookie)
                 data = api.add(param)
                 #data.update({'produits_label':' || '.join(p_labels)})
             except Exception as e:
@@ -827,7 +827,7 @@ class Promotion:
     def delete(self): # je dois implementer la confirmation
         try:
             id_ = self.tab.selection()[0]
-            api = client.API(setting.get('url'),setting.get('url'),'promotions',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),setting.get('url'),'promotions',cookie=temp_setting.cookie)
             api.delete(id_)
         except IndexError:
             pass

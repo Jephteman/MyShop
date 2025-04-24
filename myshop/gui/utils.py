@@ -1,5 +1,6 @@
-from . import client
-from .client import *
+from ..utils.client import *
+
+from ..utils.tools import version
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfilename, asksaveasfile
@@ -93,7 +94,7 @@ def login_wn():
     temp_setting.set('is_login','no')
     def check():
         data = {'username':u.get(),'password':p.get()}
-        resp = client.API(setting.get('url'),'')
+        resp = API(setting.get('url'),'')
         try:
             config_serv = resp.connect(data)
             for label, value in config_serv.items():
@@ -112,7 +113,7 @@ def login_wn():
     cookie = setting.get('cookie')
     if (setting.get('auto_login') == 'OUI') and cookie:
         setting.update_cookie()
-        is_valid = client.API(setting.get('url'),'',cookie=setting.cookie).check_cookie()
+        is_valid = API(setting.get('url'),'',cookie=setting.cookie).check_cookie()
         if is_valid:
             for label, value in is_valid.items():
                 if type(value) is dict:
@@ -336,7 +337,7 @@ class Notes:
         f2.pack(side='bottom')
 
         try:
-            api = client.API(setting.get('url'),'notes',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
             self.notes.update(api.all())
         except Exception as e:
             alert_wn(e)
@@ -353,7 +354,7 @@ class Notes:
                 'description' : var_contenu.get('1.0','end-1c')
             }
             try:
-                api = client.API(setting.get('url'),'notes',cookie=temp_setting.cookie)
+                api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
                 d = api.add(param)
             except Exception  as e:
                 alert_wn(e)
@@ -417,7 +418,7 @@ class Notes:
     def delete(self):
         try:
             id_ = self.tab.selection()[0]
-            api = client.API(setting.get('url'),'notes',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
             api.delete(id_)
         except Exception as e:
             alert_wn(e)
@@ -455,7 +456,7 @@ class monitoring:
 
     def actualise(self,event):
         try:
-            api = client.API(setting.get('url'),'logs',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'logs',cookie=temp_setting.cookie)
             data = api.all()
         except Exception as e:
             alert_wn(e)
@@ -510,7 +511,7 @@ class Graphique:
             if from_ and to:
                 param = {'from':from_,'to':to,"isform":True}
 
-            api = client.API(setting.get('url'),'ventes',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'ventes',cookie=temp_setting.cookie)
             data_raw = api.all(param=param)
         except IndentationError as e:
             alert_wn(e)
@@ -589,7 +590,7 @@ class Exporte:
                 'isreport':True
                 }
             res = self.res.get()
-            api = client.API(setting.get('url'),res,cookie=temp_setting.cookie)
+            api = API(setting.get('url'),res,cookie=temp_setting.cookie)
             data = api.all(param)
         except Exception as e:
             alert_wn(e)
@@ -814,7 +815,6 @@ class Printer:
 
 setting = Config()
 temp_setting = Config(temp_file=True)
-version = '0.0.1-alpha'
 
 
 

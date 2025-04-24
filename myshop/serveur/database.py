@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, text
 from .utils import *
-from . import my_objects
+from ..utils import my_objects
+from ..utils.exceptions import *  
 import time
 
 class database:

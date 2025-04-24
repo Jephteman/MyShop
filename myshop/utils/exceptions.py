@@ -1,3 +1,15 @@
+
+### utiliser par l'interface graphique
+class DeserialException(Exception):
+    def __str__(self):
+        return 'Les formats des données n\'est pas correcte'
+    
+class PersonaliseException(Exception):
+    def __str__(self):
+        return self.args[0]
+
+### Utiliser par le serveur applicatif
+
 class IdentifiantIncorrectException(Exception):
     def message(self):
         text = "Le mot de passe ou le nom d'utilisateur est incorrect"
@@ -60,3 +72,5 @@ class MessagePersonnalise(Exception):
         text = self.__str__()
         return text,400
     
+
+

@@ -47,8 +47,8 @@ class users_admin:
     def actualise(self):
         self.data = {}
         try:
-            data1 = client.API(setting.get('url'),'users',cookie=temp_setting.cookie).all()
-            data2 = client.API(setting.get('url'),'agents',cookie=temp_setting.cookie).all()
+            data1 = API(setting.get('url'),'users',cookie=temp_setting.cookie).all()
+            data2 = API(setting.get('url'),'agents',cookie=temp_setting.cookie).all()
             for i in data1.keys():
                 d = data1.get(i)
 
@@ -85,7 +85,7 @@ class users_admin:
                 param['photo'] = photo
 
             try:
-                api = client.API(setting.get('url'),'users',cookie=temp_setting.cookie)
+                api = API(setting.get('url'),'users',cookie=temp_setting.cookie)
                 data = api.add(param)
             except Exception as e:
                 alert_wn(e)
@@ -167,7 +167,7 @@ class users_admin:
     def delete(self):
         def ret():
             try:
-                api = client.API(setting.get('url'),'users',cookie=temp_setting.cookie)
+                api = API(setting.get('url'),'users',cookie=temp_setting.cookie)
                 api.delete(user_id)
             except Exception as e:
                 alert_wn(e)
@@ -206,7 +206,7 @@ class users_admin:
             }
 
             try:
-                api = client.API(setting.get('url'),'users',cookie=temp_setting.cookie)
+                api = API(setting.get('url'),'users',cookie=temp_setting.cookie)
                 api.change(param)
             except Exception as e:
                 alert_wn(e)
@@ -286,7 +286,7 @@ class users_admin:
             
             param = {'password':var_passwd.get(),'confirm_password':var_confim_passwd.get(),'login_id':login_id}
             try:
-                api = client.API(setting.get('url'),'',cookie=temp_setting.cookie)
+                api = API(setting.get('url'),'',cookie=temp_setting.cookie)
                 api.reset_passwd(param)
             except Exception as e:
                 alert_wn(e)
@@ -347,7 +347,7 @@ class session_admin:
         Button(f_both,text='Supprimer',command=self.delete).pack(side='right')
 
         try:
-            api = client.API(setting.get('url'),'sessions',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'sessions',cookie=temp_setting.cookie)
             data = api.all()
         except Exception as e:
             alert_wn(e)
@@ -372,7 +372,7 @@ class session_admin:
         session = i[0]
         param = {'session_id':session}
         try:
-            api = client.API(setting.get('url'),'sessions',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'sessions',cookie=temp_setting.cookie)
             api.change(param)
         except Exception as e:
             alert_wn(e)
@@ -386,7 +386,7 @@ class session_admin:
         
         session = i[0]
         try:
-            api = client.API(setting.get('url'),'sessions',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'sessions',cookie=temp_setting.cookie)
             api.delete(session)
         except Exception as e:
             alert_wn(e)

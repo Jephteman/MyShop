@@ -46,7 +46,7 @@ class win_client:
 
 
         try:
-            api = client.API(setting.get('url'),'clients',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'clients',cookie=temp_setting.cookie)
             self.data.update(api.all())
         except Exception as e:
             alert_wn(e)
@@ -76,7 +76,7 @@ class win_client:
                 param['client_id'] = tel.get()
 
             try:
-                api = client.API(setting.get('url'),'clients',cookie=temp_setting.cookie)
+                api = API(setting.get('url'),'clients',cookie=temp_setting.cookie)
                 data = api.add(param)
             except Exception as e:
                 alert_wn(e)
@@ -147,7 +147,7 @@ class win_client:
     def delete(self): # je dois implementer la confirmation
         try:
             id_ = self.tab.selection()[0]
-            api = client.API(setting.get('url'),'clients',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'clients',cookie=temp_setting.cookie)
             api.delete(id_)
         except IndexError:
             pass
@@ -171,7 +171,7 @@ class win_client:
             }
 
             try:
-                api = client.API(setting.get('url'),'clients',cookie=temp_setting.cookie)
+                api = API(setting.get('url'),'clients',cookie=temp_setting.cookie)
                 data = api.change(param)
             except InterruptedError as e:
                 alert_wn(e)
@@ -256,7 +256,7 @@ class win_client:
                     'addr':addr.get(),
                     'telephone':tel.get()
                 }
-                cli = client.API(setting.get('url'),'clients',cookie=temp_setting.cookie).all(param=param)
+                cli = API(setting.get('url'),'clients',cookie=temp_setting.cookie).all(param=param)
             except Exception as e:
                 alert_wn(e)
                 return
@@ -475,8 +475,8 @@ class mainframe():
 
     def actualiser(self):
         try:
-            self.promotions = client.API(setting.get('url'),'promotions',cookie=temp_setting.cookie).all({'valide':True})
-            api = client.API(setting.get('url'),'produits',cookie=temp_setting.cookie)
+            self.promotions = API(setting.get('url'),'promotions',cookie=temp_setting.cookie).all({'valide':True})
+            api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
             data = api.all()
         except InterruptedError as e:
             alert_wn(e)
@@ -502,7 +502,7 @@ class mainframe():
             str_march += f"{n_produit} ({qprod_idtab['quantite']}) || "
 
         try:
-            api = client.API(setting.get('url'),'ventes',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'ventes',cookie=temp_setting.cookie)
             data = api.add(param)
         except Exception as e:
             alert_wn(e)

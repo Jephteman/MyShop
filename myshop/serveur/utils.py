@@ -1,13 +1,13 @@
 from json import JSONEncoder, JSONDecoder
 from hashlib import sha3_256 as sha256
 from pathlib import Path
-import datetime
 import platform
 from _thread import *
 import os
 import re
 
-from .exceptions import *
+from ..utils.exceptions import *
+from ..utils.tools import * 
 
 def run_path() -> str:
     """
@@ -36,14 +36,6 @@ def get_cookie() -> str:
     """
     return os.urandom(32).hex()
 
-def get_timestamp() -> str:
-    """
-    Retourne l'horodatage actuel au format 'YYYY-MM-DD HH:MM:SS'.
-
-    Returns:
-        str: Horodatage actuel.
-    """
-    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 def message(data: tuple) -> tuple:
     """

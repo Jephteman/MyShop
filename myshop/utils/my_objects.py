@@ -1,4 +1,4 @@
-from .utils import get_timestamp
+from tools import get_timestamp
 
 class ModelObject(dict):
     def __init__(self,attributs:list,param:dict={}):
