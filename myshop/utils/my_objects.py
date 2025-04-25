@@ -1,7 +1,8 @@
-from tools import get_timestamp
+from .tools import get_timestamp 
 
 class ModelObject(dict):
     def __init__(self,attributs:list,param:dict={}):
+        self.attribut = attributs
         args = {}
         for i in attributs:
             args.update({i:param.get(i,'')})
@@ -11,10 +12,15 @@ class ModelObject(dict):
         super().__init__(args)
     
     def to_like(self):
+        values = self.copy()
         temp = {}
-        for key , value in self.items():
+        for key , value in values.items():
+            if key not in self.attribut: 
+                continue
             temp[key] = f"%{value}%"
-        return temp
+
+        values.update(temp)
+        return values
 
 class NoteObject(ModelObject):
     """
@@ -79,7 +85,7 @@ class VenteObject(ModelObject):
     """
     def __init__(self, param = {}):
         super().__init__(
-            ['vente_id','client_id','login_id','marchandises','prix','date'],param
+            ['vente_id','client_id','login_id','marchandises','prix','date','vendor'],param
         )
     def __repr__(self):
         return f"<Vente id={self.get('vente_id')} >"

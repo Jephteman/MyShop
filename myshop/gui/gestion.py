@@ -42,7 +42,7 @@ class inventaire:
         Label(f3,textvariable=self.somme).pack(side='left')
         f3.pack()
 
-        self.find(1)
+        self.find()
 
     def open(self,event):
         try:
@@ -53,7 +53,7 @@ class inventaire:
         else:
            Printer(data)
 
-    def find(self,event):
+    def find(self,**event):
         try:
             param = {}
             for i in ['vendeur','client_id','from','to']:
@@ -171,7 +171,6 @@ class stock:
                 self.tab.delete(n)
 
             self.temp_index.clear()
-            print(self.data.items())
             for i, produit in self.data.items():
                 if not name.get().upper() in produit.get('label').upper():
                     continue
@@ -676,8 +675,6 @@ class Promotion:
             api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
             dt = api.all()
             self.produits.update(dt)
-            print(data)
-            print(dt)
         except Exception as e:
             alert_wn(e)
         else:

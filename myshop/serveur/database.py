@@ -804,9 +804,6 @@ class Ventesdb():
 
     def all(self,param:dict={}): 
         """ renvoi les elements de la tables ventes """
-        param.update(my_objects.VenteObject(param))
-        ventes = {}
-        
         if param.get('isform',False) == False:
             param['today'] = time.strftime("%Y-%m-%d")
             req = """
@@ -817,7 +814,6 @@ class Ventesdb():
         else:
             param['to'] = to_date(param.get('to'))
             param['from'] = to_date(param.get('from'))
-
             req = """
                 select vente_id ,client_id ,username as vendeur,marchandises ,prix, date 
                 from Ventes join Logins where (Ventes.login_id == Logins.login_id) and 
@@ -825,7 +821,9 @@ class Ventesdb():
                 (Logins.username like :vendor) and
                 date(date) between date(:from) and date(:to) order by date
                 """
-
+            param.update(my_objects.VenteObject(param).to_like())
+            
+        ventes = {}
         with self.instance.cursor() as cursor:
             for i in cursor.execute(text(req),param):
                 d = i._asdict()

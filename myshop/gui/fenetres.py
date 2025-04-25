@@ -18,7 +18,7 @@ class win_client:
         Label(self.window,text="Clients",font=('',15)).pack(padx=5,pady=5)
 
         f1 = Frame(self.window,background='skyblue')
-        self.tab = ttk.Treeview(f1,columns=['id','noms','point','addr','type','tel'])
+        self.tab = ttk.Treeview(f1,columns=('id','noms','point','addr','type','tel'))
 
         self.tab.heading('id',text='ID client')
         self.tab.heading('noms',text='Nom complet')
