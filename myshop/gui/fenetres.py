@@ -16,8 +16,18 @@ class win_client:
         self.window.bind('<Control-F>',self.search)
 
         Label(self.window,text="Clients",font=('',15)).pack(padx=5,pady=5)
+        try:
+            api = API(setting.get('url'),'clients',cookie=temp_setting.cookie)
+            self.data.update(api.all())
+        except Exception as e:
+            alert_wn(e)
+            
+        self.frame1()
 
-        f1 = Frame(self.window,background='skyblue')
+
+    def frame1(self):
+        self.frame = Frame(self.window)
+        f1 = Frame(self.frame,background='skyblue')
         self.tab = ttk.Treeview(f1,columns=('id','noms','point','addr','type','tel'))
 
         self.tab.heading('id',text='ID client')
@@ -38,27 +48,22 @@ class win_client:
 
         f1.pack()
 
-        f2 = Frame(self.window,padx=5,pady=5,background='skyblue')
+        f2 = Frame(self.frame,padx=5,pady=5,background='skyblue')
         Button(f2,text=" Ajouter ",command=self.add,padx=3,pady=3).pack(side='left')
         Button(f2,text=" Voir ",command=self.see,padx=3,pady=3).pack(side='left')
         Button(f2,text=" Supprimmer ",command=self.delete,padx=3,pady=3).pack(side='right')
         f2.pack(side='bottom')
 
-
-        try:
-            api = API(setting.get('url'),'clients',cookie=temp_setting.cookie)
-            self.data.update(api.all())
-        except Exception as e:
-            alert_wn(e)
-        else:
-            for i , d in self.data.items():
-                p = (
-                    d.get('client_id'),d.get('noms'),d.get('point'),d.get('addr'),
-                    'Detaillant' if d.get('type') == 'D' else 'Grossiste',
-                    d.get('telephone')
-                )
-                self.tab.insert('','end',iid=d.get('client_id'),values=p)
-                self.temp_index.append(d.get('client_id'))
+        for i , d in self.data.items():
+            p = (
+                d.get('client_id'),d.get('noms'),d.get('point'),d.get('addr'),
+                'Detaillant' if d.get('type') == 'D' else 'Grossiste',
+                d.get('telephone')
+            )
+            self.tab.insert('','end',iid=d.get('client_id'),values=p)
+            self.temp_index.append(d.get('client_id'))
+            
+        self.frame.pack()
 
     def add(self):
         def ret():
@@ -81,7 +86,8 @@ class win_client:
             except Exception as e:
                 alert_wn(e)
             else:
-                win.destroy()
+                self.frame.destroy()
+                self.frame1()
                 
                 i_ = str(data.get('client_id'))
                 self.data.update({i_:data})
@@ -95,10 +101,14 @@ class win_client:
                 )
                 self.tab.insert('','end',iid=i_,values=p)
                 self.temp_index.append(i_)
-
-        win = Toplevel(class_="Ajout",padx=10,pady=10,background='skyblue')
-        win.resizable(False,False)
-
+                
+        def annuler():
+            self.frame.destroy()
+            self.frame1()
+        # win = Toplevel(class_="Ajout",padx=10,pady=10,background='skyblue')
+        # win.resizable(False,False)
+        self.frame.destroy()
+        self.frame = Frame(self.window)
         noms = StringVar()
         addr = StringVar()
         tel = StringVar()
@@ -107,42 +117,47 @@ class win_client:
         mail = StringVar()
         r_client = StringVar()
 
-        f1 = Frame(win,padx=15,pady=15,background='skyblue')
+        f1 = Frame(self.frame,padx=15,pady=15,background='skyblue')
         Label(f1,text="Noms : ",padx=8,font=('',15)).pack(side='left')
         Entry(f1,textvariable=noms).pack(side='right')
         f1.pack()
 
-        f1 = Frame(win,padx=15,pady=15,background='skyblue')
+        f1 = Frame(self.frame,padx=15,pady=15,background='skyblue')
         Label(f1,text="Sexe : ",padx=8,font=('',15)).pack(side='left')
         ttk.Combobox(f1,textvariable=sexe,values=['M','F'],validate='focusin').pack(side='right')
         f1.pack()
 
-        f1 = Frame(win,padx=15,pady=15,background='skyblue')
+        f1 = Frame(self.frame,padx=15,pady=15,background='skyblue')
         Label(f1,text="Type : ",padx=8,font=('',15)).pack(side='left')
         ttk.Combobox(f1,textvariable=type_,values=['Detaillant','Grossiste'],validate='focusin').pack(side='right')
         f1.pack()
 
-        f2 = Frame(win,padx=15,pady=15,background='skyblue')
+        f2 = Frame(self.frame,padx=15,pady=15,background='skyblue')
         Label(f2,text="Adresse : ",padx=8,font=('',15)).pack(side='left')
         Entry(f2,textvariable=addr).pack(side='right')
         f2.pack()
 
-        f3 = Frame(win,padx=15,pady=15,background='skyblue')
+        f3 = Frame(self.frame,padx=15,pady=15,background='skyblue')
         Label(f3,text="Code parrain : ",padx=8,font=('',15)).pack(side='left')
         Entry(f3,textvariable=r_client).pack(side='right')
         f3.pack()
 
-        f5 = Frame(win,padx=15,pady=15,background='skyblue')
+        f5 = Frame(self.frame,padx=15,pady=15,background='skyblue')
         Label(f5,text="Telephone : ",padx=8,font=('',15)).pack(side='left')
         Entry(f5,textvariable=tel).pack(side='right')
         f5.pack()
 
-        f6 = Frame(win,padx=15,pady=15,background='skyblue')
+        f6 = Frame(self.frame,padx=15,pady=15,background='skyblue')
         Label(f6,text="Email : ",padx=8,font=('',15)).pack(side='left')
         Entry(f6,textvariable=mail).pack(side='right')
         f6.pack()
-
-        Button(win,text="Enregistrer",command=ret,font=('',15)).pack(side='bottom')
+        
+        f7 = Frame(self.frame,padx=15,pady=15,background='skyblue')
+        Button(self.frame,text="Enregistrer",command=ret,font=('',15)).pack(side='left')
+        Button(self.frame,text="Annuler",command=annuler,font=('',15)).pack(side='right')
+        f7.pack(side='bottom')
+        
+        self.frame.pack()
 
     def delete(self): # je dois implementer la confirmation
         try:
@@ -188,7 +203,9 @@ class win_client:
                     'Detaillant' if data.get('type') == 'D' else 'Grossiste',
                     data.get('telephone')
                 ))
-
+        def annuler():
+            self.frame.destroy()
+            self.frame1()
         try:
             id_ = self.tab.selection()[0]
             data = self.data.get(id_)
@@ -198,8 +215,10 @@ class win_client:
             alert_wn(e)
         else:
             
-            win = Toplevel(class_="Ajout",padx=10,pady=10,background='skyblue')
-            win.resizable(False,False)
+            # win = Toplevel(class_="Ajout",padx=10,pady=10,background='skyblue')
+            # win.resizable(False,False)
+            self.frame.destroy()
+            self.frame = Frame(self.window)
 
             noms = StringVar(value=data.get('noms'))
             addr = StringVar(value=data.get('addr'))
@@ -209,42 +228,46 @@ class win_client:
             mail = StringVar(value=data.get('email'))
             point = IntVar(value=data.get('point'))
 
-            f1 = Frame(win,padx=15,pady=15,background='skyblue')
+            f1 = Frame(self.frame,padx=15,pady=15,background='skyblue')
             Label(f1,text="Noms : ",padx=8,font=('',15)).pack(side='left')
             Entry(f1,textvariable=noms).pack(side='right')
             f1.pack()
 
-            f1 = Frame(win,padx=15,pady=15,background='skyblue')
+            f1 = Frame(self.frame,padx=15,pady=15,background='skyblue')
             Label(f1,text="Sexe : ",padx=8,font=('',15)).pack(side='left')
             ttk.Combobox(f1,textvariable=sexe,values=['M','F'],validate='focusin').pack(side='right')
             f1.pack()
 
-            f1 = Frame(win,padx=15,pady=15,background='skyblue')
+            f1 = Frame(self.frame,padx=15,pady=15,background='skyblue')
             Label(f1,text="Type : ",padx=8,font=('',15)).pack(side='left')
             ttk.Combobox(f1,textvariable=type_,values=['Detaillant','Grossiste'],validate='focusin').pack(side='right')
             f1.pack()
 
-            f1 = Frame(win,padx=15,pady=15,background='skyblue')
+            f1 = Frame(self.frame,padx=15,pady=15,background='skyblue')
             Label(f1,text="Point : ",padx=8,font=('',15)).pack(side='left')
             Entry(f1,textvariable=point).pack(side='right')
             f1.pack()
 
-            f2 = Frame(win,padx=15,pady=15,background='skyblue')
+            f2 = Frame(self.frame,padx=15,pady=15,background='skyblue')
             Label(f2,text="Adresse : ",padx=8,font=('',15)).pack(side='left')
             Entry(f2,textvariable=addr).pack(side='right')
             f2.pack()
 
-            f5 = Frame(win,padx=15,pady=15,background='skyblue')
+            f5 = Frame(self.frame,padx=15,pady=15,background='skyblue')
             Label(f5,text="Telephone : ",padx=8,font=('',15)).pack(side='left')
             Entry(f5,textvariable=tel).pack(side='right')
             f5.pack()
 
-            f6 = Frame(win,padx=15,pady=15,background='skyblue')
+            f6 = Frame(self.frame,padx=15,pady=15,background='skyblue')
             Label(f6,text="Email : ",padx=8,font=('',15)).pack(side='left')
             Entry(f6,textvariable=mail).pack(side='right')
             f6.pack()
-
-            Button(win,text="Enregistrer",command=ret,font=('',15)).pack(side='bottom')
+            f7 = Frame(self.frame,padx=15,pady=15,background='skyblue')
+            Button(f7,text="Enregistrer",command=ret,font=('',15)).pack(side='right')
+            Button(f7,text="Annuler",command=annuler,font=('',15)).pack(side='left')
+            f7.pack(side='bottom')
+            
+            self.frame.pack()
 
     def search(self,event):
         def filtre():

@@ -3,7 +3,7 @@ from .exceptions import *
 import requests
 
 class API():
-    def __init__(self,url,ressource,cookie={}):
+    def __init__(self,url,ressource,cookie=''):
         """
                 data : un dictionnaire qui contient imperativement
                     * url : str

@@ -1,10 +1,10 @@
-from ..utils.client import *
+from ..utils.client import API
 
-from ..utils.tools import version
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfilename, asksaveasfile
 from configparser import ConfigParser
+from json import JSONDecoder , JSONEncoder
 
 import os
 import csv
@@ -30,10 +30,10 @@ except:
 
 class Config:
     def __init__(self,temp_file=False):
-        if temp_file:
-            self.conf_file= tempfile.TemporaryFile('+a')
-            config_file = self.conf_file.name
-        else:
+        self.temp_file = temp_file
+        self.config = ConfigParser(allow_no_value=True)
+        
+        if not temp_file:
             if platform.system() == "Windows":
                 config_dir = os.path.join(os.path.expanduser("~"), "AppData", "Roaming", "myshop")
             else:
@@ -41,15 +41,16 @@ class Config:
 
             config_file = os.path.join(config_dir, "config.txt")
             self.conf_file = pathlib.Path(config_file)
-        
-        self.config = ConfigParser(allow_no_value=True)
-        self.config.read(config_file)
+            self.config.read(config_file)
+            
         self.cookie = {}
     
     def is_installed(self):
         return True if self.get('url') != '' else False
 
     def save(self):
+        if self.temp_file:
+            raise Exception("Fichier temporaire ne peut etre stocker")
         with open(self.conf_file,'w') as f:
             self.config.write(f)
             alert_wn("Pour appliquer les parametres, veillez redemarer le programme")
@@ -130,7 +131,7 @@ def login_wn():
     root = Tk()
     root.config(background='skyblue')
     logo = pkg_resources.resource_filename('myshop','logo.ico')
-    root.iconbitmap(logo)
+    #root.iconbitmap(logo)
     u = StringVar()
     p = StringVar()
     root.title("Connection")
@@ -239,13 +240,12 @@ class setup:
         Label(f1,text=f"Proxy : ",height=3).pack(side='left')
         Entry(f1,textvariable='proxy').pack(side="right")
         f1.pack()
-        """
+
         f1 = Frame(self.frame,background='skyblue')
         StringVar(self.root,name='theme')
         Label(f1,text=f"Theme : ",height=3).pack(side='left')
         ttk.Combobox(f1,textvariable='theme',values=['Jour','Nuit'],validate='focusin',).pack(side='right')
         f1.pack()
-        """
 
         f1 = Frame(self.frame,background='skyblue')
         StringVar(self.root,name='login_auto')
@@ -263,7 +263,7 @@ class setup:
         self.config['CLIENT']['url'] = self.root.getvar('url')
         self.config['CLIENT']['proxy'] = self.root.getvar('proxy')
         self.config['CLIENT']['auto_login'] = self.root.getvar('auto_login')
-        #self.config['CLIENT']['theme'] = self.root.getvar('theme')
+        self.config['CLIENT']['theme'] = self.root.getvar('theme')
         # Détecter le système d'exploitation
         if platform.system() == "Windows":
             config_dir = os.path.join(os.path.expanduser("~"), "AppData", "Roaming", "myshop")
@@ -306,11 +306,18 @@ class Notes:
     def __init__(self):
         self.win = Toplevel(pady=5,padx=5,background='skyblue')
         self.notes = {}
+        try:
+            api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
+            self.notes.update(api.all())
+        except Exception as e:
+            alert_wn(e)
         self.win.resizable(False,False)
         Label(self.win,text='Notes',padx=5,pady=5,font=('',13)).pack()
-
-        f1 = Frame(self.win,padx=3,pady=3,background='skyblue')
-
+        self.frame1()
+        
+    def frame1(self):
+        self.frame = Frame(self.win)
+        f1 = Frame(self.frame,padx=3,pady=3,background='skyblue')
         self.tab = ttk.Treeview(f1,columns=('id','sujet','user','date'))#,height=30)
         self.tab.heading('id',text="Id")
         self.tab.heading('sujet',text="Sujet")
@@ -328,7 +335,7 @@ class Notes:
 
         f1.pack()
 
-        f2 = Frame(self.win,background='skyblue')
+        f2 = Frame(self.frame,background='skyblue')
 
         Button(f2,text='Ajouter',padx=4,pady=4,command=self.add,width=10).pack(side='left')
         Button(f2,text='Voir',padx=4,pady=4,command=self.see,width=10).pack(side='left')
@@ -336,18 +343,16 @@ class Notes:
 
         f2.pack(side='bottom')
 
-        try:
-            api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
-            self.notes.update(api.all())
-        except Exception as e:
-            alert_wn(e)
-        else:
-            for i , data in self.notes.items():
-                n_id = str(data.get('note_id'))
-                p = (n_id,data.get('sujet'),data.get('username'),data.get('date'))
-                self.tab.insert('','end',iid=n_id,values=p)
+        for i , data in self.notes.items():
+            n_id = str(data.get('note_id'))
+            p = (n_id,data.get('sujet'),data.get('username'),data.get('date'))
+            self.tab.insert('','end',iid=n_id,values=p)
+            
+        self.frame.pack()
         
     def add(self):
+        self.frame.destroy()
+        self.frame = Frame(self.win)
         def ret():
             param = {
                 'sujet':var_sujet.get(),
@@ -359,61 +364,74 @@ class Notes:
             except Exception  as e:
                 alert_wn(e)
             else:
-                win.destroy()
+                self.frame.destroy()
+                self.frame1()
                 d['username'] = setting.get('uname')
                 n_id = str(d.get('note_id'))
                 self.notes.update({n_id:d}),
                 p = (n_id,d.get('sujet'),d.get('username'),d.get('date'))
                 self.tab.insert('','end',iid=n_id,values=p)
+                
+                
+        def annuler():
+            self.frame.destroy()
+            self.frame1()
 
-        win = Toplevel(self.win,padx=5,pady=5,background='skyblue')
-        win.resizable(False,False)
         var_sujet = StringVar()
 
-        f1 = Frame(win,padx=5,pady=5,background='skyblue')
+        f1 = Frame(self.frame,padx=5,pady=5,background='skyblue')
         Label(f1,text='Sujet : ').pack(side='left')
         Entry(f1,textvariable=var_sujet).pack(side='right')
         f1.pack()
 
 
-        f3 = Frame(win,background='skyblue')
+        f3 = Frame(self.frame,background='skyblue')
         Label(f3,text='Contenu : ').pack(side='left')
         var_contenu = Text(f3,width=30,height=15)
         var_contenu.pack(side='right')
         f3.pack()
-
-        Button(win,text='Envoyer',width=10,padx=5,pady=5,command=ret).pack(side='bottom')
+        f4 = Frame(self.frame)
+        Button(f4,text='Envoyer',width=10,padx=5,pady=5,command=ret).pack(side='left')
+        Button(f4,text='Annuler',width=10,padx=5,pady=5,command=annuler).pack(side='right')
+        f4.pack(side='bottom')
+        
+        self.frame.pack()
 
     def see(self):
+        def ret():
+            self.frame.destroy()
+            self.frame1()
         try:
             id_ = self.tab.selection()[0]
             data = self.notes.get(id_)
         except Exception as e:
-            pass
+            alert_wn(e)
         else:
-            win = Toplevel(self.win,padx=5,pady=5,background='skyblue')
-            win.resizable(False,False)
+            self.frame.destroy()
+            self.frame = Frame(self.win)
             var_sujet = StringVar(value=data.get('sujet'))
             contenu = data.get('description')
             var_auth = StringVar(value=data.get('username'))
 
-            f1 = Frame(win,padx=3,pady=3,background='skyblue')
+            f1 = Frame(self.frame,padx=3,pady=3,background='skyblue')
             Label(f1,text='Sujet : ').pack(side='left')
             Entry(f1,textvariable=var_sujet,state='readonly').pack(side='right')
             f1.pack()
 
-            f2 = Frame(win,padx=3,pady=3,background='skyblue')
+            f2 = Frame(self.frame,padx=3,pady=3,background='skyblue')
             Label(f2,text='Auteur : ').pack(side='left')
             Entry(f2,textvariable=var_auth,state='readonly').pack(side='right')
             f2.pack()
 
-            f3 = Frame(win,padx=4,pady=4,background='skyblue')
+            f3 = Frame(self.frame,padx=4,pady=4,background='skyblue')
             Label(f3,text='Contenu : ').pack(side='left')
             t = Text(f3,width=35,height=20)
             t.insert('end-1c',contenu)
             t.config(state='disabled')
             t.pack()
             f3.pack()
+            Button(self.frame,text='Retour',width=10,padx=5,pady=5,command=ret).pack(side='bottom')
+            self.frame.pack()
 
     def delete(self):
         try:
@@ -618,6 +636,7 @@ class Parametre:
 
         self.list_var = {
             'url':'str','proxy':'str',
+            'theme':'choice',
             'auto_login':'radio_bouton' ,
             }
 
@@ -631,6 +650,8 @@ class Parametre:
             Label(f_,text=f'{i.capitalize()} : ').pack(side='left')
             if type_ == 'str':
                 Entry(f_,textvariable=v).pack()
+            elif type_ == 'choice':
+                ttk.Combobox(f_,textvariable=v,values=['Jour','Nuit'],validate='key').pack(side='right')
             elif type_ == 'radio_bouton':
                 Radiobutton(f_,text='OUI',variable=v,value='OUI',state='active' if v.get() == 'OUI' else 'normal').pack(side='left')
                 Radiobutton(f_,text='NON',variable=v,value='NON', state = 'active' if v.get() == 'NON' else 'normal').pack(side='left')
@@ -815,6 +836,7 @@ class Printer:
 
 setting = Config()
 temp_setting = Config(temp_file=True)
+version = '0.0.1a0'
 
 
 

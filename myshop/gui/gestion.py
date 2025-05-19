@@ -106,17 +106,29 @@ class inventaire:
 class stock:
     def __init__(self):
         self.data = {}
+        self.data_cat = {}
         self.name_id_categories = {}
         self.temp_index = []
-        
         self.window = Toplevel(class_='stock',background='skyblue')
         self.window.resizable(False,False)
-        self.window.bind('<Control-F>',self.search)
-        self.window.bind('<Control-f>',self.search)
+        try:
+            data_cat = API(setting.get('url'),'categories',cookie=temp_setting.cookie).all()
+            api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
+            self.data.update(api.all())
+            self.data_cat.update(data_cat)
+        except Exception as e:
+            alert_wn(e)
+        
+        self.frame1()
+        
+    def frame1(self):
+        self.frame = Frame(self.window) 
+        self.frame.bind('<Control-F>',self.search)
+        self.frame.bind('<Control-f>',self.search)
 
-        Label(self.window,text="Stock",font=('',15)).pack(padx=5,pady=5)
+        Label(self.frame,text="Stock",font=('',15)).pack(padx=5,pady=5)
 
-        f1 = Frame(self.window,background='skyblue')
+        f1 = Frame(self.frame,background='skyblue')
         self.tab = ttk.Treeview(f1,columns=('id','marchandise','categorie','quantite','prix'))
 
         self.tab.heading('id',text='ID produit')
@@ -136,33 +148,28 @@ class stock:
 
         f1.pack()
 
-        f2 = Frame(self.window,padx=5,pady=5,background='skyblue')
+        f2 = Frame(self.frame,padx=5,pady=5,background='skyblue')
         Button(f2,text=" Ajouter ",command=self.add,padx=3,pady=3).pack(side='left')
         Button(f2,text=" Voir ",command=self.see,padx=3,pady=3).pack(side='left')
         Button(f2,text=" Supprimmer ",command=self.delete,padx=3,pady=3).pack(side='right')
         f2.pack(side='bottom')
+        
+        self.frame.pack()
 
+        for i, produit in self.data.items():
+            p = (
+                produit.get('produit_id'),
+                produit.get('label'),
+                produit.get('cat_label'),
+                produit.get('quantite'),
+                produit.get('prix'),
+            )
+            self.temp_index.append(produit.get('produit_id'))
+            self.tab.insert('','end',iid=produit.get('produit_id'),values=p)
 
-        try:
-            data_cat = API(setting.get('url'),'categories',cookie=temp_setting.cookie).all()
-            api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
-            self.data.update(api.all())
-        except Exception as e:
-            alert_wn(e)
-        else:
-            for i, produit in self.data.items():
-                p = (
-                    produit.get('produit_id'),
-                    produit.get('label'),
-                    produit.get('cat_label'),
-                    produit.get('quantite'),
-                    produit.get('prix'),
-                )
-                self.temp_index.append(produit.get('produit_id'))
-                self.tab.insert('','end',iid=produit.get('produit_id'),values=p)
-
-            for i, d in data_cat.items():
-                self.name_id_categories.update({d.get('label'):d.get('categorie_id')})
+        for i, d in self.data_cat.items():
+            self.name_id_categories.update({d.get('label'):d.get('categorie_id')})
+        
        
     def search(self,event):
 
@@ -230,83 +237,95 @@ class stock:
         except InterruptedError as e:
             alert_wn(e)
             return
+        else:
         
-        p_id = data.get('produit_id')
-        n_produit = StringVar(value=data.get('label'))
-        categorie = StringVar(value=data.get('cat_label'))
-        prix = StringVar(value=data.get('prix')) 
-        code = StringVar(value=data.get('code_barre'))
-        photo = StringVar(value=data.get('photo'))
+            p_id = data.get('produit_id')
+            n_produit = StringVar(value=data.get('label'))
+            categorie = StringVar(value=data.get('cat_label'))
+            prix = StringVar(value=data.get('prix')) 
+            code = StringVar(value=data.get('code_barre'))
+            photo = StringVar(value=data.get('photo'))
+            
+            def annuler():
+                self.frame.destroy()
+                self.frame1()
 
-        def ret():
-            name = n_produit.get().strip()
-            if '|' in name:
-                alert_wn("Le nom du produit ne peut pas comporter le caractere '|' ")
-                return 
-                
-            if name == '':
-                alert_wn('Veillez renseigner le nom du produit')
-                return
+            def ret():
+                name = n_produit.get().strip()
+                if '|' in name:
+                    alert_wn("Le nom du produit ne peut pas comporter le caractere '|' ")
+                    return 
+                    
+                if name == '':
+                    alert_wn('Veillez renseigner le nom du produit')
+                    return
 
-            try:
-                api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
-                cat_id = self.name_id_categories.get(categorie.get())
-                param = {
-                    'label':name,'prix':prix.get(),'categorie_id':cat_id,'produit_id':p_id,
-                    'code_barre':code.get(),'photo':photo.get(),'description':desc.get('1.0','end-1c')
-                    }
-                if param.get('photo'):
-                    with open(param.get('photo')) as f:
-                        d = f.read()
-                        param['photo'] = base64.b64encode(d)
-                data = api.change(param)
-            except Exception as e:
-                alert_wn(e)
-            else:
-                data['cat_label'] = categorie.get()
-                i_ = str(data.get('produits'))
-                self.data.update({i_:data})
-                p = (
-                    data.get('produit_id'),
-                    data.get('label'),
-                    data.get('cat_label'),
-                    data.get('quantite'),
-                    data.get('prix'),
-                )
-                self.tab.insert('','end',iid=data.get('produit_id'),values=p)
+                try:
+                    api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
+                    cat_id = self.name_id_categories.get(categorie.get())
+                    param = {
+                        'label':name,'prix':prix.get(),'categorie_id':cat_id,'produit_id':p_id,
+                        'code_barre':code.get(),'photo':photo.get(),'description':desc.get('1.0','end-1c')
+                        }
+                    if param.get('photo'):
+                        with open(param.get('photo')) as f:
+                            d = f.read()
+                            param['photo'] = base64.b64encode(d)
+                    data = api.change(param)
+                except Exception as e:
+                    alert_wn(e)
+                else:
+                    data['cat_label'] = categorie.get()
+                    i_ = str(data.get('produits'))
+                    self.data.update({i_:data})
+                    p = (
+                        data.get('produit_id'),
+                        data.get('label'),
+                        data.get('cat_label'),
+                        data.get('quantite'),
+                        data.get('prix'),
+                    )
+                    self.tab.insert('','end',iid=data.get('produit_id'),values=p)
 
-                alert_wn("Ajouter du produit '{}' avec success".format(n_produit.get()))
-                ff.destroy()
+                    alert_wn("Ajouter du produit '{}' avec success".format(n_produit.get()))
+                    self.frame.destroy()
+                    self.frame1()
 
-        ff = Toplevel(self.window,name="arrivage",background='skyblue')
-        ff.resizable(False,False)
+            self.frame.destroy()
+            self.frame = Frame(self.window) 
+            ff = Frame(self.frame,background='skyblue')
 
-        Label(ff,text='Information sur le produit ',height=3,font=('Arial',15)).grid(row=0,column=1)
+            Label(ff,text='Information sur le produit ',height=3,font=('Arial',15)).grid(row=0,column=1)
 
-        Label(ff,text="Nom du produit :").grid(row=1,column=0)
-        Entry(ff,textvariable=n_produit).grid(row=1,column=1)
-        Label(ff,text="Categorie :").grid(row=2,column=0)
-        self.cat = ttk.Combobox(ff,values=[i for i in self.name_id_categories.keys()],textvariable=categorie)
-        self.cat.grid(row=2,column=1)
+            Label(ff,text="Nom du produit :").grid(row=1,column=0)
+            Entry(ff,textvariable=n_produit).grid(row=1,column=1)
+            Label(ff,text="Categorie :").grid(row=2,column=0)
+            self.cat = ttk.Combobox(ff,values=[i for i in self.name_id_categories.keys()],textvariable=categorie)
+            self.cat.grid(row=2,column=1)
 
-        Label(ff,text="Prix :").grid(row=3,column=0)
-        Entry(ff,textvariable=prix).grid(row=3,column=1)
+            Label(ff,text="Prix :").grid(row=3,column=0)
+            Entry(ff,textvariable=prix).grid(row=3,column=1)
 
-        #Label(ff,text="Photo :").grid(row=4,column=0)
-        #Entry(ff,textvariable=photo,state='readonly').grid(row=4,column=1)
-        #f = Frame(ff)
-        #Button(ff,text=' parcourir ',command=set_photo).grid(row=4,column=1)
-        #Button(ff,text=" Voir ",command=voir).grid(row=4,column=3)
+            #Label(ff,text="Photo :").grid(row=4,column=0)
+            #Entry(ff,textvariable=photo,state='readonly').grid(row=4,column=1)
+            #f = Frame(ff)
+            #Button(ff,text=' parcourir ',command=set_photo).grid(row=4,column=1)
+            #Button(ff,text=" Voir ",command=voir).grid(row=4,column=3)
 
-        Label(ff,text="Code barre :").grid(row=5,column=0)
-        Entry(ff,textvariable=code).grid(row=5,column=1)
+            Label(ff,text="Code barre :").grid(row=5,column=0)
+            Entry(ff,textvariable=code).grid(row=5,column=1)
 
-        Label(ff,text="Description :").grid(row=6,column=0)
-        desc = Text(ff,height=6,width=20)
-        desc.insert('end-1c',data.get('description'))
-        desc.grid(row=6,column=1)
-
-        Button(ff,text="Ajouter",width=15,command=ret).grid(row=7,column=1)
+            Label(ff,text="Description :").grid(row=6,column=0)
+            desc = Text(ff,height=6,width=20)
+            desc.insert('end-1c',data.get('description'))
+            desc.grid(row=6,column=1)
+            
+            f7 = Frame(ff)
+            Button(ff,text="Ajouter",width=15,command=ret).pack(side='left')
+            Button(ff,text="Ajouter",width=15,command=annuler).pack(side='right')
+            f7.grid(row=7,column=1)
+            
+            self.frame.pack()
 
     def add(self):
         def set_photo():
@@ -317,12 +336,6 @@ class stock:
             image_64 = photo.get()
             image = PhotoImage(data=image_64)
             Label(fen,text='Image du produit',image=image,compound=LEFT).pack()
-
-        n_produit = StringVar()
-        categorie = StringVar()
-        prix = StringVar() 
-        code = StringVar()
-        photo = StringVar()
 
         def ret():
             name = n_produit.get().strip()
@@ -360,14 +373,28 @@ class stock:
                     data.get('quantite'),
                     data.get('prix'),
                 )
+                print(data)
+                print(p)
                 self.temp_index.append(data.get('produit_id'))
                 self.tab.insert('','end',iid=data.get('produit_id'),values=p)
 
                 alert_wn("Ajouter du produit '{}' avec success".format(n_produit.get()))
-                ff.destroy()
-
-        ff = Toplevel(self.window,name="arrivage",background='skyblue')
-        ff.resizable(False,False)
+                self.frame.destroy()
+                self.frame1()
+                
+        def annuler():
+            self.frame.destroy()
+            self.frame1()
+            
+        n_produit = StringVar()
+        categorie = StringVar()
+        prix = StringVar() 
+        code = StringVar()
+        photo = StringVar()
+        
+        self.frame.destroy()
+        self.frame = Frame(self.window)
+        ff = Frame(self.frame)
 
         Label(ff,text='Inserer un nouveau produit ',height=3,font=('Arial',15)).grid(row=0,column=1)
 
@@ -392,8 +419,13 @@ class stock:
         Label(ff,text="Description :").grid(row=6,column=0)
         desc = Text(ff,height=6,width=20)
         desc.grid(row=6,column=1)
-
-        Button(ff,text="Ajouter",width=15,command=ret).grid(row=7,column=1)
+        
+        f_botton = Frame(ff)
+        Button(f_botton,text="Ajouter",width=15,command=ret).pack(side='left')
+        Button(f_botton,text="Annuler",width=15,command=annuler).pack(side='right')
+        f_botton.grid(row=7,column=1)
+        ff.pack()
+        self.frame.pack()
 
     def add_cat(self):
         def ret():

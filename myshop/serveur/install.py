@@ -100,7 +100,6 @@ def run(**arg):
            
     message()
 
-    print('Veillez selectionner le mode de fonctionnement (local, distant) : ',end='')
     # Mode de fonctionnement
     while entry['connection_type'] not in ['local', 'distant']:
         entry['connection_type'] = get_secure_input("Mode de fonctionnement (local, distant) : ").lower()

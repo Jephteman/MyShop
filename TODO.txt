@@ -1,4 +1,9 @@
 - [ ] changer de protocole de hashage pour la comparaison du mot de passe
 - [ ] Optimser le code
 - [ ] tester l'interface graphique completement (surtout les actions supplementaire)
+    * souc avec l'ajout de l'username dans Notes
 - [ ] documenter l'interface graphique
+
+
+excetion : 
+    * creation d'un client avec Clients
