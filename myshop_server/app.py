@@ -2,7 +2,6 @@ from flask import Flask, request
 from .backends import Logs, Sessions, Users, Agents, Clients, Categories, Notes, Produits, Ventes, Arrivages, Promotions, Settingsdb, database, cleaner, initiale_action
 from .install import run 
 from .utils import *  # Ensure utils contains the definition of `message` or import it explicitly
-from .utils import message  # Explicitly import `message` if it's defined in utils
 
 app = Flask(__name__)
 

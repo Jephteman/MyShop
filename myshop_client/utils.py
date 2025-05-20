@@ -1,4 +1,4 @@
-from ..utils.client import API
+from .client import API
 
 from tkinter import *
 from tkinter import ttk
@@ -130,7 +130,7 @@ def login_wn():
         
     root = Tk()
     root.config(background='skyblue')
-    logo = pkg_resources.resource_filename('myshop','logo.ico')
+    #logo = pkg_resources.resource_filename('myshop','logo.ico')
     #root.iconbitmap(logo)
     u = StringVar()
     p = StringVar()
@@ -302,20 +302,47 @@ class setup:
 
         self.frame.pack()
 
-class Notes:
+class NotesPage():#tk.Frame):
+    # def __init__(self, parent, controller):
+    #     tk.Frame.__init__(self, parent)
+    #     self.controller = controller
     def __init__(self):
+    
         self.win = Toplevel(pady=5,padx=5,background='skyblue')
         self.notes = {}
+        
+        # Conteneur principal
+        container = tk.Frame(self.win)
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+        
+        # Dictionnaire pour stocker les frames
+        self.frames = {}
+        
+        # Création des différentes frames
+        for F in (self.NoteHome, self.NoteAdd, self.NoteSee):
+            frame = F(container)
+            self.frames[F.__name__] = frame
+            frame.grid(row=0, column=0, sticky="nsew")
+            
         try:
             api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
             self.notes.update(api.all())
         except Exception as e:
             alert_wn(e)
-        self.win.resizable(False,False)
-        Label(self.win,text='Notes',padx=5,pady=5,font=('',13)).pack()
-        self.frame1()
         
-    def frame1(self):
+        self.show_frame('NoteAdd')
+        
+    def show_frame(self, cont):
+        """Affiche la frame demandée"""
+        frame = self.frames[cont]
+        frame.tkraise()
+        
+        
+    def NoteHome(self,contenair):
+        frame = Frame(contenair)
+        Label(frame,text='Notes',padx=5,pady=5,font=('',13)).pack()
         self.frame = Frame(self.win)
         f1 = Frame(self.frame,padx=3,pady=3,background='skyblue')
         self.tab = ttk.Treeview(f1,columns=('id','sujet','user','date'))#,height=30)

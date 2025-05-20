@@ -1,6 +1,15 @@
 from json import JSONDecoder , JSONEncoder
-from .exceptions import *
 import requests
+
+### utiliser par l'interface graphique
+class DeserialException(Exception):
+    def __str__(self):
+        return 'Les formats des données n\'est pas correcte'
+    
+class PersonaliseException(Exception):
+    def __str__(self):
+        return self.args[0]
+
 
 class API():
     def __init__(self,url,ressource,cookie=''):

@@ -1,13 +1,13 @@
 from json import JSONEncoder, JSONDecoder
 from hashlib import sha3_256 as sha256
 from pathlib import Path
-import platform
 from _thread import *
+import datetime
+import platform
 import os
 import re
 
-from ..utils.exceptions import *
-from ..utils.tools import * 
+from .exceptions import *
 
 def run_path() -> str:
     """
@@ -241,3 +241,13 @@ def to_date(param: str) -> str:
     d = param.split('/')
     date = datetime.date(int(d[2]), int(d[1]), int(d[0]))
     return date.strftime('%Y-%m-%d')
+    
+
+def get_timestamp() -> str:
+    """
+    Retourne l'horodatage actuel au format 'YYYY-MM-DD HH:MM:SS'.
+
+    Returns:
+        str: Horodatage actuel.
+    """
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

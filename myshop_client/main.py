@@ -40,7 +40,7 @@ def run(arg=None):
         root = tk.Tk()
         root.title(temp_setting.get('boutique'))
         root.config(background='skyblue')
-        logo = pkg_resources.resource_filename('myshop','logo.ico')
+        #logo = pkg_resources.resource_filename('myshop','logo.ico')
         
         #root.iconbitmap(logo)
         mainframe(root)

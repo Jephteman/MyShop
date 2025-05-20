@@ -2,14 +2,14 @@ from setuptools import setup, find_packages
 
 setup(
     name='myshop',
-    version='0.0.1-alpha',
+    version='0.0.1a0',
     description="un programme qui s'occupe de la gestion de stock dans une boutique",
     author="Jephte Mangenda",
     author_email='tech5industrie@gmail.com',
     packages=find_packages(),
-    package_data={
-        'myshop':['logo.ico']
-    },
+    # package_data={
+    #     'myshop':['logo.ico']
+    #},
     include_package_data=True,
     requires=[
         'sqlalchemy',
@@ -22,7 +22,8 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "myshop = myshop.console:main",
+            "myshop_server = myshop_server.console:main",
+            "myshop_client = myshop_client.console:main",
         ],
     },
 )
