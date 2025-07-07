@@ -351,17 +351,17 @@ class Sessionsdb():
                 cursor.commit()
             
     def add(self,param):
-        param = my_objects.SessionObject(param)
-        param['cookies'] = get_cookie()
+        param.update(my_objects.SessionObject(param))
+        param['token'] = get_cookie()
         with self.db_instance.cursor() as cursor:
             query = """
                 insert into Sessions(cookies,login_id,ip_addr,date) 
-                values(:cookies,:login_id,:ip_addr,:date);
+                values(:token,:login_id,:ip_addr,:date);
                 """
             cursor.execute(text(query),param)
             cursor.commit()
         info = {}
-        info.update({'cookie':{'cookie':param['cookies']}})
+        info.update({'cookie':{'token':param['token']}})
         need = ['logo','description','boutique','contact']
         for i in need:
             value = self.db_instance.settings.get(i)
@@ -407,10 +407,11 @@ class Sessionsdb():
         
     def check(self,cookie:dict,first=False):
         user_id = {}
+        param = my_objects.CookieObject(cookie)
         with self.db_instance.cursor() as cursor:
-            query = "select Sessions.login_id as login_id, username from Sessions join Logins where cookies == :cookie"
+            query = "select Sessions.login_id as login_id, username from Sessions join Logins where cookies == :token"
         
-            for i in cursor.execute(text(query),cookie):
+            for i in cursor.execute(text(query),param):
                 user_id.update(i._asdict())
         if first:
             need = ['logo','description','boutique','contact']

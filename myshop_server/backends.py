@@ -10,7 +10,7 @@ list_db = {
     }
 
 class Users: 
-    def __init__(self,instance:database,cookie:dict = {},config={}):
+    def __init__(self,instance:database,cookie:dict={},config={}):
         self.config = config
         self.db_instance = instance
         self.cookie = cookie
@@ -193,9 +193,12 @@ class ModeleDB :
         self.db_instance = instance
         self.cookie = cookie
         self.user = Users(instance,cookie = self.cookie, config=config)
-        if not self.user.is_login() : # nous verifions si l'utilisateur est cnnecter
+        is_login = self.user.is_login()
+        if not is_login : # nous verifions si l'utilisateur est cnnecter
             raise NonConnecterException()
-        
+        else:
+            self.user.user_info = Loginsdb(self.db_instance,config=self.config).get(is_login)
+                 
     def all(self,param):
         if not is_permited(self.user.user_info['role'],f'{self.namedb}.all'):
             # l'uilisateur na pas le droit d'effetuer l action

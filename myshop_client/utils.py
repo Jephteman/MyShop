@@ -32,6 +32,7 @@ class Config:
     def __init__(self,temp_file=False):
         self.temp_file = temp_file
         self.config = ConfigParser(allow_no_value=True)
+        self.filename = ''
         
         if not temp_file:
             if platform.system() == "Windows":
@@ -39,11 +40,14 @@ class Config:
             else:
                 config_dir = os.path.expanduser("~/.config/myshop")
 
-            config_file = os.path.join(config_dir, "config.txt")
-            self.conf_file = pathlib.Path(config_file)
-            self.config.read(config_file)
+            self.filename = os.path.join(config_dir, "config.txt")
+            self.conf_file = pathlib.Path(self.filename)
+            self.config.read(self.conf_file)
             
         self.cookie = {}
+        
+    def reload(self):
+        self.config.read(self.conf_file)
     
     def is_installed(self):
         return True if self.get('url') != '' else False
@@ -70,13 +74,13 @@ class Config:
         cookie = self.get('cookie')
         self.cookie = JSONDecoder().decode(cookie)
 
-def askfile_save(var,file_type):
+def askfile_save(var,file_type): # il ne fonctionne plus, nous ne lui renvoyons plus var
     x = asksaveasfile(filetypes=file_type)
     if x:
         var.set(x.name)
         x.close()
 
-def askfile_open(var,file_type):
+def askfile_open(var,file_type): # il ne fonctionne plus, nous ne lui renvoyons plus var
     # [('Image File','*.png'),('Image File','*.jpg')]
     x = askopenfilename(filetypes=file_type)
     if x:
@@ -91,228 +95,192 @@ def alert_wn(message):
     Label(f,text=message,height=3,relief='solid',wraplength=540).pack()
     Button(f,text='OK',command=f.destroy).pack(side='bottom')
 
-def login_wn():
-    temp_setting.set('is_login','no')
-    def check():
-        data = {'username':u.get(),'password':p.get()}
-        resp = API(setting.get('url'),'')
-        try:
-            config_serv = resp.connect(data)
-            for label, value in config_serv.items():
-                if type(value) is dict:
-                    value = JSONEncoder().encode(value)
-                if value == None:
-                    value = ''
-                temp_setting.set(label,value)
-            root.destroy()
-        except Exception as e:
-            alert_wn(e)
-        else:
-            temp_setting.set('is_login','yes')
-            temp_setting.update_cookie()
-    
-    cookie = setting.get('cookie')
-    if (setting.get('auto_login') == 'OUI') and cookie:
-        setting.update_cookie()
-        is_valid = API(setting.get('url'),'',cookie=setting.cookie).check_cookie()
-        if is_valid:
-            for label, value in is_valid.items():
-                if type(value) is dict:
-                    value = JSONEncoder().encode(value)
-                elif value == None:
-                    value = ''
-                else :
-                    value = str(value)
-                temp_setting.set(label,value)
-            temp_setting.set('is_login','yes')
-            temp_setting.cookie = setting.cookie
-            return 
+class LoginPage(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller
         
-    root = Tk()
-    root.config(background='skyblue')
-    #logo = pkg_resources.resource_filename('myshop','logo.ico')
-    #root.iconbitmap(logo)
-    u = StringVar()
-    p = StringVar()
-    root.title("Connection")
-    root.resizable(False,False)
-    Label(root,text="Connection au serveur",font=('',15),wraplength=540,padx=10,pady=10).pack()
-    
-    f1 = Frame(root,padx=8,pady=8,background='skyblue')
-    Label(f1,text="Nom d'utilisateur : ").pack(side='left')
-    Entry(f1,textvariable=u).pack(side='right')
-    f1.pack()
+        container = Frame(self)
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+        
+        self.frames = {}
+        
+        # Création des différentes frames
+        for F in (self.LoginFrame,):
+            frame = F(container)
+            self.frames[F.__name__] = frame
+            frame.grid(row=0, column=0, sticky="nsew")
+        
+        temp_setting.set('is_login','no')
+        cookie = setting.get('cookie')
+        if (setting.get('auto_login') == 'OUI') and cookie:
+            setting.update_cookie()
+            is_valid = API(setting.get('url'),'',cookie=setting.cookie).check_cookie()
+            if is_valid:
+                self.islogin(is_valid)
+            else:
+                self.show_frame('LoginFrame')
+        else:
+            self.show_frame('LoginFrame')
+            
+    def show_frame(self, cont):
+        """Affiche la frame demandée"""
+        frame = self.frames[cont]
+        frame.tkraise()
+        
+    def LoginFrame(self,contenair):
+        def check():
+            data = {'username':frame.getvar('username'),'password':frame.getvar('password')}
+            resp = API(setting.get('url'),'')
+            try:
+                config_serv = resp.connect(data)
+                self.islogin(config_serv)
+            except Exception as e:
+                alert_wn(e)
+            
+            
+        frame = Frame(contenair,background='skyblue')
+        u = StringVar(frame,name='username')
+        p = StringVar(frame,name='password')
+        Label(frame,text="Connection au serveur",font=('',15),wraplength=540,padx=10,pady=10,background='skyblue').pack()
+        
+        f1 = Frame(frame,padx=8,pady=8,background='skyblue')
+        Label(f1,text="Nom d'utilisateur : ",background='skyblue').pack(side='left')
+        Entry(f1,textvariable=u).pack(side='right')
+        f1.pack()
 
-    f2 = Frame(root,padx=8,pady=8,background='skyblue')
-    Label(f2,text="Mot de passe   : ").pack(side='left')
-    Entry(f2,textvariable=p,show='*').pack(side='right')
-    f2.pack()
+        f2 = Frame(frame,padx=8,pady=8,background='skyblue')
+        Label(f2,text="Mot de passe   : ",background='skyblue').pack(side='left')
+        Entry(f2,textvariable=p,show='*').pack(side='right')
+        f2.pack()
 
-    Button(root,text='Connecter',command=check,padx=8,pady=8,width=15).pack()
+        Button(frame,text='Connecter',command=check,padx=8,pady=8,width=15).pack()
 
-    root.mainloop()
+        return frame
+        
+    def islogin(self,config_serv):
+        for label, value in config_serv.items():
+            if type(value) is dict:
+                value = JSONEncoder().encode(value)
+            if value == None:
+                value = ''
+            temp_setting.set(label,value)
+            
+        temp_setting.set('is_login','yes')
+        temp_setting.update_cookie()
+        self.controller.show_frame('VentePage')
+        self.controller.islogin()
 
-def about():
-    f = Toplevel(background='skyblue')
-    f.geometry('500x550')
-    f.resizable(width=False,height=False)
-    Label(f,text='\nCe programme a été developpé sous license GNU/Linux \n').pack()
-    Label(f,text='Pour asurrer la gestion d\'une boutique ou quelque chose du genre ').pack()
-    """Quelques ajout"""
-    Label(f,text="Contact : Jephte Mangenda ( tech5industrie@gmail.com ) ").pack(side='bottom')
-    Label(f,text="Disponible sur : https://github.com/Jephteman/MyShop").pack(side='bottom')
-    Label(f,text=f"Version : {version}").pack(side='bottom')
+class AboutPage(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller
+        
+        container = Frame(self)
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+        
+        self.frames = {}
+        
+        # Création des différentes frames
+        for F in (self.Home,):
+            frame = F(container)
+            self.frames[F.__name__] = frame
+            frame.grid(row=0, column=0, sticky="nsew")
+            
+        self.show_frame('Home')
+        
+    def show_frame(self, cont):
+        """Affiche la frame demandée"""
+        frame = self.frames[cont]
+        frame.tkraise()
+        
+    def Home(self,container):
+        frame = Frame(container,background='skyblue')
+        Label(frame,text='\nCe programme a été developpé sous license GNU/Linux \n',background='skyblue').pack()
+        Label(frame,text='Pour asurrer la gestion d\'une boutique ou quelque chose du genre ',background='skyblue').pack()
+        """Quelques ajout"""
+        Label(frame,text="Contact : Jephte Mangenda ( tech5industrie@gmail.com ) ",background='skyblue').pack(side='bottom')
+        Label(frame,text="Disponible sur : https://github.com/Jephteman/MyShop",background='skyblue').pack(side='bottom')
+        Label(frame,text=f"Version : {version}",background='skyblue').pack(side='bottom')
+        
+        return frame
 
 def save_cookie(): # save cookie in permenante setting
     setting.set('cookie',temp_setting.get('cookie'))
 
+def clean_variable(frame):
+    """Reinitialise les valeurs des varibles """
+    for child in frame.winfo_children():
+        if 'variable' in child.keys() or  'textvariable' in child.keys():
+            if 'variable' in child.keys():
+                var = child['variable']
+            else:
+                var = child['textvariable']
+            frame.setvar(str(var),'')
+        elif hasattr(child,'winfo_children'):
+            clean_variable(child)
+        elif isinstance(Text,child):
+            child.delete('1.0',END)
+
+def selecteur_date(variable,frame_object,entry_object):
+    """Fenetre pour permettre à l'utilisateur de fournir la date """
+    def fermeture():
+        frame_object.focus_set()
+        if hasattr(entry_object,'fill_placeholder'):
+            entry_object.fill_placeholder()
+        win.destroy()
+        
+    def valider_date():
+        jour = frame.nametowidget('frame_jour.spin_jour').get()
+        mois = frame.nametowidget('frame_mois.spin_mois').get()
+        annee = frame.nametowidget('frame_annee.spin_annee').get()
+        if hasattr(entry_object,'clear_box'):
+            entry_object.clear_box()
+        variable.set(f"{jour}/{mois}/{annee}")
+        frame_object.focus_set()
+        win.destroy()
+        
+    win = Toplevel()
+    win.resizable(False,False)
+    win.title("Sélecteur de date")
+    win.geometry("390x180")
+    win.protocol('WM_DELETE_WINDOW',fermeture)
+
+    # Cadre pour les sélecteurs
+    frame = ttk.Frame(win,padding="10")
+    frame.pack(fill='both', expand=True)
+    models = [
+        {'name':'jour','label':'Jour:    ','from':1,'to':31,'default':datetime.datetime.now().day},
+        {'name':'mois','label':'Mois:   ','from':1,'to':12,'default':datetime.datetime.now().month},
+        {'name':'annee','label':'Année: ','from':1900,'to':2100,'default':datetime.datetime.now().year}
+    ]
+
+    for data in models:
+        frame_in = Frame(frame,name=f"frame_{data.get('name')}")
+        ttk.Label(frame_in, text=data.get('label'),background='skyblue').pack(side='left')
+        spin_jour = ttk.Spinbox(frame_in, from_=data.get('from'), to=data.get('to'), width=5,name=f"spin_{data.get('name')}")
+        spin_jour.pack(side='right',padx=5, pady=5)
+        spin_jour.set(data.get('default'))
+        frame_in.pack()
+
+    # Bouton de validation
+    btn_valider = ttk.Button(frame, text="Valider", command=valider_date)
+    btn_valider.pack(pady=10,side='bottom')
+
+
 """Setup process"""
-class setup:
-    def __init__(self):
-        self.list_wind = {0:self.setup0,1:self.setup1,2:self.setup2}
-        self.config = ConfigParser()
+class SetupPage(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller
+        
         self.etape = 0
-        self.root = Tk(className=f"Installation MyShop {version}")
-        self.root.geometry('720x520')
-        self.root.resizable(height=False,width=False)
-        self.root.config(background='skyblue')
-
-        # le frame rotatif , qui peu changer des text ou delement 
-        self.p_frame = Frame(self.root,width=700,height=500,padx=10,pady=10,background='skyblue')
-
-
-        f_both = Frame(self.root,background='skyblue')
-
-        self.b_prev = Button(f_both,text="Precedent",command=self.prev)
-        self.b_prev.pack(side="left")
-        self.b_next = Button(f_both,text="Suivant",command=self.next)
-        self.b_next.pack(side='left')
-        self.b_fin = Button(f_both,text="Terminer",command=self.root.destroy,state='disabled')
-        self.b_fin.pack(side='left')
-        f_both.pack(side='bottom')
-
-        self.setup0()
-        self.p_frame.pack()
-
-        self.root.mainloop()
-
-    def next(self):
-        self.frame.destroy()
-        self.etape += 1
-        self.list_wind[self.etape]()
-
-    def prev(self):
-        self.frame.destroy()
-        self.etape -= 1
-        self.list_wind[self.etape]()
-
-    def setup0(self):
-        """Message de bienvenu et un bref message """
-        self.b_prev.configure(state='disabled')
-        self.frame = Frame(self.p_frame,width=700,height=500,padx=10,pady=10,background='skyblue')
-        Label(self.frame,text="\n BIENVENU \n",font=('',21)).pack()
-        text = """
-            Ce programme a été concu pour faciliter la gestion d'une boutique  \n
-            Ce programme à été ecrit par Jephte Mangenda ( tech5industrie@gmail.com )
-            Vous pouvez le retrouver sur \n Github ( https://github.com/Jephteman/MyShop )
-            Nous allons commencer la configuration du programme
-            """
-        Label(self.frame,text=text,font=('',11)).pack()
-        self.frame.pack()
-
-    def setup1(self):
-        """ Choix du type de stockage"""
-
-        self.b_prev.configure(state='active')
-
-        self.frame = Frame(self.p_frame,padx=10,pady=10,background='skyblue')
-        Label(self.frame,font= ('',23) ,text="CONFIGURATION \n").pack(side='top')
-        Label(self.frame,text="Veillez remplir ce formulaire ",font=('',12)).pack()
-
-        f1 = Frame(self.frame,background='skyblue')
-        StringVar(self.root,name='url')
-        Label(f1,text=f"Url du serveur : ",height=3).pack(side='left')
-        Entry(f1,textvariable='url').pack(side="right")
-        f1.pack()
-
-        f1 = Frame(self.frame,background='skyblue')
-        StringVar(self.root,name='proxy')
-        Label(f1,text=f"Proxy : ",height=3).pack(side='left')
-        Entry(f1,textvariable='proxy').pack(side="right")
-        f1.pack()
-
-        f1 = Frame(self.frame,background='skyblue')
-        StringVar(self.root,name='theme')
-        Label(f1,text=f"Theme : ",height=3).pack(side='left')
-        ttk.Combobox(f1,textvariable='theme',values=['Jour','Nuit'],validate='focusin',).pack(side='right')
-        f1.pack()
-
-        f1 = Frame(self.frame,background='skyblue')
-        StringVar(self.root,name='login_auto')
-        Label(f1,text=f"Connection automatique : ",height=3).pack(side='left')
-        Radiobutton(f1,text='OUI',variable='auto_login',value='OUI').pack(side='right')
-        Radiobutton(f1,text='NON',variable='auto_login',value='NON',state='active').pack(side='right')
-        f1.pack()
-                
-        self.frame.pack()
         
-    def install(self):
-        if not self.config.has_section('CLIENT'):
-            self.config['CLIENT'] = {}
-        
-        self.config['CLIENT']['url'] = self.root.getvar('url')
-        self.config['CLIENT']['proxy'] = self.root.getvar('proxy')
-        self.config['CLIENT']['auto_login'] = self.root.getvar('auto_login')
-        self.config['CLIENT']['theme'] = self.root.getvar('theme')
-        # Détecter le système d'exploitation
-        if platform.system() == "Windows":
-            config_dir = os.path.join(os.path.expanduser("~"), "AppData", "Roaming", "myshop")
-        else:
-            config_dir = os.path.expanduser("~/.config/myshop")
-
-        config_file = os.path.join(config_dir, "config.txt")
-
-        # Créer le dossier de configuration s'il n'existe pas
-        os.makedirs(config_dir, exist_ok=True)
-
-        try:
-            with open(config_file,'a') as f:
-                self.config.write(f)
-        except Exception as e:
-            alert_wn(e)
-        else:
-            return True
-
-    def setup2(self):
-        """ Choix du type de stockage"""
-
-        self.b_prev.configure(state='active')
-
-        if self.install():
-            text = "Installation avec success"
-            self.b_next.configure(state='disabled')
-            self.b_fin.configure(state='active')
-        else:
-            text = "Echec de l'insatllation "
-
-        self.frame = Frame(self.p_frame,background='skyblue')
-        Label(self.frame,font= ('',23) ,text=" Resultat \n").pack(side='top')
-        Label(self.frame,text=text,font=('',20)).pack()
-
-
-        self.frame.pack()
-
-class NotesPage():#tk.Frame):
-    # def __init__(self, parent, controller):
-    #     tk.Frame.__init__(self, parent)
-    #     self.controller = controller
-    def __init__(self):
-    
-        self.win = Toplevel(pady=5,padx=5,background='skyblue')
-        self.notes = {}
-        
-        # Conteneur principal
-        container = tk.Frame(self.win)
+        container = Frame(self,background='skyblue',name='main_frame')
         container.pack(side="top", fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
@@ -321,69 +289,218 @@ class NotesPage():#tk.Frame):
         self.frames = {}
         
         # Création des différentes frames
-        for F in (self.NoteHome, self.NoteAdd, self.NoteSee):
+        for F in (self.Page0, self.Page1, self.Page2):
             frame = F(container)
             self.frames[F.__name__] = frame
+            frame.grid_rowconfigure(0, weight=1)
+            frame.grid_columnconfigure(0, weight=1)
             frame.grid(row=0, column=0, sticky="nsew")
             
-        try:
-            api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
-            self.notes.update(api.all())
-        except Exception as e:
-            alert_wn(e)
+        f_both = Frame(self,background='skyblue',name='frame_botton')
+        b_prev = Button(f_both,text="Precedent",command=self.prev,name='b_prev_button')
+        b_prev.pack(side="left")
+        b_next = Button(f_both,text="Suivant",command=self.next,name='b_next_button')
+        b_next.pack(side='left')
+        b_fin = Button(f_both,text="Terminer",name='b_fin_button',command=lambda: controller.show_frame('LoginPage'),state='disabled')
+        b_fin.pack(side='left')
+        f_both.pack(side='bottom') # j dois trouver une autre facon de faire
         
-        self.show_frame('NoteAdd')
-        
+        # Afficher la première frame
+        self.show_frame("Page0")
+    
     def show_frame(self, cont):
         """Affiche la frame demandée"""
         frame = self.frames[cont]
+        if cont == 'Page0':
+            b_prev = self.nametowidget('frame_botton.b_prev_button')
+            b_prev.configure(state='disabled')
+        if cont == 'Page2':
+            self.install()
+            b_prev = self.nametowidget('frame_botton.b_prev_button')
+            b_prev.configure(state='active')
+            
+        frame.tkraise()
+    
+    def next(self):
+        self.etape += 1
+        self.show_frame(f'Page{self.etape}')
+        
+    def prev(self):
+        self.etape -= 1
+        self.show_frame(f'Page{self.etape}')
+
+    def Page0(self,container):
+        frame = Frame(container,background='skyblue',name='page1_frame')
+        Label(frame,text="\n BIENVENU \n",font=('',21),background='skyblue').pack()
+        text = """
+            Ce programme a été concu pour faciliter la gestion d'une boutique  \n
+            Ce programme à été ecrit par Jephte Mangenda ( tech5industrie@gmail.com )
+            Vous pouvez le retrouver sur \n Github ( https://github.com/Jephteman/MyShop )
+            Nous allons commencer la configuration du programme
+            """
+        Label(frame,text=text,font=('',11),background='skyblue').pack()
+        return frame
+
+    def Page1(self,container):
+        """ Choix du type de stockage"""
+
+        frame = Frame(container,background='skyblue')
+        Label(frame,font= ('',23) ,text="CONFIGURATION \n",background='skyblue').pack(side='top')
+        Label(frame,text="Veillez remplir ce formulaire ",font=('',12),background='skyblue').pack(padx=5,pady=5)
+
+        f1 = Frame(frame,background='skyblue')
+        StringVar(self,name='url')
+        Label(f1,text=f"Url du serveur : ",background='skyblue').pack(side='left')
+        Entry(f1,textvariable='url').pack(side="right")
+        f1.pack(padx=3,pady=3)
+
+        f1 = Frame(frame,background='skyblue')
+        StringVar(self,name='proxy')
+        Label(f1,text=f"Proxy : ",background='skyblue').pack(side='left')
+        Entry(f1,textvariable='proxy').pack(side="right")
+        f1.pack(padx=3,pady=3)
+
+        # f1 = Frame(frame,background='skyblue')
+        # StringVar(self,name='theme')
+        # Label(f1,text=f"Theme : ",height=3).pack(side='left')
+        # ttk.Combobox(f1,textvariable='theme',values=['Jour','Nuit'],validate='focusin',).pack(side='right')
+        # f1.pack()
+
+        f1 = Frame(frame,background='skyblue')
+        StringVar(self,name='login_auto')
+        Label(f1,text=f"Connection automatique : ",background='skyblue').pack(side='left')
+        Radiobutton(f1,text='OUI',variable='auto_login',value='OUI',background='skyblue').pack(side='right')
+        Radiobutton(f1,text='NON',variable='auto_login',value='NON',state='active',background='skyblue').pack(side='right')
+        f1.pack(padx=3,pady=3)
+                
+        return frame
+        
+    def Page2(self,container):
+        """ Choix du type de stockage"""
+        StringVar(self,name='resultat')
+
+        frame = Frame(container,background='skyblue')
+        Label(frame,font= ('',23) ,text=" Resultat \n",background='skyblue').pack(side='top')
+        Label(frame,textvariable='resultat',font=('',20),background='skyblue').pack()
+
+        return frame
+        
+    def install(self):
+        if not setting.config.has_section('CLIENT'):
+            setting.config['CLIENT'] = {}
+        
+        setting.config['CLIENT']['url'] = self.getvar('url')
+        setting.config['CLIENT']['proxy'] = self.getvar('proxy')
+        setting.config['CLIENT']['auto_login'] = self.getvar('auto_login')
+        #setting['CLIENT']['theme'] = self.getvar('theme')
+
+        try:
+            setting.save()
+        except Exception as e:
+            alert_wn(e)
+            self.setvar('resultat',"L'installation a echoué. Veillez recommencer")
+        else:
+            b_next = self.nametowidget('frame_botton.b_next_button')
+            b_prev = self.nametowidget('frame_botton.b_prev_button')
+            b_fin = self.nametowidget('frame_botton.b_fin_button')
+            self.setvar('resultat',"L'installation a reussi avec success.")
+            b_next.configure(state='disabled')
+            b_prev.configure(state='disabled')
+            b_fin.configure(state='active')
+
+class NotePage(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller
+        self.notes = {}
+        
+        # Conteneur principal
+        container = Frame(self,background='skyblue')
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+        
+        # Dictionnaire pour stocker les frames
+        self.frames = {}
+        
+        # Création des différentes frames
+        for F in (self.Add, self.Home):
+            frame = F(container)
+            self.frames[F.__name__] = frame
+            frame.grid_rowconfigure(0, weight=1)
+            frame.grid_columnconfigure(0, weight=1)
+            frame.grid(row=0, column=0, sticky="nsew")
+        
+        self.show_frame('Home')
+        
+    def show_frame(self, cont,action=''):
+        """Affiche la frame demandée"""
+        frame = self.frames[cont]
+        
+        if cont != 'Home':
+            clean_variable(frame)
+            # frame.setvar(name='var_author',value='')
+            t = self.frames['Add'].nametowidget('wigdet_contenu')
+            #t.delete('1.0',END)
+            if action:
+                try:
+                    tableau = self.frames['Home'].nametowidget('body.tableau')
+                    id_ = tableau.selection()[0]
+                    data = self.notes.get(id_)
+                    
+                    self.frames['Add'].nametowidget('bottom.send_btn').config(state='disabled')
+                except Exception as e:
+                    alert_wn(e)
+                    return 
+                else:
+                    frame.setvar(name='var_author',value=data.get('username'))
+                    frame.setvar(name='var_sujet',value=data.get('sujet'))
+                    t.insert('1.0',data.get('description'))
+            else:
+                self.frames['Add'].nametowidget('bottom.send_btn').config(state='active')
+                
         frame.tkraise()
         
+    def Home(self,contenair):
+        frame = Frame(contenair,name='frame_home',background='skyblue')
+        frame.bind('<Control-A>' or '<Control-a>',self.actualise)
+        Label(frame,text='Notes',padx=5,pady=5,font=('',13),background='skyblue').pack()
         
-    def NoteHome(self,contenair):
-        frame = Frame(contenair)
-        Label(frame,text='Notes',padx=5,pady=5,font=('',13)).pack()
-        self.frame = Frame(self.win)
-        f1 = Frame(self.frame,padx=3,pady=3,background='skyblue')
-        self.tab = ttk.Treeview(f1,columns=('id','sujet','user','date'))#,height=30)
-        self.tab.heading('id',text="Id")
-        self.tab.heading('sujet',text="Sujet")
-        self.tab.heading('user',text="Utilisateur")
-        self.tab.heading('date',text="Date")
+        f1 = Frame(frame,padx=3,pady=3,background='skyblue',name='body')
+        tab = ttk.Treeview(f1,columns=('id','sujet','user','date'),name='tableau')#,height=30)  # frame.nametowidget('tableau') # frame.insert
+        tab.heading('id',text="Id")
+        tab.heading('sujet',text="Sujet")
+        tab.heading('user',text="Utilisateur")
+        tab.heading('date',text="Date")
 
-        self.tab['show'] = 'headings'
+        tab['show'] = 'headings'
 
-        sc = Scrollbar(f1,command=self.tab.yview)
+        sc = Scrollbar(f1,command=tab.yview)
         sc.pack(side="right",fill=Y)
 
-        self.tab.configure(yscrollcommand=sc.set)
+        tab.configure(yscrollcommand=sc.set)
         
-        self.tab.pack()
+        tab.pack(fill="both", expand=True,pady=5,padx=5)
 
-        f1.pack()
+        f1.pack(fill="both", expand=True,pady=5,padx=5)
 
-        f2 = Frame(self.frame,background='skyblue')
+        f2 = Frame(frame,background='skyblue',name='bottom')
 
-        Button(f2,text='Ajouter',padx=4,pady=4,command=self.add,width=10).pack(side='left')
-        Button(f2,text='Voir',padx=4,pady=4,command=self.see,width=10).pack(side='left')
+        Button(f2,text='Ajouter',padx=4,pady=4,command=lambda : self.show_frame('Add'),width=10).pack(side='left')
+        Button(f2,text='Voir',padx=4,pady=4,command=lambda : self.show_frame('Add',action="see"),width=10).pack(side='left')
         Button(f2,text='Supprimer',padx=4,pady=4,command=self.delete,width=10).pack(side='right')
 
         f2.pack(side='bottom')
-
-        for i , data in self.notes.items():
-            n_id = str(data.get('note_id'))
-            p = (n_id,data.get('sujet'),data.get('username'),data.get('date'))
-            self.tab.insert('','end',iid=n_id,values=p)
             
-        self.frame.pack()
+        return frame
         
-    def add(self):
-        self.frame.destroy()
-        self.frame = Frame(self.win)
+    def Add(self,container):
         def ret():
+            sujet = frame.tk.globalgetvar('var_sujet')
+            contenu = frame.nametowidget('wigdet_contenu')
             param = {
-                'sujet':var_sujet.get(),
-                'description' : var_contenu.get('1.0','end-1c')
+                'sujet': sujet,
+                'description' : contenu.get('1.0','end-1c')
             }
             try:
                 api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
@@ -391,127 +508,64 @@ class NotesPage():#tk.Frame):
             except Exception  as e:
                 alert_wn(e)
             else:
-                self.frame.destroy()
-                self.frame1()
                 d['username'] = setting.get('uname')
                 n_id = str(d.get('note_id'))
                 self.notes.update({n_id:d}),
                 p = (n_id,d.get('sujet'),d.get('username'),d.get('date'))
-                self.tab.insert('','end',iid=n_id,values=p)
+                tab = self.frames['Home'].nametowidget('body.tableau')
+                tab.insert('','end',iid=n_id,values=p)
+                self.show_frame('Home')
+                var_sujet.set('')
                 
-                
-        def annuler():
-            self.frame.destroy()
-            self.frame1()
+        
+        frame = Frame(container,name='frame_add',background='skyblue')
 
-        var_sujet = StringVar()
+        var_sujet = StringVar(frame,name='var_sujet')
 
-        f1 = Frame(self.frame,padx=5,pady=5,background='skyblue')
-        Label(f1,text='Sujet : ').pack(side='left')
+        f1 = Frame(frame,padx=5,pady=5,background='skyblue',name='top')
+        Label(f1,text='Sujet : ',background='skyblue').pack(side='left')
         Entry(f1,textvariable=var_sujet).pack(side='right')
         f1.pack()
 
-
-        f3 = Frame(self.frame,background='skyblue')
-        Label(f3,text='Contenu : ').pack(side='left')
-        var_contenu = Text(f3,width=30,height=15)
-        var_contenu.pack(side='right')
-        f3.pack()
-        f4 = Frame(self.frame)
-        Button(f4,text='Envoyer',width=10,padx=5,pady=5,command=ret).pack(side='left')
-        Button(f4,text='Annuler',width=10,padx=5,pady=5,command=annuler).pack(side='right')
+        #f3 = Frame(frame,background='skyblue',name='middle')
+        Label(frame,text='Contenu : ',background='skyblue').pack()#side='left')
+        var_contenu = Text(frame,name='wigdet_contenu',width=30,height=15)
+        var_contenu.pack(fill="both", expand=True,pady=5,padx=5)#side='right')
+        #f3.pack()
+        
+        f4 = Frame(frame,name='bottom',background='skyblue')
+        Button(f4,text='Envoyer',width=10,padx=5,pady=5,command=ret,name='send_btn').pack(side='left')
+        Button(f4,text='Annuler',width=10,padx=5,pady=5,command=lambda: self.show_frame('Home')).pack(side='right')
         f4.pack(side='bottom')
         
-        self.frame.pack()
+        return frame
 
-    def see(self):
-        def ret():
-            self.frame.destroy()
-            self.frame1()
+    def actualise(self):
+        tab = self.frames['Home'].nametowidget('body.tableau')
         try:
-            id_ = self.tab.selection()[0]
-            data = self.notes.get(id_)
+            api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
+            self.notes.update(api.all())
         except Exception as e:
             alert_wn(e)
-        else:
-            self.frame.destroy()
-            self.frame = Frame(self.win)
-            var_sujet = StringVar(value=data.get('sujet'))
-            contenu = data.get('description')
-            var_auth = StringVar(value=data.get('username'))
-
-            f1 = Frame(self.frame,padx=3,pady=3,background='skyblue')
-            Label(f1,text='Sujet : ').pack(side='left')
-            Entry(f1,textvariable=var_sujet,state='readonly').pack(side='right')
-            f1.pack()
-
-            f2 = Frame(self.frame,padx=3,pady=3,background='skyblue')
-            Label(f2,text='Auteur : ').pack(side='left')
-            Entry(f2,textvariable=var_auth,state='readonly').pack(side='right')
-            f2.pack()
-
-            f3 = Frame(self.frame,padx=4,pady=4,background='skyblue')
-            Label(f3,text='Contenu : ').pack(side='left')
-            t = Text(f3,width=35,height=20)
-            t.insert('end-1c',contenu)
-            t.config(state='disabled')
-            t.pack()
-            f3.pack()
-            Button(self.frame,text='Retour',width=10,padx=5,pady=5,command=ret).pack(side='bottom')
-            self.frame.pack()
+        
+        for i , data in self.notes.items():
+            n_id = str(data.get('note_id'))
+            p = (n_id,data.get('sujet'),data.get('username'),data.get('date'))
+            if not tab.exists(int(n_id)):
+                tab.insert('','end',iid=n_id,values=p)
 
     def delete(self):
         try:
-            id_ = self.tab.selection()[0]
+            tab = self.frames['Home'].nametowidget('body.tableau')
+            id_ = tab.selection()[0]
             api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
             api.delete(id_)
+            
+            tab.delete(id_)
+            self.notes.pop(id_)
         except Exception as e:
             alert_wn(e)
-        else:
-            try:
-                self.tab.delete(id_)
-                self.notes.pop(id_)
-            except :
-                pass
 
-class monitoring:
-    def __init__(self):
-        win = Toplevel(name='monitoring',pady=5,padx=5,height=300,width=250,background='skyblue')
-        Label(win,text='Monitoring',font=('',24)).pack(padx=5,pady=5)
-
-        self.tab = ttk.Treeview(win,columns=('id','action','message','date'),height=30)
-        self.tab.heading('id',text="Id")
-        self.tab.column('id',width=30)
-        self.tab.heading('action',text='Action')
-        self.tab.column('action',width=50)
-        self.tab.heading('message',text="Message",)
-        self.tab.column('message',width=395)
-        self.tab.heading('date',text="Date")
-        #self.tab.column('date',width=35)
-        self.tab['show'] = 'headings'
-        win.bind('<Control-A>' or '<Control-a>',self.actualise)
-
-        sc = Scrollbar(win,command=self.tab.yview)
-        sc.pack(side="right",fill=Y)
-
-        self.tab.configure(yscrollcommand=sc.set)
-        
-        self.tab.pack(expand=1,fill='x')
-        self.actualise('')
-
-    def actualise(self,event):
-        try:
-            api = API(setting.get('url'),'logs',cookie=temp_setting.cookie)
-            data = api.all()
-        except Exception as e:
-            alert_wn(e)
-        else:
-            for id_ , value in data.items():
-                if not self.tab.exists(id_):
-                    p = (
-                        id_,value.get('action'),value.get('message'),value.get('date')
-                    )
-                    self.tab.insert('','end',iid=id_,values=p)
 
 class Graphique:
     def __init__(self):
@@ -528,20 +582,20 @@ class Graphique:
         self.fin = StringVar()
         self.path = StringVar()
 
-        Label(self.window,text="Graphique",font=('',15)).pack()
+        Label(self.window,text="Graphique",font=('',15),background='skyblue').pack()
 
         f1 = Frame(self.window,background='skyblue')
-        Label(f1,text='A partir du ').pack(side='left')
+        Label(f1,text='A partir du ',background='skyblue').pack(side='left')
         Entry(f1,textvariable=self.origine,).pack(side='left')
-        Label(f1,text="Au ").pack(side='left')
+        Label(f1,text="Au ",background='skyblue').pack(side='left')
         Entry(f1,textvariable=self.fin).pack(side='right')
         
         f1.pack()
 
         f2 = Frame(self.window,background='skyblue')
-        Label(f2,text='Emplacement : ').pack(side='left')
+        Label(f2,text='Emplacement : ',background='skyblue').pack(side='left')
         Entry(f2,textvariable=self.path,state='readonly').pack(side='left')
-        Button(f2,text='parcourir',command=set_file).pack(side='right')
+        Button(f2,text='parcourir',command=set_file,background='skyblue').pack(side='right')
 
         f2.pack()
 
@@ -601,22 +655,22 @@ class Exporte:
         self.fin = StringVar()
 
         #win.title('Exportation des donnees')
-        Label(win,text='Exportation des donnees',font=('',17),padx=5,pady=5).pack()
+        Label(win,text='Exportation des donnees',font=('',17),padx=5,pady=5,background='skyblue').pack()
 
         f1 = Frame(win,background='skyblue')
-        Label(f1,text='Ressource : ').pack(side='left')
+        Label(f1,text='Ressource : ',background='skyblue').pack(side='left')
         ttk.Combobox(f1,textvariable=self.res,values=('ventes','logs','arrivages','produits','notes','sessions')).pack(side='right')
         f1.pack()
 
         f2 = Frame(win,background='skyblue')
-        Label(f2,text='A partir du ').pack(side='left')
+        Label(f2,text='A partir du ',background='skyblue').pack(side='left')
         Entry(f2,textvariable=self.origine,).pack(side='left')
-        Label(f2,text="Au ").pack(side='left')
+        Label(f2,text="Au ",background='skyblue').pack(side='left')
         Entry(f2,textvariable=self.fin).pack(side='right')
         f2.pack()
 
         f3 = Frame(win,background='skyblue')
-        Label(f3,text='Emplacement : ').pack(side='left')
+        Label(f3,text='Emplacement : ',background='skyblue').pack(side='left')
         Entry(f3,textvariable=self.path,state='readonly').pack(side='left')
         Button(f3,text='Parcourir',command=self.set_file).pack(side='right')
         f3.pack()
@@ -654,48 +708,83 @@ class Exporte:
                 writer.writeheader()
                 writer.writerows(serilise_data)
             alert_wn('Donnees exportees avec success')
-            
-class Parametre:
-    def __init__(self) -> None:
-        self.window = Toplevel(background='skyblue')
-        self.window.geometry('720x520')
-        self.window.resizable(False,False)
 
+
+
+class ParametrePage(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller
+        
+        # Conteneur principal
+        container = Frame(self,background='skyblue')
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+        
+        # Dictionnaire pour stocker les frames
+        self.frames = {}
+        
         self.list_var = {
             'url':'str','proxy':'str',
             'theme':'choice',
-            'auto_login':'radio_bouton' ,
+            'auto_login':'radio_bouton'
             }
+        
+        # Création des différentes frames
+        for F in (self.Home,):
+            frame = F(container)
+            self.frames[F.__name__] = frame
+            frame.grid_rowconfigure(0, weight=1)
+            frame.grid_columnconfigure(0, weight=1)
+            frame.grid(row=0, column=0, sticky="nsew")
+            
+        self.show_frame('Home')
+        
+    def show_frame(self, cont,action=''):
+        """Affiche la frame demandée"""
+        frame = self.frames[cont]
+        if cont != 'Home':
+            clean_variable(frame)
+        frame.tkraise()
 
-        Label(self.window,text='Parametre',font=('',24)).pack(padx=5,pady=5)
-
-        f_dev = Frame(self.window,background='skyblue')
+    def Home(self,contenair):
+        frame = Frame(contenair,name='frame_home',background='skyblue')
+        Label(frame,text='Parametre',font=('',24),background='skyblue').pack(padx=5,pady=5)
+        f_dev = Frame(frame,background='skyblue',name='body')
 
         for i, type_ in self.list_var.items():
-            v = StringVar(self.window,name=i,value=setting.get(i))
+            v = StringVar(frame,name=i)
             f_ = Frame(f_dev,background='skyblue')
-            Label(f_,text=f'{i.capitalize()} : ').pack(side='left')
+            Label(f_,text=f'{i.capitalize()} : ',background='skyblue').pack(side='left')
             if type_ == 'str':
                 Entry(f_,textvariable=v).pack()
-            elif type_ == 'choice':
-                ttk.Combobox(f_,textvariable=v,values=['Jour','Nuit'],validate='key').pack(side='right')
             elif type_ == 'radio_bouton':
-                Radiobutton(f_,text='OUI',variable=v,value='OUI',state='active' if v.get() == 'OUI' else 'normal').pack(side='left')
-                Radiobutton(f_,text='NON',variable=v,value='NON', state = 'active' if v.get() == 'NON' else 'normal').pack(side='left')
+                Radiobutton(f_,text='OUI',variable=v,value='OUI').pack(side='left')
+                Radiobutton(f_,text='NON',variable=v,value='NON').pack(side='left')
             f_.pack(padx=5,pady=5)
 
         Button(f_dev,text='imprimantes',width=15,command=self.printer).pack()
 
         f_dev.pack()
 
-        f_botton = Frame(self.window,background='skyblue')
+        f_botton = Frame(frame,background='skyblue')
         Button(f_botton,text='Annuler',command=self.quit).pack(side='right')
         Button(f_botton,text='Appliquer',command=self.save).pack(side='left')
         f_botton.pack(side=BOTTOM,padx=3)
-
+        
+        return frame
+        
+    def actualise(self):
+        frame = self.frames['Home']
+        for name, nothing in self.list_var.items():
+            value = setting.get(name)
+          
+            frame.setvar(name,value)
+        
     def quit(self):
         """Abbandon des modifications"""
-        self.window.destroy()
+        self.controller.show_frame('Accueil')
 
     def printer(self):
         pass
@@ -703,12 +792,14 @@ class Parametre:
     def save(self):
         """Enregistrement dans le fichier de configuration"""
         for name in self.list_var:
-            setting.set(name,self.window.getvar(name))
+            frame = self.frames['Home']
+            value = frame.tk.globalgetvar(name)
+            setting.set(name,value)
 
         if setting.get('auto_login') == 'OUI':
             save_cookie()
         setting.save()
-        self.window.destroy()
+
 
 class Printer:
     def __init__(self,data):
@@ -718,18 +809,19 @@ class Printer:
         self.window.resizable(False,False)
         self.data = data
 
-        Label(self.window,text="Vente",font=('',24),width=24,background='skyblue').pack(side=TOP,padx=5,pady=5)
+        Label(self.window,text="Facture",font=('',24),width=24,background='skyblue').pack(side=TOP,padx=5,pady=5)
 
         f_dev = Frame(self.window,background='skyblue')
+        
         for name , value in data.items():
             if name in ('marchandises') :
                 continue
             f = Frame(f_dev,background='skyblue')
-            Label(f,text=f"{name.capitalize()} : ",font=('',15)).pack(side='left')
-            Label(f,text=value,font=('',15)).pack()
+            Label(f,text=f"{name.capitalize()} : ",font=('',15),background='skyblue').pack(side='left')
+            Label(f,text=value,font=('',15),background='skyblue').pack()
             f.pack(padx=3,pady=3)
 
-        f8 = Frame(f_dev,height=100,width=155,background='skyblue')
+        f8 = Frame(f_dev,background='skyblue')
         lc_temp = ttk.Treeview(f8,columns=('produit','quantite','prix'))#,height=50)
         lc_temp.heading('produit',text='Produits')
         lc_temp.column('produit',width=80)
@@ -739,8 +831,8 @@ class Printer:
         lc_temp.column('prix',width=80)
         lc_temp['show'] = 'headings'
 
-        lc_temp.pack(fill=Y,expand=1)
-        f8.pack()
+        lc_temp.pack(fill='both',expand=True)
+        f8.pack(fill='both',expand=True)
 
         for prod, info in data.get('marchandises').items():
             lc_temp.insert('','end',value=(prod,info[0],info[1]))

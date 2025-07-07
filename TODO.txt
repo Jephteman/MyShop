@@ -1,9 +1,12 @@
 - [ ] changer de protocole de hashage pour la comparaison du mot de passe
 - [ ] Optimser le code
-- [ ] tester l'interface graphique completement (surtout les actions supplementaire)
-    * souc avec l'ajout de l'username dans Notes
 - [ ] documenter l'interface graphique
+- [ ] capturer les exceptions coté serveur(add, renvoi une exception si la contraite d'unisité nest pas respecter)
 
+    formantage de la facture
+    
+    et aussi la prise de date
+    
+	Dans gestion(inventaire), j ne sais prq la variable du placeholderentry ne fait pas ce qui coder 
 
-excetion : 
-    * creation d'un client avec Clients
+- [ ] modifier la db (ajouter le champ date qui contient le timestamp) dans le table Promotion, Login

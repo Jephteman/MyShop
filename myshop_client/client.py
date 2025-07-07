@@ -4,7 +4,7 @@ import requests
 ### utiliser par l'interface graphique
 class DeserialException(Exception):
     def __str__(self):
-        return 'Les formats des données n\'est pas correcte'
+        return 'Les formants des données n\'est pas correcte'
     
 class PersonaliseException(Exception):
     def __str__(self):
@@ -16,7 +16,7 @@ class API():
         """
                 data : un dictionnaire qui contient imperativement
                     * url : str
-                    * protocole : str (default http)produit
+                    * protocole : str (default http)
                     * cookie : str (dict)
         """
         self.base_url = url

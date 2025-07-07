@@ -1,49 +1,56 @@
-from .utils import *
+from .utils import alert_wn, API, setting, temp_setting, clean_variable
 from tkinter import *
 from tkinter import ttk
 
-# jai pas encore rendu les derniers optimisation
-class users_admin:
-    def __init__(self):
-        "intervient dans l'administration des comptes sur le backend"
-
+class UserPage(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller 
         self.tab_index = {}
         self.data = {}
-
-        self.window = Toplevel(class_='utilisateurs',background='skyblue')
-        self.window.resizable(False,False)
-
-        Label(self.window,text="Utilisateurs",font=('',15)).pack(padx=5,pady=5)
-
-        f1 = Frame(self.window,padx=10,pady=10,background='skyblue')
-        self.lc = ttk.Treeview(f1,columns=('id','usernames','noms','role','statut'))
-        self.lc.heading('id',text="Id")
-        self.lc.heading('usernames',text='Usernames')
-        self.lc.heading('noms',text="Noms")
-        self.lc.heading('role',text="Role")
-        self.lc.heading('statut',text="Statut")
-        self.lc['show']='headings'
-
-        sc = Scrollbar(self.window,command=self.lc.yview)
-        sc.pack(side="right",fill=Y)
-
-        self.lc.configure(yscrollcommand=sc.set)
-
-        self.lc.pack()
-
-        f1.pack()
-
-        f_both = Frame(self.window,padx=10,pady=10,background='skyblue')
-        Button(f_both,text='Ajouter',command=self.add).pack(side='left')
-        Button(f_both,text='Change',command=self.change).pack(side='left')
-        Button(f_both,text="Changer le mdp",command=self.reset_passwd).pack(side='left')
-        Button(f_both,text='Delete',command=self.delete).pack(side='right')
-
-
-        f_both.pack(side='bottom')
-
-        self.actualise()
-    
+        
+        container = Frame(self)
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+        
+        # Dictionnaire pour stocker les frames
+        self.frames = {}
+        
+        # Création des différentes frames
+        for F in (self.Home, self.Add, self.Change, self.ResetPasswd):
+            frame = F(container)
+            self.frames[F.__name__] = frame
+            frame.grid(row=0, column=0, sticky="nsew")
+        
+        # Afficher la première frame
+        self.show_frame("Home")
+        
+    def show_frame(self, cont):
+        """Affiche la frame demandée"""
+        frame = self.frames[cont]
+        clean_variable(frame)
+        if cont != 'Home' :
+            tab = self.frames['Home'].nametowidget('body.tableau')
+            if cont == 'Change':
+                login_id = tab.selection()[0]
+                data = self.data.get(login_id)
+            
+                frame.setvar('var_uname',data.get('uname'))
+                frame.setvar('var_passwd',data.get('*******'))
+                frame.setvar('var_addr',data.get('addr'))
+                frame.setvar('var_noms',data.get('noms'))
+                frame.setvar('var_tel',data.get('telephone'))
+                frame.setvar('var_email',data.get('email'))
+                frame.setvar('var_photo',data.get('photo'))
+                frame.setvar('var_role',data.get('role'))
+                
+            if cont == 'ResetPassword':
+                login_id = tab.selection()[0]
+                frame.setvar('var_login_id',login_id)
+                
+        frame.tkraise()
+        
     def actualise(self):
         self.data = {}
         try:
@@ -58,15 +65,50 @@ class users_admin:
                     continue
 
                 self.data[i] = d
-        except InterruptedError as e:
+        except Exception as e:
             alert_wn(e)
-            self.window.destroy()
-        else:
-            for index, info in self.data.items() : 
-                if not self.lc.exists(int(index)):
-                    x =  self.lc.insert('','end',iid=index,values=(int(index),info.get('username'),info.get('noms'),info.get('role'),'actif' if info.get('statut') else 'bloquer'))
 
-    def add(self):
+        else:
+            lc = self.frames['Home'].nametowidget('body.tableau')
+            for index, info in self.data.items() : 
+                if not lc.exists(int(index)):
+                    p = (int(index),info.get('username'),info.get('noms'),info.get('role'),'actif' if info.get('statut') else 'bloquer')
+                    x = lc.insert('','end',iid=index,values=p )    
+        
+    def Home(self,container):
+        frame = Frame(container,name='frame_home',background='skyblue')
+
+        Label(frame,text="Utilisateurs",font=('',15),background='skyblue').pack(padx=5,pady=5)
+
+        f1 = Frame(frame,padx=10,pady=10,background='skyblue',name='body')
+        lc = ttk.Treeview(f1,columns=('id','usernames','noms','role','statut'),name='tableau')
+        lc.heading('id',text="Id")
+        lc.heading('usernames',text='Usernames')
+        lc.heading('noms',text="Noms")
+        lc.heading('role',text="Role")
+        lc.heading('statut',text="Statut")
+        lc['show']='headings'
+
+        sc = Scrollbar(f1,command=lc.yview)
+        sc.pack(side="right",fill=Y)
+
+        lc.configure(yscrollcommand=sc.set)
+
+        lc.pack(fill='both',expand=True)
+
+        f1.pack(fill='both',expand=True)
+
+        f_both = Frame(frame,padx=10,pady=10,background='skyblue')
+        Button(f_both,text='Ajouter',command=lambda : self.show_frame('Add')).pack(side='left')
+        Button(f_both,text='Change',command=lambda : self.show_frame('Change')).pack(side='left')
+        Button(f_both,text="Changer le mdp",command=lambda : self.show_frame('ResetPasswd')).pack(side='left')
+        Button(f_both,text='Delete',command=self.delete).pack(side='right')
+
+        f_both.pack(side='bottom')
+        
+        return frame
+
+    def Add(self,container):
         def ret():
             # recupoerer limage et la convertir en base64
             param = {
@@ -90,79 +132,78 @@ class users_admin:
             except Exception as e:
                 alert_wn(e)
             else:
-                window.destroy()
                 data.update(param)
                 self.data[str(data.get('login_id'))] = data
+                lc = self.frames['Home'].nametowidget('body.tableau')
                 i_ = str(data.get('login_id'))
-                x =  self.lc.insert('','end',iid=i_,values=(
+                x = lc.insert('','end',iid=i_,values=(
                     i_,data.get('username'),
                     data.get('noms'),data.get('role'),
                     'actif'))
                 alert_wn("Le compte a été crée avec success")
-        
-        window = Toplevel(self.window,background='skyblue')
-        window.geometry('600x400')
-        window.resizable(False,False)
+                self.show_frame('Home')
 
-        var_role = StringVar(window)
-        var_uname = StringVar(window)
-        var_passwd = StringVar(window)
-        var_addr = StringVar(window)
-        var_noms = StringVar(window)
-        var_tel = StringVar(window)
-        var_email = StringVar(window)
-        self.var_photo = StringVar(window)
+        frame = Frame(container,name='frame_add',background='skyblue')
+        var_role = StringVar(frame,name='var_role')
+        var_uname = StringVar(frame,name='var_uname')
+        var_passwd = StringVar(frame,name='var_passwd')
+        var_addr = StringVar(frame,name='var_addr')
+        var_noms = StringVar(frame,name='var_noms')
+        var_tel = StringVar(frame,name='var_tel')
+        var_email = StringVar(frame,name='var_email')
+        var_photo = StringVar(frame,name='var_photo')
 
-        Label(window,text="Création d'un compte",font=('',29),pady=15).pack()
+        Label(frame,text="Création d'un compte",font=('',29),pady=15,background='skyblue').pack()
 
-        f_noms = Frame(window,background='skyblue')
-        Label(f_noms,text="Noms : ",font=('',15)).pack(side='left')
+        f_noms = Frame(frame,background='skyblue')
+        Label(f_noms,text="Noms : ",font=('',15),background='skyblue').pack(side='left')
         Entry(f_noms,textvariable=var_noms).pack(side='right')
         f_noms.pack()
 
-        f_uname = Frame(window,background='skyblue')
-        Label(f_uname,text="Nom d'utilisateur : ",font=('',15)).pack(side='left')
+        f_uname = Frame(frame,background='skyblue')
+        Label(f_uname,text="Nom d'utilisateur : ",font=('',15),background='skyblue').pack(side='left')
         Entry(f_uname,textvariable=var_uname).pack(side='right')
         f_uname.pack()
 
-        f_pass = Frame(window,background='skyblue')
-        Label(f_pass,text="Mot de passe : ",font=('',15)).pack(side='left')
+        f_pass = Frame(frame,background='skyblue')
+        Label(f_pass,text="Mot de passe : ",font=('',15),background='skyblue').pack(side='left')
         Entry(f_pass,textvariable=var_passwd).pack(side='right')
         f_pass.pack()
 
-        f_role = Frame(window,background='skyblue')
-        Label(f_role,text="Role : ",font=('',15)).pack(side='left')
+        f_role = Frame(frame,background='skyblue')
+        Label(f_role,text="Role : ",font=('',15),background='skyblue').pack(side='left')
         ttk.Combobox(f_role,textvariable=var_role,values=('admin','vendeur','moniteur')).pack(side='right')
         f_role.pack()
 
-        f_addr = Frame(window,background='skyblue')
-        Label(f_addr,text="Addrese : ",font=('',15)).pack(side='left')
+        f_addr = Frame(frame,background='skyblue')
+        Label(f_addr,text="Addrese : ",font=('',15),background='skyblue').pack(side='left')
         Entry(f_addr,textvariable=var_addr).pack(side='right')
         f_addr.pack()
 
-        f_num = Frame(window,background='skyblue')
-        Label(f_num,text="Numero : ",font=('',15)).pack(side='left')
+        f_num = Frame(frame,background='skyblue')
+        Label(f_num,text="Numero : ",font=('',15),background='skyblue').pack(side='left')
         Entry(f_num,textvariable=var_tel).pack(side='right')
         f_num.pack()
 
-        f_mail = Frame(window,background='skyblue')
-        Label(f_mail,text="Email : ",font=('',15)).pack(side='left')
+        f_mail = Frame(frame,background='skyblue')
+        Label(f_mail,text="Email : ",font=('',15),background='skyblue').pack(side='left')
         Entry(f_mail,textvariable=var_email).pack(side='right')
         f_mail.pack()
 
-        f_photo = Frame(window,background='skyblue')
-        Label(f_photo,text="Photo : ",font=('',15)).pack(side='left')
+        f_photo = Frame(frame,background='skyblue')
+        Label(f_photo,text="Photo : ",font=('',15),background='skyblue').pack(side='left')
         Button(f_photo,text='parcourir',command=self.set_file).pack(side='right') #   parcourir nest pas implementer
-        Entry(f_photo,textvariable=self.var_photo,state='readonly').pack(side='right')
+        Entry(f_photo,textvariable=var_photo,state='readonly').pack(side='right')
         
-
         f_photo.pack()
 
-        Button(window,text="Creer le compte",command=ret,font=('',15),pady=15,width=25).pack()
+        Button(frame,text="Creer le compte",command=ret,font=('',15),pady=15,width=25).pack()
+        
+        return frame
 
     def set_file(self):
         t = [('Image File','*.png'),('Image File','*.jpg')]
-        askfile_open(self.var_photo,t)
+        askfile_open(self.var_photo,t) ### cette portion de code ne fonctionne pas
 
     def delete(self):
         def ret():
@@ -173,26 +214,27 @@ class users_admin:
                 alert_wn(e)
             else:
                 window.destroy()
-                self.lc.delete(user_id)
-        
-        i = self.lc.selection()
+                lc.delete(user_id)
+                
+        lc = self.frames['Home'].nametowidget('body.tableau')
+        i = lc.selection()
         if not i:
             return
         
         user_id = i[0]
         
-        window = Toplevel(self.window,height=100,width=100,background='skyblue')
-        window.resizable(False,False)
+        frame = Frame(container,name='frame_add',background='skyblue')
 
-        Label(window,text=f"Voullez-vous supprimer l'utilisateur {self.data[user_id].get('username')} ?",padx=10,font=('',13),).pack()
+        Label(frame,text=f"Voullez-vous supprimer l'utilisateur {self.data[user_id].get('username')} ?",padx=10,font=('',13),).pack()
 
-        f1 = Frame(window,background='skyblue')
+        f1 = Frame(frame,background='skyblue')
         Button(f1,text="  OUI  ",font=('',9),command=ret,pady=6,width=10).pack(side=LEFT)
         Button(f1,text='  NON  ',command=window.destroy,font=('',9),pady=6,width=10).pack(side=RIGHT)
         f1.pack()
-
-    def change(self):
         
+        return frame
+
+    def Change(self,container):
         def ret():
             param = {
                 'login_id':login_id,
@@ -211,9 +253,10 @@ class users_admin:
             except Exception as e:
                 alert_wn(e)
             else:
-                window.destroy()
-                self.lc.delete(i[0])
-                self.lc.insert(
+                lc = self.frames['Home'].nametowidget('body.tableau')
+                self.show_frame('Home')
+                lc.delete(i[0])
+                lc.insert(
                     '',i[0],iid=i[0],values=(
                         i[0],user_info.get('username'),
                         param.get('noms'),param.get('role'),
@@ -221,70 +264,61 @@ class users_admin:
                     )
                 
                 alert_wn("Le compte a ete modifier avec success")
-
-        i = self.lc.selection()
-        if not i :
-            return
+                self.show_frame('Home')
         
-        
-        login_id = i[0]
-        user_info = self.data.get(login_id)
-        
-        window = Toplevel(self.window,background='skyblue')
-        window.geometry('600x400')
-        window.resizable(False,False)
+        frame = Frame(container,name='frame_change')
+        var_role = StringVar(frame,name='var_role')
+        var_addr = StringVar(frame,name='var_addr')
+        var_noms = StringVar(frame,name='var_noms')
+        var_tel = StringVar(frame,name='var_tel')
+        var_email = StringVar(frame,name='var_email')
+        var_photo = StringVar(frame,name='var_photo')
 
-        var_role = StringVar(window,value=user_info.get('role'))
-        var_addr = StringVar(window,value=user_info.get('addr'))
-        var_noms = StringVar(window,value=user_info.get('noms'))
-        var_tel = StringVar(window,value=user_info.get('telephone'))
-        var_email = StringVar(window,value=user_info.get('email'))
-        var_photo = StringVar(window)
+        Label(frame,text="Modification d'un compte",font=('',29),pady=15,background='skyblue').pack()
 
-        Label(window,text="Modification d'un compte",font=('',29),pady=15).pack()
-
-        f_noms = Frame(window,background='skyblue')
-        Label(f_noms,text="Noms : ",font=('',15)).pack(side='left')
+        f_noms = Frame(frame,background='skyblue')
+        Label(f_noms,text="Noms : ",font=('',15),background='skyblue').pack(side='left')
         Entry(f_noms,textvariable=var_noms).pack(side='right')
         f_noms.pack()
 
-        f_role = Frame(window,background='skyblue')
-        Label(f_role,text="Role : ",font=('',15)).pack(side='left')
+        f_role = Frame(frame,background='skyblue')
+        Label(f_role,text="Role : ",font=('',15),background='skyblue').pack(side='left')
         ttk.Combobox(f_role,textvariable=var_role,values=('admin','vendeur','moniteur')).pack(side='right')
         f_role.pack()
 
-        f_addr = Frame(window,background='skyblue')
-        Label(f_addr,text="Addrese : ",font=('',15)).pack(side='left')
+        f_addr = Frame(frame,background='skyblue')
+        Label(f_addr,text="Addrese : ",font=('',15),background='skyblue').pack(side='left')
         Entry(f_addr,textvariable=var_addr).pack(side='right')
         f_addr.pack()
 
-        f_num = Frame(window,background='skyblue')
-        Label(f_num,text="Numero : ",font=('',15)).pack(side='left')
+        f_num = Frame(frame,background='skyblue')
+        Label(f_num,text="Numero : ",font=('',15),background='skyblue').pack(side='left')
         Entry(f_num,textvariable=var_tel).pack(side='right')
         f_num.pack()
 
-        f_mail = Frame(window,background='skyblue')
-        Label(f_mail,text="Email : ",font=('',15)).pack(side='left')
+        f_mail = Frame(frame,background='skyblue')
+        Label(f_mail,text="Email : ",font=('',15),background='skyblue').pack(side='left')
         Entry(f_mail,textvariable=var_email).pack(side='right')
         f_mail.pack()
 
-        f_photo = Frame(window,background='skyblue')
-        Label(f_photo,text="Photo : ",font=('',15)).pack(side='left')
+        f_photo = Frame(frame,background='skyblue')
+        Label(f_photo,text="Photo : ",font=('',15),background='skyblue').pack(side='left')
         Button(f_photo,text='parcourir').pack(side='right') #   parcourir nest pas implementer
         Entry(f_photo,textvariable=var_photo,state='readonly').pack(side='right')
         
-
         f_photo.pack()
 
-        Button(window,text="Modifier",command=ret,font=('',15),pady=15,width=25).pack()
+        Button(frame,text="Modifier",command=ret,font=('',15),pady=15,width=25).pack()
+        
+        return frame
 
-    def reset_passwd(self):
+    def ResetPasswd(self,container):
         def ret():
             if var_confim_passwd.get() != var_passwd.get():
                 alert_wn("Les deux champs doivent etre identique")
                 return 
             
-            param = {'password':var_passwd.get(),'confirm_password':var_confim_passwd.get(),'login_id':login_id}
+            param = {'password':var_passwd.get(),'confirm_password':var_confim_passwd.get(),'login_id':var_login_id.get()}
             try:
                 api = API(setting.get('url'),'',cookie=temp_setting.cookie)
                 api.reset_passwd(param)
@@ -292,80 +326,113 @@ class users_admin:
                 alert_wn(e)
             else:
                 alert_wn('Mot de passe chnger avec succes')
-                window.destroy()
-            
-        i = self.lc.selection()
-        if not i:
-            return
+                self.show_frame('Home')
         
-        login_id = i[0]
+        frame = Frame(container,name='frame_resetpasswd',background='skyblue')
+        
+        var_user_id = StringVar(frame,name='var_user_id')
 
-        window = Toplevel(self.window,background='skyblue')
-        var_passwd = StringVar(window)
-        var_confim_passwd = StringVar(window)
-        Label(window,text="Changement de mot de passe",font=('',15)).pack()
-        f1 = Frame(window,background='skyblue')
-        Label(f1,text="Mot de passe :").pack(side='left')
+        var_passwd = StringVar(frame,name='var_passwd')
+        var_confim_passwd = StringVar(frame,name='var_confirm_passwd')
+        Label(frame,text="Changement de mot de passe",font=('',15),background='skyblue').pack()
+        f1 = Frame(frame,background='skyblue')
+        Label(f1,text="Mot de passe :",background='skyblue').pack(side='left')
         Entry(f1,textvariable=var_passwd,show='*').pack(side='right')
         f1.pack()
-        f2 = Frame(window,background='skyblue')
-        Label(f2,text="Confirmer le :").pack(side='left')
+        f2 = Frame(frame,background='skyblue')
+        Label(f2,text="Confirmer le :",background='skyblue').pack(side='left')
         Entry(f2,textvariable=var_confim_passwd,show='*').pack(side='right')
         f2.pack()
-        Button(window,text='Envoyer',padx=10,pady=10,width=15,command=ret).pack()
+        Button(frame,text='Envoyer',padx=10,pady=10,width=15,command=ret).pack()
+        
+        return frame
 
-class session_admin:
-    def __init__(self):
+
+class SessionPage(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller 
+        self.tab_index = {}
+        self.data = {}
         self.users = {}
+        
+        container = Frame(self)
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+        
+        # Dictionnaire pour stocker les frames
+        self.frames = {}
+        
+        # Création des différentes frames
+        for F in (self.Home,):
+            frame = F(container)
+            self.frames[F.__name__] = frame
+            frame.grid(row=0, column=0, sticky="nsew")
+        
+        # Afficher la première frame
+        self.show_frame("Home")
+        
+    def show_frame(self, cont):
+        """Affiche la frame demandée"""
+        frame = self.frames[cont]
+        if cont != 'Home':
+            clean_variable(frame)
+        frame.tkraise()
+        
+    def Home(self,container):
+        frame = Frame(container,name='frame_home',background='skyblue')
 
-        window = Toplevel(class_='sessions',background='skyblue')
-        window.resizable(False,False)
+        Label(frame,text="Sessions",font=('',15),background='skyblue').pack(padx=5,pady=5)
 
-        Label(window,text="Sessions",font=('',15)).pack(padx=5,pady=5)
+        f1 = Frame(frame,background='skyblue',name='body')
+        lc = ttk.Treeview(f1,columns=('id','usernames','date','statut','ip'),name='tableau')
+        lc.heading('id',text="Id")
+        lc.heading('usernames',text='Usernames')
+        lc.heading('date',text="Date")
+        lc.heading('statut',text="Statut")
+        lc.heading('ip',text="Addresse IP")
 
-        f1 = Frame(window,padx=10,pady=10,background='skyblue')
-        self.lc = ttk.Treeview(f1,columns=('id','usernames','date','statut','ip'))
-        self.lc.heading('id',text="Id")
-        self.lc.heading('usernames',text='Usernames')
-        self.lc.heading('date',text="Date")
-        self.lc.heading('statut',text="Statut")
-        self.lc.heading('ip',text="Addresse IP")
+        lc['show'] = 'headings'
 
-        self.lc['show'] = 'headings'
-
-        sc = Scrollbar(window,command=self.lc.yview)
+        sc = Scrollbar(f1,command=lc.yview)
         sc.pack(side="right",fill=Y)
 
-        self.lc.configure(yscrollcommand=sc.set)
+        lc.configure(yscrollcommand=sc.set)
 
-        self.lc.pack()
+        lc.pack(fill="both", expand=True)
 
-        f1.pack()
+        f1.pack(fill="both", expand=True)
 
-        f_both = Frame(window,padx=10,pady=10,background='skyblue')
+        f_both = Frame(frame,padx=10,pady=10,background='skyblue')
         Button(f_both,text='Bloquer',command=self.block).pack(side='left')
         Button(f_both,text='Supprimer',command=self.delete).pack(side='right')
+        f_both.pack(side='bottom')
+        
+        return frame
 
+    def actualise(self):
         try:
             api = API(setting.get('url'),'sessions',cookie=temp_setting.cookie)
             data = api.all()
         except Exception as e:
             alert_wn(e)
         else:
+            lc = self.frames['Home'].nametowidget('body.tableau')
             for i, d in data.items():
-                p = [
+                p = (
                     d.get('session_id'),
                     d.get('username'),
                     d.get('date'),
                     'actif' if d.get('statut') == 1 else 'bloquer',
                     d.get('ip_addr')
-                    ]
-                self.lc.insert('','end',iid=d.get('session_id'),values=p)
-
-        f_both.pack(side='bottom')
+                    )
+                if not lc.exists(int(i)):
+                    lc.insert('','end',iid=d.get('session_id'),values=p)
 
     def block(self):
-        i = self.lc.selection()
+        lc = self.frames['Home'].nametowidget('body.tableau')
+        i = lc.selection()
         if not i:
             return
         
@@ -377,10 +444,11 @@ class session_admin:
         except Exception as e:
             alert_wn(e)
         else:
-            self.lc.set(session,'statut','bloquer')
+            lc.set(session,'statut','bloquer')
 
     def delete(self):
-        i = self.lc.selection()
+        lc = self.frames['Home'].nametowidget('body.tableau')
+        i = lc.selection()
         if not i:
             return
         
@@ -391,6 +459,78 @@ class session_admin:
         except Exception as e:
             alert_wn(e)
         else:
-            self.lc.delete(session)
+            lc.delete(session)
  
 
+
+class MonitorPage(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller
+        
+        # Conteneur principal
+        container = Frame(self)
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+        
+        # Dictionnaire pour stocker les frames
+        self.frames = {}
+        
+        # Création des différentes frames
+        for F in (self.Home,):
+            frame = F(container)
+            self.frames[F.__name__] = frame
+            frame.grid_rowconfigure(0, weight=1)
+            frame.grid_columnconfigure(0, weight=1)
+            frame.grid(row=0, column=0, sticky="nsew")
+            
+        self.show_frame('Home')
+        
+    def show_frame(self, cont,action=''):
+        """Affiche la frame demandée"""
+        frame = self.frames[cont]
+        if cont != 'Home':
+            clean_variable(frame)
+        frame.tkraise()
+
+
+    def Home(self,contenair):
+        frame = Frame(contenair,name='frame_home',background='skyblue')
+        Label(frame,text='Monitoring',font=('',24),background='skyblue').pack(padx=5,pady=5)
+
+        tab = ttk.Treeview(frame,columns=('id','action','message','date'),height=30,name='tableau')
+        tab.heading('id',text="Id")
+        tab.column('id',width=30)
+        tab.heading('action',text='Action')
+        tab.column('action',width=50)
+        tab.heading('message',text="Message",)
+        tab.column('message',width=395)
+        tab.heading('date',text="Date")
+        #self.tab.column('date',width=35)
+        tab['show'] = 'headings'
+        frame.bind('<Control-A>' or '<Control-a>',self.actualise)
+
+        sc = Scrollbar(frame,command=tab.yview)
+        sc.pack(side="right",fill=Y)
+
+        tab.configure(yscrollcommand=sc.set)
+        
+        tab.pack(expand=True,fill='both')
+        
+        return frame
+
+    def actualise(self):
+        try:
+            api = API(setting.get('url'),'logs',cookie=temp_setting.cookie)
+            data = api.all()
+        except Exception as e:
+            alert_wn(e)
+        else:
+            tableau = self.frames['Home'].nametowidget('tableau')
+            for id_ , value in data.items():
+                if not tableau.exists(id_):
+                    p = (
+                        id_,value.get('action'),value.get('message'),value.get('date')
+                    )
+                    tableau.insert('','end',iid=id_,values=p)

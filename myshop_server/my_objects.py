@@ -22,6 +22,19 @@ class ModelObject(dict):
         values.update(temp)
         return values
 
+class CookieObject(ModelObject):
+    """
+    Une classe héritant de dict pour représenter une cookie 
+    """
+    def __init__(self, param):
+        super().__init__(
+            ['token','user_id'],
+            param
+        )
+    def __repr__(self):
+        return f"<Cookie token={self.get('token')}'>"
+
+
 class NoteObject(ModelObject):
     """
     Une classe héritant de dict pour représenter une note de la table Notes.
