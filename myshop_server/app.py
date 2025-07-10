@@ -1,7 +1,6 @@
 from flask import Flask, request
-from .backends import Logs, Sessions, Users, Agents, Clients, Categories, Notes, Produits, Ventes, Arrivages, Promotions, Settingsdb, database, cleaner, initiale_action
-from .install import run 
-from .utils import *  # Ensure utils contains the definition of `message` or import it explicitly
+from .backends import Logs, Sessions, Users, Agents, Clients, Categories, Notes, Produits, Ventes, Arrivages, Promotions, database, cleaner, initiale_action
+from .utils import * 
 
 app = Flask(__name__)
 
@@ -94,8 +93,8 @@ def reset_passwd():
         return error(e)
     else:
         return message(res)
-
-@app.route('/api/v1/settings/<action>')
+"""
+#@app.route('/api/v1/settings/<action>')
 def restore_setting(action):
     try:
         param = request.data.decode()
@@ -116,7 +115,7 @@ def restore_setting(action):
         return error(e)
     else:
         return message(req)
-
+"""
 @app.route('/api/v1/<ressource>/add',methods=['POST'])
 def add(ressource):
     """
@@ -265,21 +264,12 @@ def delete(ressource,id):
     else:
         return message(req)
 
-def prepare():
+def prepare(config):
     """
         Prepare le lancement du serveur
     """
-    
-    db_settings = database()
-    db_settings.connect(db='settings.db')
-
-    db_settings_instance =  Settingsdb(db_settings)
 
     db_instance = database()
-    config = db_settings_instance.all()
-    
-    if not config:
-        RuntimeError("Veillez relancer le programme")
     
     db_instance.settings.update(config)
 

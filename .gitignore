@@ -2,6 +2,7 @@ myshop/__pycache__/
 dist/
 build/
 myshop.e*
+myshop.db
 myenv/
 *.pyc
 design/

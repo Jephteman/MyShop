@@ -3,29 +3,10 @@ from hashlib import sha3_256 as sha256
 from pathlib import Path
 from _thread import *
 import datetime
-import platform
 import os
 import re
 
 from .exceptions import *
-
-def run_path() -> str:
-    """
-    Retourne le répertoire de configuration de l'application en fonction du système d'exploitation.
-    Crée le répertoire s'il n'existe pas.
-
-    Returns:
-        str: Chemin du répertoire de configuration.
-    """
-    if platform.system() == "Windows":
-        config_path = os.path.join(os.path.expanduser("~"), "AppData", "Roaming", "myshop")
-    else:
-        config_path = os.path.expanduser("~/.config/myshop")
-    config_dir = Path(config_path)
-    if not config_dir.exists():
-        config_dir.mkdir()
-
-    return config_dir.as_posix()
 
 def get_cookie() -> str:
     """

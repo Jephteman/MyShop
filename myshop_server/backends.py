@@ -5,7 +5,7 @@ from .utils import *
 # regroupe les differentes ressources qui sont disponibles dans le backend
 list_db = {
     'Logs':Logsdb,'Logins':Loginsdb,'Sessions':Sessionsdb,'Users':Loginsdb,'Notes':Notesdb,
-    'Clients':Clientsdb,'Categories':Categoriesdb,'Promotions':Promotionsdb,#'Settings':Settingsdb,
+    'Clients':Clientsdb,'Categories':Categoriesdb,'Promotions':Promotionsdb,
     'Produits':Produitsdb,'Ventes':Ventesdb,'Arrivages':Arrivagesdb,'Agents':Agentsdb
     }
 
@@ -335,14 +335,27 @@ def cleaner(instance:database,config={}):
         time.sleep(int(sleep_time))
 
 def initiale_action(instance:database,config={}): # effectue les actions d'initialisation
-    logins = Loginsdb(instance,config=config)
+    print("[-] Creation des tables sur la base de donnees ")
+    Logsdb(instance,first=True)
+    logins = Loginsdb(instance,first=True, config=config)
+    Sessionsdb(instance,first=True)
+    Agentsdb(instance,first=True)
+    clients = Clientsdb(instance,first=True)
+    Categoriesdb(instance,first=True)
+    Produitsdb(instance,first=True)
+    Ventesdb(instance,first=True)
+    Arrivagesdb(instance,first=True)
+    Promotionsdb(instance,first=True)
+    Notesdb(instance,first=True)
+    
     if not logins.all(): # cree le 1er compte sur le serveur
         p = {'username':'MyShop','password':'MyShop','role':'admin'}
+        print("[-] Creation du compte par defaut ")
         logins.add(p)
 
-    clients = Clientsdb(instance,config=config)
     if not clients.all(): # creation du 1er client (client par defaut)
         p = {'noms': 'Client par defaut','date':get_timestamp()}
+        print("[-] Creation du client par defaut ")
         clients.add(p)
 
     ### d'autres actions

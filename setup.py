@@ -7,9 +7,9 @@ setup(
     author="Jephte Mangenda",
     author_email='tech5industrie@gmail.com',
     packages=find_packages(),
-    # package_data={
-    #     'myshop':['logo.ico']
-    #},
+    package_data={
+         'myshop':['myshop_server/.env']
+    },
     include_package_data=True,
     requires=[
         'sqlalchemy',

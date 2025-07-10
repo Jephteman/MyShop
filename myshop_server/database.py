@@ -9,40 +9,20 @@ class database:
         self.db = None
         self.settings = settings
 
-    def check(self,db=None):
-        net = self.settings.get('connection_type','local')
-        db_name =  self.settings.get('db_name') if not db else db
-
+    def check(self):
         try:
-            if net == 'local':
-                db = Path(run_path())
-                db.joinpath(db_name)
-                conn = create_engine("sqlite:///{}".format(db))
-            else:
-                user = self.settings.get('db_username')
-                passwd = self.settings.get('db_password')
-                host = self.settings.get('host')
-                conn = create_engine("""
-                    mysql+mysqlconnector://{}:{}@{}
-                        """.format(user,passwd,host,db_name))
-            conn.connect()
-        except : 
-            pass
+            self.db.connect()
+        except Exception as e: 
+            raise Exception(e)
         else:
-            conn.close()
+            self.db.close()
             return True    
 
-    def connect(self,db=None):
+    def connect(self):
         net = self.settings.get('connection_type','local')
-        db_name =  db
-        setting_db = self.settings.get('db_name')
-        if not db_name:
-            if not setting_db:
-                db_name = 'settings.db'
-            else:
-                db_name= setting_db
+        db_name =  self.settings.get('db_name','myshop.db')
         if net == 'local':
-            db = Path(run_path()).joinpath(db_name)
+            db = Path(self.settings.get('db_path')).joinpath(db_name)
             self.autoincrement = 'autoincrement'
             conn = create_engine("sqlite:///{}".format(db))
         elif net == 'distant':
@@ -61,99 +41,6 @@ class database:
     def cursor(self):
         """retourne le cursor"""
         return self.db.connect()
-
-class Settingsdb:
-    """
-    Settingsdb Class
-    This class provides an interface to manage a "Settings" table in a database. 
-    It allows for creating, reading, updating, and deleting settings stored in the database.
-    Attributes:
-        instance (database): The database instance used for executing queries.
-    Methods:
-        __init__(instance: database, first=False, config={}):
-            Initializes the Settingsdb class. If `first` is True, it creates the "Settings" table 
-            and an index on the "label" column if they do not already exist.
-        add(param: dict):
-            Adds a new setting to the "Settings" table. The `param` dictionary must contain 
-            'label' and 'value' keys.
-        get(param: dict):
-            Retrieves the value of a setting based on the provided label. The `param` dictionary 
-            must contain a 'label' key. Returns a dictionary with the retrieved data.
-        all(param: dict = {}):
-            Retrieves all settings from the "Settings" table. Returns a dictionary where keys 
-            are labels and values are the corresponding settings' values.
-        change(param: dict):
-            Updates the value of a setting based on the provided label. The `param` dictionary 
-            must contain 'label' and 'value' keys. Returns a dictionary with the updated data.
-        delete(param: dict):
-            Deletes a setting from the "Settings" table based on the provided label. The `param` 
-            dictionary must contain a 'label' key.
-        save():
-            Placeholder method for saving parameters in the database for restoration. 
-            Not yet implemented.
-    """
-    def __init__(self,instance:database,first=False,config={}):
-        self.instance = instance
-        if first:
-            with self.instance.cursor() as cursor:
-                query = """
-                    create table if not exists Settings(
-                    label char(24) primary key ,
-                    value Text
-                )"""
-                cursor.execute(text(query))
-                cursor.execute(text("create index if not exists idx_settings on Settings(label)"))
-                cursor.commit()
-
-    def add(self,param):
-        param = my_objects.SettingObject(param)
-        with self.instance.cursor() as cursor:
-            query = """
-                insert into Settings(label,value) 
-                values(:label,:value)
-                """
-            cursor.execute(text(query),param)
-            cursor.commit()
-
-    def get(self,param):
-        param = my_objects.SettingObject(param)
-        data = {}
-        with self.instance.cursor() as cursor :
-            query = """select value from Settings where label = :label"""
-            for i in cursor.execute(text(query),param):
-                data.update(i._asdict())
-
-        return data
-    
-    def all(self,param={}):
-        data = {}
-        with self.instance.cursor() as cursor:
-            query = "select * from Settings "
-            for i in cursor.execute(text(query),param):
-                d = i._asdict()
-                data.update({d.get('label'):d.get('value')})
-        
-        return data
-
-    def change(self,param):
-        param = my_objects.SettingObject(param)
-        data = {}
-        with self.instance.cursor() as cursor:
-            query = "update Settings set value = :value where label = :label returning *"
-            for i in cursor.execute(text(query),param):
-                data.update(i._asdict())
-            cursor.commit()
-        return data
-
-    def delete(self,param):
-        param = my_objects.SettingObject(param)
-        with self.instance.cursor() as cursor:
-            query = "delete from Settings where label = :label"
-            cursor.execute(text(query),param)        
-
-    def save(self):
-        """  Enregistre les paramtres dans la db pour une restoration  """
-        raise NotImplementedError()
 
 class Logsdb():
     def __init__(self,instance:database,first=False,config={}):

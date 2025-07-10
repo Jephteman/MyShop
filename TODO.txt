@@ -5,8 +5,6 @@
 
     formantage de la facture
     
-    et aussi la prise de date
-    
 	Dans gestion(inventaire), j ne sais prq la variable du placeholderentry ne fait pas ce qui coder 
 
 - [ ] modifier la db (ajouter le champ date qui contient le timestamp) dans le table Promotion, Login
