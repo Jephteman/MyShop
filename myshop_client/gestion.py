@@ -1,4 +1,4 @@
-from .utils import alert_wn, API, setting, temp_setting, clean_variable, Printer, selecteur_date
+from .utils import alert_wn, API, setting, temp_setting, clean_variable, Printer, selecteur_date, askfile_open
 from .widgets import *
 
 class InventairePage(Frame):
@@ -40,17 +40,17 @@ class InventairePage(Frame):
         somme = IntVar(frame,name='var_somme')
         
         f_top = Frame(frame,background='skyblue',name='frame_top')
-        
         Label(f_top,text="Inventaire",font=('',15),background='skyblue').pack(padx=5,pady=5)
         
-        f_entry = Frame(f_top,background='skyblue')
+        f_entry = Frame(f_top,background='skyblue',name='body')
         for name, message in (('vendeur','Vendeur'),('client_id','Id du client'),('from','Date depart') ,('to','Date fin')):
             variable = StringVar(frame,name=f'var_{name}')
-            entry = PlaceholderEntry(f_entry,textvariable=variable,placeholder=message)
+            entry = PlaceholderEntry(f_entry,textvariable=variable,placeholder=message,name=f'entry_{name}')
             entry.pack(side='left',padx=5,pady=5)
-            if name in ['from','to']:
-                entry.bind('<FocusIn>', lambda event: selecteur_date(variable,f_top,entry))
-                
+            
+        f_entry.nametowidget('entry_from').bind('<FocusIn>', lambda event: selecteur_date('var_from',frame))#,entry)) 
+        f_entry.nametowidget('entry_to').bind('<FocusIn>', lambda event: selecteur_date('var_to',frame))#,entry)) 
+        
         Button(f_entry,name='b_search',text= 'Chercher',command = lambda : self.actualise()).pack(side='right',padx=5,pady=5)
         f_entry.pack()
 
@@ -99,10 +99,11 @@ class InventairePage(Frame):
             win = self.frames['Home']
             for i in ['vendeur','client_id','from','to']:
                 try:
-                    value = win.getvar(i)
+                    name = f'var_{i}'
+                    value = win.getvar(name)
+                    param[i] = value
                 except:
                     continue
-                param[i] = value
 
             if not param:
                 param = {'isform':False}
@@ -290,7 +291,7 @@ class StockPage(Frame):
 
     def Add(self,contenair):
         def set_photo():
-            askfile_open(photo,[('Image File','*.png'),('Image File','*.jpg')])
+            askfile_open(photo,[('Image File','*.png'),('Image File','*.jpg')])  # un souci avec ctte partie du code 
 
         def voir():
             image_64 = photo.get()
@@ -318,17 +319,19 @@ class StockPage(Frame):
                     'label':name,'prix':prix.get(),'categorie_id':cat_id,
                     'code_barre':code.get(),'photo':photo.get(),'description':desc.get('1.0','end-1c')
                     }
-                if param.get('photo'):
-                    with open(param.get('photo'),'rb') as f:
-                        f = base64.encodebytes(f.read())
-                        param['photo'] = f.decode()
+                #if param.get('photo'):
+                #    with open(param.get('photo'),'rb') as f:
+                #        f = base64.encodebytes(f.read())
+                #        param['photo'] = f.decode()
                 if not p_id.get():
                     data = api.add(param)
                 else:
-                    data = api.change(p_id.get(),param=param)
+                    param.set('produit_id',p_id.get())
+                    data = api.change(param)
             except Exception as e:
                 alert_wn(e)
             else:
+                tab = self.frames['Home'].nametowidget('body.tableau')
                 data['cat_label'] = categorie.get()
                 i_ = str(data.get('produit_id'))
                 self.data.update({i_:data})
@@ -343,7 +346,7 @@ class StockPage(Frame):
                 tab.insert('','end',iid=data.get('produit_id'),values=p)
 
                 alert_wn("Ajouter du produit '{}' avec success".format(n_produit.get()))
-                self.show_frame('StockHome')
+                self.show_frame('Home')
         
         frame = Frame(contenair,name='frame_add',background='skyblue')
         n_produit = StringVar(frame,name='var_produit_label')
@@ -357,11 +360,10 @@ class StockPage(Frame):
 
         Label(ff,text='Inserer un nouveau produit ',height=3,font=('Arial',15),background='skyblue').pack()
         
-        f1 = Frame(ff,background='skyblue')
-        Label(f1,text="Nom du produit :",background='skyblue').pack(side='left')
-        Entry(f1,textvariable=n_produit).pack(side='right')
-        f1.pack()
-        
+        PlaceholderEntry(ff,textvariable=n_produit,placeholder='Nom du produit').pack()
+        PlaceholderEntry(ff,textvariable=prix,placeholder='Prix').pack()
+        PlaceholderEntry(ff,textvariable=code,placeholder="Code barre").pack()
+                
         f2 = Frame(ff,name='categorie',background='skyblue')
         Label(f2,text="Categorie :",background='skyblue').pack(side='left')
         cat = ttk.Combobox(f2,textvariable=categorie,name='list_cat')
@@ -369,20 +371,19 @@ class StockPage(Frame):
         Button(f2,text='Ajouter une categorie',command=lambda: self.show_frame('AddCat')).pack(side='right')
         f2.pack()
         
-        f3 = Frame(ff,background='skyblue')
-        Label(f3,text="Prix :",background='skyblue').pack(side='left')
-        Entry(f3,textvariable=prix).pack(side='right')
-        f3.pack()
+        #f3 = Frame(ff,background='skyblue')
+        #Label(f3,text="Prix :",background='skyblue').pack(side='left')
+
+        #f3.pack()
 
         #Label(ff,text="Photo :").grid(row=4,column=0)
         #Entry(ff,textvariable=photo,state='readonly').grid(row=4,column=1)
         #Button(ff,text='parcourir',command=set_photo).grid(row=4,column=2)
         #Button(ff,text=" Voir ",command=voir).grid(row=4,column=3)
         
-        f4 = Frame(ff,background='skyblue')
-        Label(f4,text="Code barre :",background='skyblue').pack(side='left')
-        Entry(f4,textvariable=code).pack(side='right')
-        f4.pack()
+        #f4 = Frame(ff,background='skyblue')
+
+        #f4.pack()
 
         Label(ff,text="Description :",background='skyblue').pack()
         desc = Text(ff,height=15,width=25,name='description')
@@ -597,8 +598,8 @@ class ArrivagePage(Frame):
             id_ = l_march.curselection()
             prod = l_march.get(id_[0])
             produit.set(prod)
-            entry.config(state='readonly')
-            f2.destroy()
+            #entry.config(state='readonly')
+            #f2.destroy()
 
         def ret():
             produit_id = self.produits_label_id.get(produit.get())
@@ -651,8 +652,12 @@ class ArrivagePage(Frame):
         Label(f3,text='Pieces :',background='skyblue').pack(side='left')
         Entry(f3,textvariable=piece).pack()
         f3.pack()
-
-        Button(frame,text="Inserer",command=ret).pack(side='bottom',padx=4,pady=4)
+        
+        f4 = Frame(frame,background='skyblue',name='f4')
+        Button(f4,text="Inserer",command=ret).pack(side='left')
+        Button(f4,text="Retour",command=lambda : self.show_frame('Home')).pack(side='left')
+        
+        f4.pack(side='bottom')
         
         return frame
 
@@ -678,6 +683,7 @@ class PromotionPage(Frame):
         
         self.produits = {}
         self.data = {}
+        self.temp_num_id = {}
         # Conteneur principal
         container = Frame(self)
         container.pack(side="top", fill="both", expand=True)
@@ -714,8 +720,9 @@ class PromotionPage(Frame):
             button_moins.config(state='active')
             list_prod.delete(0,END)
             
-            for i , value in self.produits.items():
-                list_prod.insert(str(i),value.get('label'))
+            for i , value in enumerate(self.produits.values()):
+                self.temp_num_id[i] = value.get('produit_id')
+                list_prod.insert(i,value.get('label'))
         elif action:
             clean_variable(frame)
             tab = self.frames['Home'].nametowidget('body.tableau')
@@ -810,7 +817,8 @@ class PromotionPage(Frame):
                 id_ = p_list.index(march)
                 
                 if not march in p_id_list:
-                    p_id_list.append(id_)
+                    
+                    p_id_list.append(self.temp_num_id.get(id_))
                     p_list_select.insert(id_,label)
             except IndexError: 
                 alert_wn("Veillez d'abord selectionner le produit a ajouté")
@@ -822,7 +830,7 @@ class PromotionPage(Frame):
                 march = p_list_select.curselection()[0]
                 label = p_list_select.selection_get()
                 id_ = p_list_select.index(march)
-                p_id_list.remove(id_)
+                p_id_list.remove(self.temp_num_id.get(id_))
                 p_list_select.delete(march)
             except IndexError:
                 alert_wn("Veillez d'abord selectionner le produit a rectiré")
@@ -872,19 +880,25 @@ class PromotionPage(Frame):
         date_d = StringVar(frame,name='var_date_d')
         
         f_body = Frame(frame,background='skyblue',name='body')
-        Label(f_body,text="Nom :",background='skyblue',padx=3,pady=3).grid(column=0,row=2)
-        Entry(f_body,textvariable=name).grid(column=1,row=2)
+        #Label(f_body,text="Nom :",background='skyblue',padx=3,pady=3).grid(column=0,row=2)
+        PlaceholderEntry(f_body,textvariable=name,placeholder="Titre").grid(column=1,row=2)
         
-        Label(f_body,text="Reduction (%):",background='skyblue',padx=3,pady=3).grid(column=0,row=3)
-        Entry(f_body,textvariable=reduction).grid(column=1,row=3)
+        #Label(f_body,text="Reduction (%):",background='skyblue',padx=3,pady=3).grid(column=0,row=3)
+        PlaceholderEntry(f_body,textvariable=reduction,placeholder='% de la reduction').grid(column=1,row=3)
         
-        Label(f_body,text="Debut :",background='skyblue',padx=3,pady=3).grid(column=0,row=4)
-        Entry(f_body,textvariable=date_d).grid(column=1,row=4)
+        #Label(f_body,text="Debut :",background='skyblue',padx=3,pady=3).grid(column=0,row=4)
+        entry_debut = PlaceholderEntry(f_body,textvariable=date_d,placeholder="Date du debut")
+        entry_debut.bind('<FocusIn>', lambda event: selecteur_date('var_date_d',frame))#,entry)) 
+        entry_debut.grid(column=1,row=4)
         
-        Label(f_body,text="Fin :",background='skyblue',padx=3,pady=3).grid(column=0,row=5)
-        Entry(f_body,textvariable=date_f).grid(column=1,row=5)
+        #Label(f_body,text="Fin :",background='skyblue',padx=3,pady=3).grid(column=0,row=5)
+        #Entry(f_body,textvariable=date_f).grid(column=1,row=5)
+        entry_fin = PlaceholderEntry(f_body,textvariable=date_f,placeholder="Date de fin")
+        entry_fin.bind('<FocusIn>', lambda event: selecteur_date('var_date_f',frame))#,entry)) 
+        entry_fin.grid(column=1,row=5)
         
         Label(f_body,text="Produits :",background='skyblue',padx=3,pady=3).grid(column=0,row=6)
+        
         p_list = Listbox(f_body,height=8,width=20,name='list_produit')
         p_list.grid(column=1,row=6)
         Button(f_body,padx=5,pady=5,text='+',height=3,width=3,command=add_produit,name='button_plus').grid(column=2,row=6)
@@ -892,7 +906,7 @@ class PromotionPage(Frame):
         p_list_select.grid(column=3,row=6)
         Button(f_body,padx=5,pady=5,text='-',height=3,width=3,command=del_produit,name='button_moins').grid(column=4,row=6)
             
-        Label(f_body,text="Descripton :",background='skyblue',padx=3,pady=3,name='description').grid(column=0,row=7)
+        Label(f_body,text="Descripton :",background='skyblue',padx=3,pady=3).grid(column=0,row=7)
         desc = Text(f_body,width=20,height=8,name='description')
         desc.grid(column=1,row=7)
         

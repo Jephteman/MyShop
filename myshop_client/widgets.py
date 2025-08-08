@@ -7,6 +7,7 @@ class PlaceholderEntry(Entry):
                  fg_placeholder='grey50', *args, **kw):
         super().__init__(master, cnf={}, bg='white', *args, **kw)
         self.fg = fg
+        self.show = kw.get('show','')
         self.fg_placeholder = fg_placeholder
         self.placeholder = placeholder
         self.bind('<FocusOut>', lambda event: self.fill_placeholder())
@@ -15,13 +16,18 @@ class PlaceholderEntry(Entry):
 
     def clear_box(self):
         if not self.get() and super().get():
+            self.config(show=self.show)
             self.config(fg=self.fg)
             self.delete(0,END)
 
     def fill_placeholder(self):
         if not super().get():
+            self.config(show='')
             self.config(fg=self.fg_placeholder)
             self.insert(0, self.placeholder)
+        else:
+            self.config(fg=self.fg)
+            self.config(show=self.show)
     
     def get(self):
         content = super().get()

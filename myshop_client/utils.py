@@ -1,12 +1,11 @@
 from .client import API
+from .widgets import *
 
-from tkinter import *
-from tkinter import ttk
 from tkinter.filedialog import askopenfilename, asksaveasfile
 from configparser import ConfigParser
 from json import JSONDecoder , JSONEncoder
 
-import os
+import os, subprocess
 import csv
 import base64
 import platform
@@ -14,15 +13,19 @@ import pathlib
 import tempfile
 import datetime
 import matplotlib.pyplot as plt 
+from PIL import Image, ImageTk
 
+from reportlab.lib.pagesizes import HALF_LETTER
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer, Image as rep_Image
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer, Image as rep_image
+
 import pkg_resources
 
+
 try:
-    import pywin32_system32 as win32
+    import pywin32_system32 as win32 # type: ignore
 except:
     if os.name == 'nt':
         print("Vous ne pourrez pas effectuer d'impression puis que vous n'avez installé 'win32print'")
@@ -33,14 +36,15 @@ class Config:
         self.temp_file = temp_file
         self.config = ConfigParser(allow_no_value=True)
         self.filename = ''
+        self.config_dir = ''
         
         if not temp_file:
             if platform.system() == "Windows":
-                config_dir = os.path.join(os.path.expanduser("~"), "AppData", "Roaming", "myshop")
+                self.config_dir = os.path.join(os.path.expanduser("~"), "AppData", "Roaming", "myshop")
             else:
-                config_dir = os.path.expanduser("~/.config/myshop")
+                self.config_dir = os.path.expanduser("~/.config/myshop")
 
-            self.filename = os.path.join(config_dir, "config.txt")
+            self.filename = os.path.join(self.config_dir, "config.txt")
             self.conf_file = pathlib.Path(self.filename)
             self.config.read(self.conf_file)
             
@@ -57,7 +61,7 @@ class Config:
             raise Exception("Fichier temporaire ne peut etre stocker")
         with open(self.conf_file,'w') as f:
             self.config.write(f)
-            alert_wn("Pour appliquer les parametres, veillez redemarer le programme")
+            alert_wn("Paramtres sauvegarder avec success")
 
     def get(self,param:str):
         return self.config.get('CLIENT',param) if self.config.has_option('CLIENT',param) else ''
@@ -140,23 +144,35 @@ class LoginPage(Frame):
             except Exception as e:
                 alert_wn(e)
             
-            
         frame = Frame(contenair,background='skyblue')
         u = StringVar(frame,name='username')
         p = StringVar(frame,name='password')
         Label(frame,text="Connection au serveur",font=('',15),wraplength=540,padx=10,pady=10,background='skyblue').pack()
         
+        img_name = setting.get('logo')
+        if img_name and pathlib.Path(img_name).exists():
+            img_file = img_name
+        else:
+            try:
+                img_file = pkg_resources.resource_filename('myshop','myshop_client/logo.gif')
+            except ModuleNotFoundError:
+                img_file = pathlib.Path(__file__).parent.joinpath('logo.png')
+            except Exception as e:
+                alert_wn(e)
+
+        img = Image.open(img_file)
+        photo = ImageTk.PhotoImage(img)
+        
+        Label(frame,image=photo).pack(padx=5,pady=5)
         f1 = Frame(frame,padx=8,pady=8,background='skyblue')
-        Label(f1,text="Nom d'utilisateur : ",background='skyblue').pack(side='left')
-        Entry(f1,textvariable=u).pack(side='right')
+        PlaceholderEntry(f1,textvariable=u,placeholder="Nom d'utilisateur").pack()
+        PlaceholderEntry(f1,textvariable=p,placeholder="Mot de passe",show='*').pack()
         f1.pack()
 
-        f2 = Frame(frame,padx=8,pady=8,background='skyblue')
-        Label(f2,text="Mot de passe   : ",background='skyblue').pack(side='left')
-        Entry(f2,textvariable=p,show='*').pack(side='right')
-        f2.pack()
-
         Button(frame,text='Connecter',command=check,padx=8,pady=8,width=15).pack()
+        
+        Button(frame,text='Parametre',command=lambda: self.controller.show_frame('ParametrePage'),padx=8,pady=8,width=15).pack(side='right')
+        
 
         return frame
         
@@ -202,6 +218,15 @@ class AboutPage(Frame):
         frame = Frame(container,background='skyblue')
         Label(frame,text='\nCe programme a été developpé sous license GNU/Linux \n',background='skyblue').pack()
         Label(frame,text='Pour asurrer la gestion d\'une boutique ou quelque chose du genre ',background='skyblue').pack()
+        
+        try:
+            img_file = pkg_resources.resource_filename('myshop','myshop_client/logo.gif')
+        except ModuleNotFoundError:
+            img_file = pathlib.Path(__file__).parent.joinpath('logo.gif')
+
+        img = Image.open(img_file)
+        photo = ImageTk.PhotoImage(img)
+        Label(frame,image=photo).pack(padx=5,pady=5)
         """Quelques ajout"""
         Label(frame,text="Contact : Jephte Mangenda ( tech5industrie@gmail.com ) ",background='skyblue').pack(side='bottom')
         Label(frame,text="Disponible sur : https://github.com/Jephteman/MyShop",background='skyblue').pack(side='bottom')
@@ -221,26 +246,27 @@ def clean_variable(frame):
             else:
                 var = child['textvariable']
             frame.setvar(str(var),'')
+        elif isinstance(child,Text):
+            child.delete('1.0',END)
+            
         elif hasattr(child,'winfo_children'):
             clean_variable(child)
-        elif isinstance(Text,child):
-            child.delete('1.0',END)
 
-def selecteur_date(variable,frame_object,entry_object):
+def selecteur_date(variable_name,frame_object):#,entry_object):
     """Fenetre pour permettre à l'utilisateur de fournir la date """
     def fermeture():
         frame_object.focus_set()
-        if hasattr(entry_object,'fill_placeholder'):
-            entry_object.fill_placeholder()
+        #if hasattr(entry_object,'fill_placeholder'):
+        #    entry_object.fill_placeholder()
         win.destroy()
         
     def valider_date():
         jour = frame.nametowidget('frame_jour.spin_jour').get()
         mois = frame.nametowidget('frame_mois.spin_mois').get()
         annee = frame.nametowidget('frame_annee.spin_annee').get()
-        if hasattr(entry_object,'clear_box'):
-            entry_object.clear_box()
-        variable.set(f"{jour}/{mois}/{annee}")
+        #if hasattr(entry_object,'clear_box'):
+        #    entry_object.clear_box()
+        frame_object.setvar(variable_name,f"{jour}/{mois}/{annee}")
         frame_object.focus_set()
         win.destroy()
         
@@ -508,7 +534,7 @@ class NotePage(Frame):
             except Exception  as e:
                 alert_wn(e)
             else:
-                d['username'] = setting.get('uname')
+                d['username'] = temp_setting.get('username')
                 n_id = str(d.get('note_id'))
                 self.notes.update({n_id:d}),
                 p = (n_id,d.get('sujet'),d.get('username'),d.get('date'))
@@ -523,8 +549,7 @@ class NotePage(Frame):
         var_sujet = StringVar(frame,name='var_sujet')
 
         f1 = Frame(frame,padx=5,pady=5,background='skyblue',name='top')
-        Label(f1,text='Sujet : ',background='skyblue').pack(side='left')
-        Entry(f1,textvariable=var_sujet).pack(side='right')
+        PlaceholderEntry(f1,textvariable=var_sujet,placeholder='Sujet').pack()
         f1.pack()
 
         #f3 = Frame(frame,background='skyblue',name='middle')
@@ -585,11 +610,13 @@ class Graphique:
         Label(self.window,text="Graphique",font=('',15),background='skyblue').pack()
 
         f1 = Frame(self.window,background='skyblue')
-        Label(f1,text='A partir du ',background='skyblue').pack(side='left')
-        Entry(f1,textvariable=self.origine,).pack(side='left')
-        Label(f1,text="Au ",background='skyblue').pack(side='left')
-        Entry(f1,textvariable=self.fin).pack(side='right')
+        entry1 = PlaceholderEntry(f1,textvariable=self.origine,placeholder='A partir du ')
+        entry1.bind('<FocusIn>', lambda event: selecteur_date(self.origine,f1,entry1)) 
+        entry1.pack(side='left')
         
+        entry2 = PlaceholderEntry(f1,textvariable=self.fin, placeholder='Au')
+        entry2.bind('<FocusIn>', lambda event: selecteur_date(self.fin,f2,entry2)) 
+        entry2.pack(side='right')
         f1.pack()
 
         f2 = Frame(self.window,background='skyblue')
@@ -663,12 +690,15 @@ class Exporte:
         f1.pack()
 
         f2 = Frame(win,background='skyblue')
-        Label(f2,text='A partir du ',background='skyblue').pack(side='left')
-        Entry(f2,textvariable=self.origine,).pack(side='left')
-        Label(f2,text="Au ",background='skyblue').pack(side='left')
-        Entry(f2,textvariable=self.fin).pack(side='right')
+        entry1 = PlaceholderEntry(f2,textvariable=self.origine,placeholder='A partir du ')
+        entry1.bind('<FocusIn>', lambda event: selecteur_date(self.origine,f1,entry1)) 
+        entry1.pack(side='left')
+        
+        entry2 = PlaceholderEntry(f2,textvariable=self.fin, placeholder='Au')
+        entry2.bind('<FocusIn>', lambda event: selecteur_date(self.fin,f2,entry2)) 
+        entry2.pack(side='right')
         f2.pack()
-
+        
         f3 = Frame(win,background='skyblue')
         Label(f3,text='Emplacement : ',background='skyblue').pack(side='left')
         Entry(f3,textvariable=self.path,state='readonly').pack(side='left')
@@ -694,9 +724,7 @@ class Exporte:
         except Exception as e:
             alert_wn(e)
         else:
-            serilise_data = []
-            for  i, d in data.items():
-                serilise_data.append(d)
+            serilise_data = data.values()
 
             csv_file = self.path.get()
             if not serilise_data:
@@ -708,7 +736,6 @@ class Exporte:
                 writer.writeheader()
                 writer.writerows(serilise_data)
             alert_wn('Donnees exportees avec success')
-
 
 
 class ParametrePage(Frame):
@@ -784,7 +811,10 @@ class ParametrePage(Frame):
         
     def quit(self):
         """Abbandon des modifications"""
-        self.controller.show_frame('Accueil')
+        if temp_setting.get('islogin') == 'yes':
+            self.controller.show_frame('VentePage')
+        else:
+            self.controller.show_frame('LoginPage')
 
     def printer(self):
         pass
@@ -799,6 +829,7 @@ class ParametrePage(Frame):
         if setting.get('auto_login') == 'OUI':
             save_cookie()
         setting.save()
+        self.quit()
 
 
 class Printer:
@@ -827,40 +858,31 @@ class Printer:
         lc_temp.column('produit',width=80)
         lc_temp.heading('quantite',text='Quantite')
         lc_temp.column('quantite',width=60)
-        lc_temp.heading('prix',text='Prix')
-        lc_temp.column('prix',width=80)
+        lc_temp.heading('prix_initial',text='Prix Unité')
+        lc_temp.column('prix_initial',width=80)
+        lc_temp.heading('prix_total',text='Total')
+        lc_temp.column('prix_total',width=80)
         lc_temp['show'] = 'headings'
 
         lc_temp.pack(fill='both',expand=True)
         f8.pack(fill='both',expand=True)
 
         for prod, info in data.get('marchandises').items():
-            lc_temp.insert('','end',value=(prod,info[0],info[1]))
+            lc_temp.insert('','end',value=(prod,info[0],info[1],info[2]))
 
         f_dev.pack()
 
         f_foot = Frame(self.window,background='skyblue')
-        Button(f_foot,text='OK',width=5,command=self.close).pack(side='left')
-        Button(f_foot,text='Imprimer',width=5,command=self.formantage).pack(side='left')
+        Button(f_foot,text='OK',width=5,command=lambda : self.close()).pack(side='left')
+        Button(f_foot,text='Imprimer',width=5,command=lambda : self.formantage()).pack(side='left')
         f_foot.pack(side='bottom',padx=5,pady=5)
   
     def close(self):
         self.window.destroy()
-
-    """def lister_imprimantes(self):
-        name_imprimantes = []
-        imprimantes = win32print.EnumPrinters(
-            win32print.PRINTER_ENUM_LOCAL | win32print.PRINTER_ENUM_CONNECTIONS)
-        for i, imprimante in enumerate(imprimantes):
-            name_imprimantes.append(imprimante[2])
-        return imprimantes
-    """
+        
     def imprimer_pdf(self,fichier_pdf, nom_imprimante=None):
-        raise NotImplementedError()
-        """
-        os.system(f"cp {fichier_pdf} /home/oem/Documents ")
         if os.name == 'posix':
-            if subprocess.run(["lp", fichier_pdf]).returncode == 0:
+            if subprocess.run(["lp", fichier_pdf.name]).returncode == 0:
                 alert_wn("Le document a été envoyé à l'imprimante avec succès.")
             else:
                 alert_wn("Erreur lors de l'envoi du document à l'imprimante.")
@@ -868,90 +890,93 @@ class Printer:
             if nom_imprimante is None:
                 nom_imprimante = win32print.GetDefaultPrinter()
             try:
-                win32api.ShellExecute(0, "print", fichier_pdf, f'/d:"{nom_imprimante}"', ".", 0)
+                win32api.ShellExecute(0, "print", fichier_pdf.name, f'/d:"{nom_imprimante}"', ".", 0)
             except Exception as e:
                 alert_wn(f"Erreur lors de l'impression : {e}")
         else:
             alert_wn("Le systeme d'exploitation n'est pas pris en charge")
-    """
+            
+        fichier_pdf.close()
 
     def formantage(self):
         param = self.data
-        param.update(setting.all())
+        param.update(temp_setting.all())
         
-        # Création du PDF en mémoire
-        pdf_buffer = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
+        pdf_filename = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
 
-        # Styles de texte
+        
+        doc = SimpleDocTemplate(pdf_filename.name,pagesize=HALF_LETTER,leftMargin=10 * mm,rightMargin=10 * mm,topMargin=5 * mm)
+
+        # Styles personnalisés
         styles = getSampleStyleSheet()
-        style_normal = styles['Normal']
-        style_heading = styles['Heading1']
+        style_centered = ParagraphStyle(
+            "Centered",
+            parent=styles["Normal"],
+            alignment=1,  # Centré
+            fontSize=10,
+            spaceAfter=6,
+        )
+        style_bold = ParagraphStyle("Bold",parent=styles["Normal"],fontName="Helvetica-Bold",fontSize=10)
+        style_normal = styles["Normal"] 
+        # Contenu de la facture
+        story = []
+        logo_path = param.get('logo')
+        if logo_path:
+            # 1. Logo (en-tête)
+            logo = rep_Image(logo_path, width=50 * mm, height=30 * mm)  # Ajustez la taille
+            logo.hAlign = "CENTER"
+            story.append(logo)
+            story.append(Spacer(1, 10))  # Espace après le logo
 
-        # Contenu du document
-        content = []
-        img_b64 = param.get('logo')
-        if img_b64:
-            img = base64.decodebytes(img_b64)
-            f_image = tempfile.NamedTemporaryFile(delete=False)
-            f_image.write(img)
-            f_image.close()
-            logo = rep_image(f_image.name,height=20,width=30)
-            content.append(logo)
-            content.append(Spacer(1,5))
+        # 2. Infos boutique
+        story.append(Paragraph(param.get("boutique"), style_bold))
+        story.append(Paragraph(param.get("address"), style_centered))
+        story.append(Paragraph(param.get("telephone"), style_centered))
+        story.append(Spacer(1, 10))
 
-        # Ajout de l'en-tête
-        en_tete = Paragraph(param.get('boutique'), style_heading)
-        content.append(en_tete)
-        content.append(Spacer(1, 6))
-        content.append(Paragraph(param.get('description'),style_heading))
-        content.append(Spacer(1, 16))
+        # 3. Infos client (cadre gris)
+        client_data = [
+            [Paragraph(f"Client : {param.get('client_id')}", style_bold)],
+            [Paragraph(f"Date : {param.get('date')}", style_normal)],
+            [Paragraph(f"Facture : {param.get('vente_id')}", style_normal)],
+        ]
+        client_table = Table(client_data, colWidths=[80 * mm])
+        client_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+            ("BOX", (0, 0), (-1, -1), 0.5, colors.grey),
+            ("PADDING", (0, 0), (-1, -1), 5),
+        ]))
+        story.append(client_table)
+        story.append(Spacer(1, 10))
 
-        content.append(Paragraph(f"Ventes id : {param.get('vente_id')}",style_normal))
-        content.append(Spacer(1, 6))
-        content.append(Paragraph(f"Client : {param.get('client_id')}",style_normal))
-        content.append(Spacer(1, 6))
-        content.append(Paragraph(f"Vendeur : {param.get('vendeur')}",style_normal))
-        content.append(Spacer(1, 6))
-        content.append(Paragraph(f"Date : {param.get('date')}",style_normal))
-        content.append(Spacer(1, 6))
-        content.append(Paragraph(f"Prix : {param.get('prix')}",style_normal))
-        content.append(Spacer(1, 10))
+        # 4. Tableau des articles
+        data = [['Produit','Qte','Prix Unité','Total']]
+        for prod, info in param.get('marchandises').items():
+            data.append([prod , info[0], info[1],info[2]])
 
-        # Ajout d'un tableau
-        data = [['Produit', 'Quantite', 'Prix']]
-        for prod, info in data.get('marchandises').items():
-            data.append([prod , info[0], info[1]])
-
-        table = Table(data)
+        table = Table(data, colWidths=[50 * mm, 15 * mm, 25 * mm, 25 * mm])
         table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black),
-            ]))
+            ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+            ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
+            ("ALIGN", (0, 0), (0, -1), "LEFT"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ]))
+        story.append(table)
+        story.append(Spacer(1, 10))
 
-        content.append(table)
-        content.append(Spacer(1, 12))  # Espacement
+        # 5. Totaux
+        story.append(Paragraph(f"<b>TOTAL: {param.get('prix')}</b>", style_bold))
+        story.append(Spacer(1, 15))
 
-        # Ajout de l'épilogue
-        epilogue = Paragraph(param.get('contact'), style_normal)
-        content.append(epilogue)
+        # 6. Pied de page
+        story.append(Paragraph(f"{param.get('remerciement')}", style_centered))
 
-        # Génération du PDF dans le buffer
-        doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
-        doc.build(content)
-
-        # Fermeture du buffer pour s'assurer que tout est écrit
-        pdf_buffer.close()
-
-        self.imprimer_pdf(pdf_buffer.name)
-        os.unlink(pdf_buffer.name)
-        if img_b64:
-            os.unlink(f_image.name)
-
+        # Génération du PDF
+        doc.build(story)
+        
+        self.imprimer_pdf(pdf_filename)
 
 setting = Config()
 temp_setting = Config(temp_file=True)

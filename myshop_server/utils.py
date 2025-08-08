@@ -156,7 +156,7 @@ def valide_data(donnees: dict) -> bool:
             else:
                 continue
 
-        if (data == '' and not rules.get('required')):
+        if (data == '' and not rules.get('required',False)):
             continue
 
         for t, value in rules.items():

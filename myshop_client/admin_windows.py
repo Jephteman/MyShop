@@ -1,6 +1,6 @@
 from .utils import alert_wn, API, setting, temp_setting, clean_variable
-from tkinter import *
-from tkinter import ttk
+from .widgets import *
+
 
 class UserPage(Frame):
     def __init__(self, parent, controller):
@@ -30,10 +30,15 @@ class UserPage(Frame):
         """Affiche la frame demandée"""
         frame = self.frames[cont]
         clean_variable(frame)
-        if cont != 'Home' :
+        if not cont in [ 'Home', 'Add']:
             tab = self.frames['Home'].nametowidget('body.tableau')
-            if cont == 'Change':
+            try:
                 login_id = tab.selection()[0]
+            except Exception as e:
+                alert_wn(e)
+                return
+                
+            if cont == 'Change':
                 data = self.data.get(login_id)
             
                 frame.setvar('var_uname',data.get('uname'))
@@ -42,11 +47,10 @@ class UserPage(Frame):
                 frame.setvar('var_noms',data.get('noms'))
                 frame.setvar('var_tel',data.get('telephone'))
                 frame.setvar('var_email',data.get('email'))
-                frame.setvar('var_photo',data.get('photo'))
+                #frame.setvar('var_photo',data.get('photo'))
                 frame.setvar('var_role',data.get('role'))
                 
-            if cont == 'ResetPassword':
-                login_id = tab.selection()[0]
+            if cont == 'ResetPasswd':
                 frame.setvar('var_login_id',login_id)
                 
         frame.tkraise()
@@ -119,12 +123,12 @@ class UserPage(Frame):
                 'role':var_role.get(),
                 'telephone':var_tel.get(),
                 'email':var_email.get(),
-                'photo':''
+                #'photo':''
             }
-            if self.var_photo.get():
-                photo = open(self.var_photo,'rb').read()
-                photo = base64.encodebytes(photo)
-                param['photo'] = photo
+            #if self.var_photo.get():
+            #    photo = open(self.var_photo,'rb').read()
+            #    photo = base64.encodebytes(photo)
+            #    param['photo'] = photo
 
             try:
                 api = API(setting.get('url'),'users',cookie=temp_setting.cookie)
@@ -151,23 +155,21 @@ class UserPage(Frame):
         var_noms = StringVar(frame,name='var_noms')
         var_tel = StringVar(frame,name='var_tel')
         var_email = StringVar(frame,name='var_email')
-        var_photo = StringVar(frame,name='var_photo')
+        #var_photo = StringVar(frame,name='var_photo')
 
         Label(frame,text="Création d'un compte",font=('',29),pady=15,background='skyblue').pack()
 
         f_noms = Frame(frame,background='skyblue')
-        Label(f_noms,text="Noms : ",font=('',15),background='skyblue').pack(side='left')
-        Entry(f_noms,textvariable=var_noms).pack(side='right')
+        #Label(f_noms,text="Noms : ",font=('',15),background='skyblue').pack(side='left')
+        PlaceholderEntry(f_noms,textvariable=var_noms,placeholder="Noms").pack()
         f_noms.pack()
 
         f_uname = Frame(frame,background='skyblue')
-        Label(f_uname,text="Nom d'utilisateur : ",font=('',15),background='skyblue').pack(side='left')
-        Entry(f_uname,textvariable=var_uname).pack(side='right')
+        PlaceholderEntry(f_uname,textvariable=var_uname,placeholder="Nom d'utilisateur").pack()
         f_uname.pack()
 
         f_pass = Frame(frame,background='skyblue')
-        Label(f_pass,text="Mot de passe : ",font=('',15),background='skyblue').pack(side='left')
-        Entry(f_pass,textvariable=var_passwd).pack(side='right')
+        PlaceholderEntry(f_pass,textvariable=var_passwd,placeholder="Mot de pass").pack()
         f_pass.pack()
 
         f_role = Frame(frame,background='skyblue')
@@ -176,13 +178,11 @@ class UserPage(Frame):
         f_role.pack()
 
         f_addr = Frame(frame,background='skyblue')
-        Label(f_addr,text="Addrese : ",font=('',15),background='skyblue').pack(side='left')
-        Entry(f_addr,textvariable=var_addr).pack(side='right')
+        PlaceholderEntry(f_addr,textvariable=var_addr,placeholder="Adresse").pack()
         f_addr.pack()
 
         f_num = Frame(frame,background='skyblue')
-        Label(f_num,text="Numero : ",font=('',15),background='skyblue').pack(side='left')
-        Entry(f_num,textvariable=var_tel).pack(side='right')
+        PlaceholderEntry(f_num,textvariable=var_tel,placeholder="Telephone").pack()
         f_num.pack()
 
         f_mail = Frame(frame,background='skyblue')
@@ -190,39 +190,44 @@ class UserPage(Frame):
         Entry(f_mail,textvariable=var_email).pack(side='right')
         f_mail.pack()
 
-        f_photo = Frame(frame,background='skyblue')
-        Label(f_photo,text="Photo : ",font=('',15),background='skyblue').pack(side='left')
-        Button(f_photo,text='parcourir',command=self.set_file).pack(side='right') #   parcourir nest pas implementer
-        Entry(f_photo,textvariable=var_photo,state='readonly').pack(side='right')
-        
-        f_photo.pack()
+        #f_photo = Frame(frame,background='skyblue')
+        #Label(f_photo,text="Photo : ",font=('',15),background='skyblue').pack(side='left')
+        #Button(f_photo,text='parcourir',command=self.set_file).pack(side='right') #   parcourir nest pas implementer
+        #Entry(f_photo,textvariable=var_photo,state='readonly').pack(side='right')
+        #f_photo.pack()
 
-        Button(frame,text="Creer le compte",command=ret,font=('',15),pady=15,width=25).pack()
+        
+        f3 = Frame(frame,background='skyblue')
+        Button(f3,text="Creer le compte",command=ret,pady=10,width=20).pack(side='left')
+        Button(f3,text='Annuler',padx=10,pady=10,width=15,command=lambda: self.show_frame('Home')).pack(side='right')
+        f3.pack(padx=10,pady=10)
+
         
         return frame
 
-    def set_file(self):
-        t = [('Image File','*.png'),('Image File','*.jpg')]
-        askfile_open(self.var_photo,t) ### cette portion de code ne fonctionne pas
+    #def set_file(self):
+    #    t = [('Image File','*.png'),('Image File','*.jpg')]
+    #    askfile_open(self.var_photo,t) ### cette portion de code ne fonctionne pas
 
     def delete(self):
         def ret():
             try:
+                lc = self.frames['Home'].nametowidget('body.tableau')
+                i = lc.selection()
+                if not i:
+                    return
+        
+                user_id = i[0]
                 api = API(setting.get('url'),'users',cookie=temp_setting.cookie)
                 api.delete(user_id)
             except Exception as e:
                 alert_wn(e)
             else:
-                window.destroy()
+                alert_wn('Utilisateur suprimé avec success')
                 lc.delete(user_id)
                 
-        lc = self.frames['Home'].nametowidget('body.tableau')
-        i = lc.selection()
-        if not i:
-            return
         
-        user_id = i[0]
-        
+        """
         frame = Frame(container,name='frame_add',background='skyblue')
 
         Label(frame,text=f"Voullez-vous supprimer l'utilisateur {self.data[user_id].get('username')} ?",padx=10,font=('',13),).pack()
@@ -233,18 +238,19 @@ class UserPage(Frame):
         f1.pack()
         
         return frame
+        """
 
     def Change(self,container):
         def ret():
             param = {
-                'login_id':login_id,
-                'user_id':login_id,
+                'login_id':var_login_id.get(),
+                'user_id':var_login_id.get(),
                 'noms':var_noms.get(),
                 'addr':var_addr.get(),
                 'role':var_role.get(),
                 'telephone':var_tel.get(),
                 'email':var_email.get(),
-                'photo':'' # nous devons avoir une foction qui encode en base64 limage 
+                #'photo':'' # nous devons avoir une foction qui encode en base64 limage 
             }
 
             try:
@@ -254,25 +260,27 @@ class UserPage(Frame):
                 alert_wn(e)
             else:
                 lc = self.frames['Home'].nametowidget('body.tableau')
+                i = lc.selection()
                 self.show_frame('Home')
                 lc.delete(i[0])
                 lc.insert(
                     '',i[0],iid=i[0],values=(
-                        i[0],user_info.get('username'),
+                        i[0],api.get('username'),
                         param.get('noms'),param.get('role'),
-                        'actif' if user_info.get('statut') else 'bloquer')
+                        'actif' if api.get('statut') else 'bloquer')
                     )
                 
                 alert_wn("Le compte a ete modifier avec success")
                 self.show_frame('Home')
         
-        frame = Frame(container,name='frame_change')
+        frame = Frame(container,name='frame_change',background='skyblue')
+        var_login_id = StringVar(frame,name='var_login_id')
         var_role = StringVar(frame,name='var_role')
         var_addr = StringVar(frame,name='var_addr')
         var_noms = StringVar(frame,name='var_noms')
         var_tel = StringVar(frame,name='var_tel')
         var_email = StringVar(frame,name='var_email')
-        var_photo = StringVar(frame,name='var_photo')
+        #var_photo = StringVar(frame,name='var_photo')
 
         Label(frame,text="Modification d'un compte",font=('',29),pady=15,background='skyblue').pack()
 
@@ -301,14 +309,17 @@ class UserPage(Frame):
         Entry(f_mail,textvariable=var_email).pack(side='right')
         f_mail.pack()
 
-        f_photo = Frame(frame,background='skyblue')
-        Label(f_photo,text="Photo : ",font=('',15),background='skyblue').pack(side='left')
-        Button(f_photo,text='parcourir').pack(side='right') #   parcourir nest pas implementer
-        Entry(f_photo,textvariable=var_photo,state='readonly').pack(side='right')
+        #f_photo = Frame(frame,background='skyblue')
+        #Label(f_photo,text="Photo : ",font=('',15),background='skyblue').pack(side='left')
+        #Button(f_photo,text='parcourir').pack(side='right') #   parcourir nest pas implementer
+        #Entry(f_photo,textvariable=var_photo,state='readonly').pack(side='right')
         
-        f_photo.pack()
-
-        Button(frame,text="Modifier",command=ret,font=('',15),pady=15,width=25).pack()
+        #f_photo.pack()
+        
+        f3 = Frame(frame,background='skyblue')
+        Button(f3,text="Modifier",command=ret,pady=10,padx=10,width=10).pack(side='left')
+        Button(f3,text='Annuler',padx=10,pady=10,width=15,command=lambda: self.show_frame('Home')).pack(side='right')
+        f3.pack(side='bottom',padx=10,pady=10)
         
         return frame
 
@@ -330,7 +341,7 @@ class UserPage(Frame):
         
         frame = Frame(container,name='frame_resetpasswd',background='skyblue')
         
-        var_user_id = StringVar(frame,name='var_user_id')
+        var_login_id = StringVar(frame,name='var_login_id')
 
         var_passwd = StringVar(frame,name='var_passwd')
         var_confim_passwd = StringVar(frame,name='var_confirm_passwd')
@@ -343,7 +354,12 @@ class UserPage(Frame):
         Label(f2,text="Confirmer le :",background='skyblue').pack(side='left')
         Entry(f2,textvariable=var_confim_passwd,show='*').pack(side='right')
         f2.pack()
-        Button(frame,text='Envoyer',padx=10,pady=10,width=15,command=ret).pack()
+        
+        f3 = Frame(frame,background='skyblue')
+        Button(f3,text='Envoyer',padx=10,pady=10,width=15,command=ret).pack(side='left')
+        Button(f3,text='Annuler',padx=10,pady=10,width=15,command=lambda: self.show_frame('Home')).pack(side='right')
+        f3.pack(side='bottom',padx=10,pady=10)
+        
         
         return frame
 

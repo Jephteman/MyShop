@@ -85,7 +85,6 @@ def reset_passwd():
         valide_data(param)
 
         cookie = request.cookies.to_dict()
-        
         instance = environment.get('instance')
         config = environment.get('configurations')
         res = Users(instance,config=config,cookie=cookie).reset_passwd(param)
@@ -132,7 +131,6 @@ def add(ressource):
         param['date'] = get_timestamp()
 
         valide_data(param)
-
         cookie = request.cookies.to_dict()
         instance = environment.get('instance')
         config = environment.get('configurations')

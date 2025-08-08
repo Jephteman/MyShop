@@ -1,12 +1,28 @@
 import tkinter as tk
 from .fenetres import *
 from .gestion import *
-from .utils import *
 from .admin_windows import *
+from .utils import *
 
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
+        img_name = setting.get('logo')
+        
+        if img_name and pathlib.Path(img_name).exists():
+            img_file = img_name
+        else:
+            try:
+                img_file = pkg_resources.resource_filename('myshop','myshop_client/logo.gif')
+            except ModuleNotFoundError:
+                img_file = pathlib.Path(__file__).parent.joinpath('logo.gif')
+            except Exception as e:
+                alert_wn(e)
+
+        img = Image.open(img_file)
+        photo = ImageTk.PhotoImage(img)
+        self.iconphoto(False,photo)
+        
         # Conteneur principal
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
@@ -28,7 +44,6 @@ class App(tk.Tk):
         elif not temp_setting.get('is_login') == 'yes':
             self.show_frame('LoginPage')
         else:
-            #self.config(menu=menuBar,background='skyblue')
             self.islogin()
             self.show_frame("VentePage")
     
@@ -59,7 +74,6 @@ class App(tk.Tk):
         menu_gestion.add_command(label="Arrivage",command=lambda : self.show_frame('ArrivagePage'))
         menu_gestion.add_command(label="Stock",command=lambda : self.show_frame('StockPage'))
         menu_gestion.add_command(label="Clients",command=lambda : self.show_frame('ClientPage'))
-        # menu_gestion.add_command(label="Actualiser",command=self.actualiser)
         menu.add_cascade(menu=menu_gestion,label="Gestion")
 
         #       menu  administrationmenu_outils

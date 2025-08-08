@@ -63,7 +63,6 @@ class Users:
         
     def add(self,data):
         data['login_id'] = data.get('user_id')
-        
         if not self.is_login():
             data['message'] = f"une tentative interdite de creation d'un utiliateur"
             Logsdb(self.db_instance).add(data)
@@ -72,7 +71,6 @@ class Users:
             data['message'] = f"une tentative de creation d'un compte par {self.user_info.get('username')}"
             Logsdb(self.db_instance).add(data)
             raise PermissionException(f"Vous ne pouvez pas creer ce compte")
-
         r_login = Loginsdb(self.db_instance,config=self.config).add(data)
         data['login_id'] = r_login.get('login_id')
 
@@ -145,7 +143,7 @@ class Users:
         
         try:
 
-            Loginsdb(self.db_instance).reset_passwd(data)
+            Loginsdb(self.db_instance,config=self.config).reset_passwd(data)
 
             data['message'] = f"une modification du mdp par l'utilisateur {self.user_info.get('username')} sur l'utilisateur {data.get('login_id')} "
             Logsdb(self.db_instance).add(data)

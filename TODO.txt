@@ -1,10 +1,9 @@
-- [ ] changer de protocole de hashage pour la comparaison du mot de passe
 - [ ] Optimser le code
 - [ ] documenter l'interface graphique
-- [ ] capturer les exceptions coté serveur(add, renvoi une exception si la contraite d'unisité nest pas respecter)
+- [] j rencontre un soucis avec PlaceholderEntry:,; j'arrive pas à combler le cas d'utisation qui est le mien 
 
-    formantage de la facture
-    
-	Dans gestion(inventaire), j ne sais prq la variable du placeholderentry ne fait pas ce qui coder 
+- [] ameliorer le graphiqe
+- [] revoir l generation de graphiqe
 
-- [ ] modifier la db (ajouter le champ date qui contient le timestamp) dans le table Promotion, Login
+- [] App pour le scan
+- [] App pour l'administration a distance

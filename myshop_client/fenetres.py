@@ -138,9 +138,10 @@ class ClientPage(Frame):
                     data.get('telephone')
                 )
                 tab.insert('','end',iid=i_,values=p)
-                temp_index.append(i_)
+                self.temp_index.append(i_)
         
         frame = Frame(container,name='frame_add',background='skyblue')
+        Label(frame,text="Insertion d'un client",padx=15,pady=15,font=('',15),background='skyblue').pack()
         noms = StringVar(frame,name='var_noms')
         addr = StringVar(frame,name='var_addr')
         tel = StringVar(frame,name='var_tel')
@@ -149,11 +150,12 @@ class ClientPage(Frame):
         mail = StringVar(frame,name='var_mail')
         r_client = StringVar(frame,name='var_r_client')
 
-        f1 = Frame(frame,padx=15,pady=15,background='skyblue')
-        Label(f1,text="Noms : ",padx=8,font=('',15),background='skyblue').pack(side='left')
-        Entry(f1,textvariable=noms).pack(side='right')
-        f1.pack()
-
+        PlaceholderEntry(frame,textvariable=noms,placeholder="Nom du client").pack()
+        PlaceholderEntry(frame,textvariable=tel,placeholder="Numero de telephone").pack()
+        PlaceholderEntry(frame,textvariable=r_client,placeholder="Code du parrain (facultatif)").pack()
+        PlaceholderEntry(frame,textvariable=addr,placeholder='Addresse ').pack()
+        PlaceholderEntry(frame,textvariable=mail,placeholder="Adresse mail").pack()
+        
         f1 = Frame(frame,padx=15,pady=15,background='skyblue')
         Label(f1,text="Sexe : ",padx=8,font=('',15),background='skyblue').pack(side='left')
         ttk.Combobox(f1,textvariable=sexe,values=['M','F'],validate='focusin').pack(side='right')
@@ -163,26 +165,6 @@ class ClientPage(Frame):
         Label(f1,text="Type : ",padx=8,font=('',15),background='skyblue').pack(side='left')
         ttk.Combobox(f1,textvariable=type_,values=['Detaillant','Grossiste'],validate='focusin').pack(side='right')
         f1.pack()
-
-        f2 = Frame(frame,padx=15,pady=15,background='skyblue')
-        Label(f2,text="Adresse : ",padx=8,font=('',15),background='skyblue').pack(side='left')
-        Entry(f2,textvariable=addr).pack(side='right')
-        f2.pack()
-
-        f3 = Frame(frame,padx=15,pady=15,background='skyblue')
-        Label(f3,text="Code parrain : ",padx=8,font=('',15),background='skyblue').pack(side='left')
-        Entry(f3,textvariable=r_client).pack(side='right')
-        f3.pack()
-
-        f5 = Frame(frame,padx=15,pady=15,background='skyblue')
-        Label(f5,text="Telephone : ",padx=8,font=('',15),background='skyblue').pack(side='left')
-        Entry(f5,textvariable=tel).pack(side='right')
-        f5.pack()
-
-        f6 = Frame(frame,padx=15,pady=15,background='skyblue')
-        Label(f6,text="Email : ",padx=8,font=('',15),background='skyblue').pack(side='left')
-        Entry(f6,textvariable=mail).pack(side='right')
-        f6.pack()
         
         f7 = Frame(frame,padx=15,pady=15,background='skyblue')
         Button(f7,text="Enregistrer",command=ret,font=('',15)).pack(side='left')
@@ -312,7 +294,6 @@ class VentePage(Frame):
         client_id = StringVar(frame,name='var_client_id')
         
         ## ces variables sont utiliser pour sauvegarder les entrees utilisateur
-        var_date = StringVar(frame,name='var_date',value=time.strftime("%Y-%m-%d:%H:%M:%S"))
         var_marchandise = StringVar(frame,name='var_marchandise')
         var_piece = IntVar(frame,name='var_piece',value=1)
         var_prix = StringVar(frame,name='var_prix')
@@ -320,20 +301,10 @@ class VentePage(Frame):
        
         # le frame de gauche qui contient la liste
         f_left = Frame(frame,width=20,padx=15,pady=15,background='skyblue',name='frame_gauche')
- 
-        f4 = Frame(f_left,background='skyblue')
-        Label(f4,text="Date :",border='5',background='skyblue').pack(side='left')
-        Label(f4,textvariable=var_date,background='skyblue').pack(side='right')
-        f4.pack()
-
-        #f5 = Frame(f_left,background='skyblue')
-        #Label(f5,text="Nom du vendeur  :",border='5').pack(side='left')
-        #Label(f5,text=temp_setting.get('username')).pack(side='right')
-        #f5.pack()
 
         f6 = Frame(f_left,background='skyblue')
         Label(f6,text="Id du client  :",border='5',background='skyblue').pack(side='left')
-        Entry(f6,textvariable=client_id).pack(side='left')
+        PlaceholderEntry(f6,textvariable=client_id,placeholder="ex : 0991374833").pack(side='left')
         f6.pack()
 
         f7 = Frame(f_left,background='skyblue')
@@ -456,7 +427,6 @@ class VentePage(Frame):
     def annul_fonc(self):
         """anulle le entrees utulisateur"""
         clean_variable(self.frames['Home'])
-        self.frames['Home'].setvar('var_date',time.strftime("%Y-%m-%d:%H:%M:%S"))
         self.frames['Home'].setvar('var_piece','1')
         self.tmp_march.clear()
         

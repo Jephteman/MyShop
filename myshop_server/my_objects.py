@@ -56,7 +56,7 @@ class PromotionObject(ModelObject):
     def __init__(self, param = {}):
         super().__init__(
             ['promotion_id','label','produits_ids',
-            'date_depart','date_fin','reduction','description'],
+            'date_depart','date_fin','reduction','description','date'],
             param
         )
 
@@ -163,7 +163,7 @@ class LoginObject(ModelObject):
     """
     def __init__(self, param = {}):
         super().__init__(
-            ['login_id','username','password','role','statut'],param
+            ['login_id','username','password','role','statut','date'],param
         )
 
     def __repr__(self):

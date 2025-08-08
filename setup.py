@@ -8,7 +8,7 @@ setup(
     author_email='tech5industrie@gmail.com',
     packages=find_packages(),
     package_data={
-         'myshop':['myshop_server/.env']
+         'myshop':['myshop_server/.env','myshop_client/logo.ico']
     },
     include_package_data=True,
     requires=[

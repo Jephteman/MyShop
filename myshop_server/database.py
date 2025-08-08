@@ -111,6 +111,7 @@ class Loginsdb():
                     username char(32) unique not null,
                     password char(64) not null,
                     role char(8) not null,
+                    creation_date date datetime,
                     statut integer(1) not null default 1)
                 """.format(instance.autoincrement)
                 cursor.execute(text(query))
@@ -136,14 +137,13 @@ class Loginsdb():
         return idt
     
     def reset_passwd(self,param):
-        param = my_objects.LoginObject(param)
+        param.update(my_objects.LoginObject(param))
         salt = self.config.get('salt')
         if not param.get('password','invalid1') == param.get('confirm_password','invalid'):
             raise MessagePersonnalise('les mots des passes doivent etre identiques')
         
         param['password'] = sha256(bytes(salt+param['password'],'utf-8')).hexdigest()
         param['confirm_password'] = sha256(bytes(salt+param['confirm_password'],'utf-8')).hexdigest()
-
         with self.instance.cursor() as cursor:
             query = """
                 update Logins set password = :password where login_id = :login_id
@@ -159,15 +159,14 @@ class Loginsdb():
         param['password'] = sha256(param['password']).hexdigest()
         with self.instance.cursor() as cursor:
             query = """
-                insert into Logins(username,password,role) 
-                values(:username,:password,:role) returning login_id,username,role,statut
+                insert into Logins(username,password,role,creation_date) 
+                values(:username,:password,:role,:date) returning login_id,username,role,statut;
                 """
         
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
 
             cursor.commit()
-        
         return data
 
     def change(self,param):
@@ -249,7 +248,7 @@ class Sessionsdb():
             cursor.commit()
         info = {}
         info.update({'cookie':{'token':param['token']}})
-        need = ['logo','description','boutique','contact']
+        need = ['logo','description','boutique','contact','telephone','address','remerciement','slogan']
         for i in need:
             value = self.db_instance.settings.get(i)
             info.update({i:value})
@@ -914,6 +913,7 @@ class Promotionsdb:
                     produits_ids Text,
                     date_depart datetime,
                     date_fin datetime,
+                    creation_date datetime,
                     reduction int(3),
                     description Text)
                     """.format(self.instance.autoincrement)
@@ -928,8 +928,8 @@ class Promotionsdb:
         param['produits_ids'] = JSONEncoder().encode(param.get('produits_ids',[]))
         with self.instance.cursor() as cursor:
             query = """
-                insert into Promotions(label,produits_ids,date_depart,date_fin,reduction,description) 
-                values (:label,:produits_ids,:date_depart,:date_fin,:reduction,:description) returning * 
+                insert into Promotions(label,produits_ids,date_depart,date_fin,reduction,description,creation_date) 
+                values (:label,:produits_ids,:date_depart,:date_fin,:reduction,:description,:date) returning * 
                 """
             for i in cursor.execute(text(query),param):
                 d = i._asdict()
