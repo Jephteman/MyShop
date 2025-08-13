@@ -21,7 +21,8 @@ class PlaceholderEntry(Entry):
             self.delete(0,END)
 
     def fill_placeholder(self):
-        if not super().get():
+        content = self.get()
+        if not content:
             self.config(show='')
             self.config(fg=self.fg_placeholder)
             self.insert(0, self.placeholder)

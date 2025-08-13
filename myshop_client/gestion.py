@@ -875,7 +875,7 @@ class PromotionPage(Frame):
         add_entry = StringVar(frame,name='var_add_entry')
         
         name = StringVar(frame,name='var_name')
-        reduction = IntVar(frame,name='var_reduction',value=0)
+        reduction = StringVar(frame,name='var_reduction')
         date_f = StringVar(frame,name='var_date_f')
         date_d = StringVar(frame,name='var_date_d')
         

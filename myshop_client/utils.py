@@ -754,8 +754,8 @@ class ParametrePage(Frame):
         
         self.list_var = {
             'url':'str','proxy':'str',
-            'theme':'choice',
-            'auto_login':'radio_bouton'
+            #'theme':'choice',
+            #'auto_login':'radio_bouton'
             }
         
         # Création des différentes frames
@@ -791,7 +791,7 @@ class ParametrePage(Frame):
                 Radiobutton(f_,text='NON',variable=v,value='NON').pack(side='left')
             f_.pack(padx=5,pady=5)
 
-        Button(f_dev,text='imprimantes',width=15,command=self.printer).pack()
+        #Button(f_dev,text='imprimantes',width=15,command=lambda : self.printer).pack()
 
         f_dev.pack()
 
