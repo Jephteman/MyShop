@@ -2,9 +2,10 @@ myshop/__pycache__/
 dist/
 build/
 myshop.e*
+myshop.db
 myenv/
-.*.txt
 *.pyc
-gui/__pycache__/
 design/
 test/
+runtest*.py
+.vscode/

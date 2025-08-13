@@ -37,6 +37,10 @@
 #### Serveur
 _____________
 1. Ouvrez le terminal et tapez la commande ``myshop serveur``
+<center>
+    ![config image 1](img/capture_confi_local_1.PNG)
+    ![config image 2](img/capture_confi_local_2.PNG)
+</center>
 ![Logo](img/capture_confi_local_1.PNG)
 ![Logo](img/capture_confi_local_2.PNG)
 

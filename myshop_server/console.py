@@ -1,14 +1,10 @@
+
 import argparse
-from .gui import main as gui
-from .serveur import wsgi as server
+from . import wsgi as server
 
 def main():
     parser = argparse.ArgumentParser(description="Programme facilitant la gestion du stock d'une boutique")
-    parser.add_argument(
-        "instance",
-        help="L'insatance que vous voulez lancer. Soit le serveur ou le clien",
-        choices=['client','serveur'],
-    )
+ 
     parser.add_argument(
         "--host",
         default='localhost',
@@ -26,12 +22,7 @@ def main():
     )
 
     args = parser.parse_args()
-    if args.instance == 'client':
-        gui.run(args)
-    elif args.instance == 'serveur':
-        server.run(args)
-    else:
-        parser.error("Le paramete que vous avez donner n'est pas pris en charge")
+    server.run(args)
 
 if __name__ == '__main__':
     main()

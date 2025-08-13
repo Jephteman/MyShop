@@ -41,11 +41,11 @@ python3 setup.py install
 suivant que l'on veut exécuter le serveur ou le client
 si on veut lancer le client 
 ```
-myshop client
+myshop_client
 ```
 si on veut lancer le serveur 
 ```
-myshop serveur
+myshop_serveur
 ```
 mais une bonne chose à faire serait de faire lancer le serveur par un script qui s'exécute automatiquement après le démarrage de l'ordinateur 
     

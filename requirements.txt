@@ -1,6 +1,7 @@
-Flask>=2.0.0
-SQLAlchemy>=1.4.0
-configparser>=5.0.0
-matplotlib>=3.4.0
-reportlab>=3.6.0
-setuptools>=58.0.0
+Flask
+SQLAlchemy
+configparser
+matplotlib
+reportlab
+setuptools
+waitress
