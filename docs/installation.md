@@ -41,6 +41,8 @@ _____________
     ![config image 1](img/capture_confi_local_1.PNG)
     ![config image 2](img/capture_confi_local_2.PNG)
 </center>
+![Logo](img/capture_confi_local_1.PNG)
+![Logo](img/capture_confi_local_2.PNG)
 
     (1) Le mode de connection correspond au type de connection de l'API à la base de donnée.
 

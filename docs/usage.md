@@ -9,15 +9,12 @@ Par defaut, il s'agit de : <br>
 
    - Nom d'utilisateur : MyShop
 
-   - Mot de passe : MyShop 
-<center>
+   - Mot de passe : MyShop
+     
     ![client image 1](img/client_login.PNG)
-</center>
 
 Après vous etre bien identifier avec des identifiants valides vous serait alors diriger vers cette page
-<center>
-    ![client image home](img/home.PNG)
-</center>
+![client image home](img/home.PNG)
 
 
 ### Serveur (API)
