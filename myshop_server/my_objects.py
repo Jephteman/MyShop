@@ -34,6 +34,18 @@ class CookieObject(ModelObject):
     def __repr__(self):
         return f"<Cookie token={self.get('token')}'>"
 
+class NotificatiionObject(ModelObject):
+    """
+    Une classe héritant de dict pour représenter une notification de la table Notifications.
+    Permet une sérialisation facile et un accès par attribut.
+    """
+    def __init__(self, param):
+        super().__init__(
+            ['notification_id','message','niveau','date'],
+            param
+        )
+    def __repr__(self):
+        return f"<Notification id={self.get('note_id')}'>"
 
 class NoteObject(ModelObject):
     """

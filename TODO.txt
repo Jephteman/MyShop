@@ -2,8 +2,6 @@
 - [ ] documenter l'interface graphique
 - [] j rencontre un soucis avec PlaceholderEntry:,; j'arrive pas à combler le cas d'utisation qui est le mien 
 
-- [] ameliorer le graphiqe
-- [] revoir l generation de graphiqe
 
 - [] App pour le scan
 - [] App pour l'administration a distance

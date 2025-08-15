@@ -5,7 +5,7 @@ from .utils import *
 # regroupe les differentes ressources qui sont disponibles dans le backend
 list_db = {
     'Logs':Logsdb,'Logins':Loginsdb,'Sessions':Sessionsdb,'Users':Loginsdb,'Notes':Notesdb,
-    'Clients':Clientsdb,'Categories':Categoriesdb,'Promotions':Promotionsdb,
+    'Clients':Clientsdb,'Categories':Categoriesdb,'Promotions':Promotionsdb,'Graphiques':Graphique,
     'Produits':Produitsdb,'Ventes':Ventesdb,'Arrivages':Arrivagesdb,'Agents':Agentsdb
     }
 
@@ -219,7 +219,7 @@ class ModeleDB :
         if not is_permited(self.user.user_info['role'],f'{self.namedb}.get'):
             param['message'] = f"Une tentative interdite d'access a la ressource '{self.namedb}' numero {param.get(id_)}"
             Logsdb(self.db_instance).add(param)
-            raise PermissionException(f"Vous ne pouvez pas a la resource {self.namedb.lower()}")
+            raise PermissionException(f"Vous ne pouvez pas a la ressource {self.namedb.lower()}")
 
         try:
             data = list_db[self.namedb](self.db_instance).get(param)
@@ -322,6 +322,10 @@ class Notes(ModeleDB):
     """ Sert de couche d'abstraction pour communiquer avec notes """    
     namedb = 'Notes'
 
+class Graphiques(ModeleDB):
+    """ Sert de couche d'abstraction pour generer des graphiqque des ventes """    
+    namedb = 'Graphiques'
+
 def cleaner(instance:database,config={}):
     """
         S'occupe de faire le netoyage en arriere plan pour supprimmer les sessions invalides et d'autres actions
@@ -345,16 +349,17 @@ def initiale_action(instance:database,config={}): # effectue les actions d'initi
     Arrivagesdb(instance,first=True)
     Promotionsdb(instance,first=True)
     Notesdb(instance,first=True)
+    Noteficationsdb(instance,first=True)
     
     if not logins.all(): # cree le 1er compte sur le serveur
         p = {'username':'MyShop','password':'MyShop','role':'admin'}
-        print("[-] Creation du compte par defaut ")
         logins.add(p)
+        print("[-] Creation du compte par defaut ")
 
     if not clients.all(): # creation du 1er client (client par defaut)
         p = {'noms': 'Client par defaut','date':get_timestamp()}
-        print("[-] Creation du client par defaut ")
         clients.add(p)
+        print("[-] Creation du client par defaut ")
 
     ### d'autres actions
 

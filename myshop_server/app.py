@@ -1,12 +1,12 @@
-from flask import Flask, request
-from .backends import Logs, Sessions, Users, Agents, Clients, Categories, Notes, Produits, Ventes, Arrivages, Promotions, database, cleaner, initiale_action
+from flask import Flask, request, send_file
+from .backends import Logs, Sessions, Users, Agents, Clients, Categories, Notes, Produits, Ventes, Arrivages, Promotions, Graphiques, database, cleaner, initiale_action
 from .utils import * 
 
 app = Flask(__name__)
 
 list_ressource = {
     'logs':Logs,'sessions':Sessions,'users':Users,'agents':Agents,
-    'clients':Clients,'categories':Categories,'notes':Notes,
+    'clients':Clients,'categories':Categories,'notes':Notes,'graphiques':Graphiques,
     'produits':Produits,'ventes':Ventes,'arrivages':Arrivages,'promotions':Promotions
     }
 
@@ -19,7 +19,7 @@ def error(e:Exception):
     """
         S'occupe d'appeller la methode ^message^ de la classe de l'exception
     """
-    return e.message() if 'message' in dir(e) else str(e)
+    return e.message() if 'message' in dir(e) else str(e),302
 
 @app.errorhandler(404)
 def page_not_found(err):
@@ -28,6 +28,10 @@ def page_not_found(err):
     """
     m =  message(("page not found",404))
     return m
+
+@app.route('/logo')
+def get_logo():
+    return send_file('static/logo.png')
 
 @app.route('/api/v1/check_cookie',methods=['GET'])
 def check_cookie():
@@ -92,29 +96,7 @@ def reset_passwd():
         return error(e)
     else:
         return message(res)
-"""
-#@app.route('/api/v1/settings/<action>')
-def restore_setting(action):
-    try:
-        param = request.data.decode()
-        param = JSONDecoder().decode(param)
-        ##param =  serialise(param)
-        param['ip_addr'] = request.access_route[0]
-        param['action'] = f'{action}'
-        param['date'] = get_timestamp()
 
-        valide_data(param)
-
-        cookie = request.cookies.to_dict()
-        
-        instance = environment.get('instance')
-        config = environment.get('configurations')
-        req = Settingsdb(instance,config=config,cookie=cookie).do(action)
-    except Exception as e:
-        return error(e)
-    else:
-        return message(req)
-"""
 @app.route('/api/v1/<ressource>/add',methods=['POST'])
 def add(ressource):
     """

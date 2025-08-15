@@ -256,16 +256,12 @@ def selecteur_date(variable_name,frame_object):#,entry_object):
     """Fenetre pour permettre à l'utilisateur de fournir la date """
     def fermeture():
         frame_object.focus_set()
-        #if hasattr(entry_object,'fill_placeholder'):
-        #    entry_object.fill_placeholder()
         win.destroy()
         
     def valider_date():
         jour = frame.nametowidget('frame_jour.spin_jour').get()
         mois = frame.nametowidget('frame_mois.spin_mois').get()
         annee = frame.nametowidget('frame_annee.spin_annee').get()
-        #if hasattr(entry_object,'clear_box'):
-        #    entry_object.clear_box()
         frame_object.setvar(variable_name,f"{jour}/{mois}/{annee}")
         frame_object.focus_set()
         win.destroy()
@@ -591,6 +587,93 @@ class NotePage(Frame):
         except Exception as e:
             alert_wn(e)
 
+class NoticePage(Frame):
+    def __init__(self, parent, controller):
+        Frame.__init__(self, parent)
+        self.controller = controller
+        self.notifications = {}
+        
+        # Conteneur principal
+        container = Frame(self,background='skyblue')
+        container.pack(side="top", fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+        
+        # Dictionnaire pour stocker les frames
+        self.frames = {}
+        
+        # Création des différentes frames
+        for F in (self.Home,):
+            frame = F(container)
+            self.frames[F.__name__] = frame
+            frame.grid_rowconfigure(0, weight=1)
+            frame.grid_columnconfigure(0, weight=1)
+            frame.grid(row=0, column=0, sticky="nsew")
+        
+        self.show_frame('Home')
+        
+    def show_frame(self, cont):
+        """Affiche la frame demandée"""
+        frame = self.frames[cont]
+        frame.tkraise()
+        
+    def Home(self,contenair):
+        frame = Frame(contenair,name='frame_home',background='skyblue')
+        frame.bind('<Control-A>' or '<Control-a>',self.actualise)
+        Label(frame,text='Notifications',padx=5,pady=5,font=('',13),background='skyblue').pack()
+        
+        f1 = Frame(frame,padx=3,pady=3,background='skyblue',name='body')
+        tab = ttk.Treeview(f1,columns=('id','message','niveau','date'),name='tableau')#,height=30)  # frame.nametowidget('tableau') # frame.insert
+        tab.heading('id',text="Id")
+        tab.heading('message',text="Message")
+        tab.heading('niveau',text="Niveau")
+        tab.heading('date',text="Date")
+
+        tab['show'] = 'headings'
+
+        sc = Scrollbar(f1,command=tab.yview)
+        sc.pack(side="right",fill=Y)
+
+        tab.configure(yscrollcommand=sc.set)
+        
+        tab.pack(fill="both", expand=True,pady=5,padx=5)
+
+        f1.pack(fill="both", expand=True,pady=5,padx=5)
+
+        f2 = Frame(frame,background='skyblue',name='bottom')
+
+        #Button(f2,text='Voir',padx=4,pady=4,command=lambda : self.show_frame('See'),width=10).pack(side='left')
+        Button(f2,text='Supprimer',padx=4,pady=4,command=self.delete,width=10).pack(side='right')
+
+        f2.pack(side='bottom')
+            
+        return frame
+
+    def actualise(self):
+        tab = self.frames['Home'].nametowidget('body.tableau')
+        try:
+            api = API(setting.get('url'),'notifications',cookie=temp_setting.cookie)
+            self.notes.update(api.all())
+        except Exception as e:
+            alert_wn(e)
+        
+        for i , data in self.notifications.items():
+            n_id = str(data.get('notification_id'))
+            p = (n_id,data.get('message'),data.get('niveau'),data.get('date'))
+            if not tab.exists(int(n_id)):
+                tab.insert('','end',iid=n_id,values=p)
+
+    def delete(self):
+        try:
+            tab = self.frames['Home'].nametowidget('body.tableau')
+            id_ = tab.selection()[0]
+            api = API(setting.get('url'),'notifications',cookie=temp_setting.cookie)
+            api.delete(id_)
+            
+            tab.delete(id_)
+            self.notifications.pop(id_)
+        except Exception as e:
+            alert_wn(e)
 
 class Graphique:
     def __init__(self):
@@ -603,19 +686,43 @@ class Graphique:
         self.window.resizable(False,False)
         
         # en-tete  
-        self.origine = StringVar()
-        self.fin = StringVar()
-        self.path = StringVar()
+        self.origine = StringVar(name='var_origine')
+        self.fin = StringVar(name='var_fin')
+        self.path = StringVar(name='var_path')
+        self.type_ = StringVar(name='var_type')
+        self.diag_form = StringVar(name='var_diag_form')
+        graphic_type = (
+            'date2n_vente',
+            'client2n_vente',
+            'produit2n_vente',
+            'vendeur2n_vente'
+        )
+        diagram_type = (
+            'baton',
+            'circulaire',
+            'courbe'
+        )
 
         Label(self.window,text="Graphique",font=('',15),background='skyblue').pack()
 
+        f1 = Frame(self.window,padx=15,pady=15,background='skyblue')
+        Label(f1,text="Type : ",padx=8,font=('',15),background='skyblue').pack(side='left')
+        ttk.Combobox(f1,textvariable=self.type_,values=graphic_type,validate='focusin').pack(side='right')
+        f1.pack()
+
+        f2 = Frame(self.window,padx=15,pady=15,background='skyblue')
+        Label(f2,text="Diagramme : ",padx=8,font=('',15),background='skyblue').pack(side='left')
+        ttk.Combobox(f2,textvariable=self.diag_form,values=diagram_type,validate='focusin').pack(side='right')
+        f2.pack()
+
+
         f1 = Frame(self.window,background='skyblue')
         entry1 = PlaceholderEntry(f1,textvariable=self.origine,placeholder='A partir du ')
-        entry1.bind('<FocusIn>', lambda event: selecteur_date(self.origine,f1,entry1)) 
+        entry1.bind('<FocusIn>', lambda event: selecteur_date('var_origine',self.window)) 
         entry1.pack(side='left')
         
         entry2 = PlaceholderEntry(f1,textvariable=self.fin, placeholder='Au')
-        entry2.bind('<FocusIn>', lambda event: selecteur_date(self.fin,f2,entry2)) 
+        entry2.bind('<FocusIn>', lambda event: selecteur_date('var_fin',self.window)) 
         entry2.pack(side='right')
         f1.pack()
 
@@ -635,36 +742,32 @@ class Graphique:
 
             param = None
             if from_ and to:
-                param = {'from':from_,'to':to,"isform":True}
+                param = {'from':from_,'to':to,"isform":True,'graphe_fonction':self.type_.get()}
 
-            api = API(setting.get('url'),'ventes',cookie=temp_setting.cookie)
+            api = API(setting.get('url'),'graphiques',cookie=temp_setting.cookie)
             data_raw = api.all(param=param)
         except IndentationError as e:
             alert_wn(e)
-        else:
-            self.window.destroy()
-            dates = {}
-            quantite = []
-            for i , d in data_raw.items() :
-                date = datetime.datetime.strptime(d.get('date').split(' ')[0],"%Y-%m-%d")
-                if not date in dates.keys():
-                    dates.update({date:0})
-
-                dates[date] += 1
-            
+        else:                        
             file_save = self.path.get()
-
-            plt.plot(dates.keys(),dates.values())
-            plt.xlabel("Dates")
-            plt.ylabel("Nombres")
+            diagram_type = self.diag_form.get()
+            if diagram_type == 'circulaire':
+                plt.pie(data_raw.values(),label=data_raw.keys())
+            elif diagram_type == 'baton':
+                plt.bar(data_raw.keys(),data_raw.values())
+            else: # dans le cas des courbes
+                xlabel = self.type_.get().capitalize().split(sep='2')[0]
+                plt.plot(data_raw.keys(),data_raw.values())
+                plt.xlabel(xlabel)
+                plt.ylabel("Nombres de vente")
+            
             plt.title("Graphique des ventes")
-            plt.gcf().autofmt_xdate()
+            #plt.gcf().autofmt_xdate()
 
             try:
                 plt.savefig(file_save,format='pdf',bbox_inches='tight',)
-            except IndentationError :
+            except Exception as e :
                 alert_wn("Une ereur s'est produite")
-                #plt.close()
             else:
                 self.window.destroy()
                 alert_wn("Le graphique est generer avec success")
@@ -736,7 +839,6 @@ class Exporte:
                 writer.writeheader()
                 writer.writerows(serilise_data)
             alert_wn('Donnees exportees avec success')
-
 
 class ParametrePage(Frame):
     def __init__(self, parent, controller):
@@ -830,7 +932,6 @@ class ParametrePage(Frame):
             save_cookie()
         setting.save()
         self.quit()
-
 
 class Printer:
     def __init__(self,data):

@@ -68,7 +68,8 @@ def is_permited(role: str, action: str) -> bool:
             'Ventes': ['all', 'get', 'add', 'change', 'delete'],
             'Promotions': ['all', 'get', 'add', 'change', 'delete'],
             'Notes': ['all', 'get', 'add', 'change', 'delete'],
-            'Settings': ['all', 'get', 'add', 'change', 'delete']
+            'Settings': ['all', 'get', 'add', 'change', 'delete'],
+            'Graphiques':['all']
         },
         'moniteur': {
             "Logs": ['all'],
@@ -76,7 +77,8 @@ def is_permited(role: str, action: str) -> bool:
             'Produits': ['all'],
             'Users': ['all'],
             'Promotions': ['all'],
-            'Notes': ['all']
+            'Notes': ['all'],
+            'Graphiques':['all']
         }
     }
 

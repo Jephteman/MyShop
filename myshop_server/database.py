@@ -10,13 +10,9 @@ class database:
         self.settings = settings
 
     def check(self):
-        try:
-            self.db.connect()
-        except Exception as e: 
-            raise Exception(e)
-        else:
-            self.db.close()
-            return True    
+        self.db.connect()
+        self.db.close()
+        return True    
 
     def connect(self):
         net = self.settings.get('connection_type','local')
@@ -167,6 +163,7 @@ class Loginsdb():
                 data.update(i._asdict())
 
             cursor.commit()
+        Noteficationsdb(self.instance,config=self.config).add({'message':f"Création de l'utilisateur {param.get('username'),'niveau':'information'}"})
         return data
 
     def change(self,param):
@@ -220,6 +217,7 @@ class Loginsdb():
 class Sessionsdb():
     def __init__(self,instance:database,first=False,config={}):
         self.db_instance = instance
+        self.config = config
         if first:
             with self.db_instance.cursor() as cursor:
                 query ="""
@@ -248,11 +246,12 @@ class Sessionsdb():
             cursor.commit()
         info = {}
         info.update({'cookie':{'token':param['token']}})
-        need = ['logo','description','boutique','contact','telephone','address','remerciement','slogan']
+        need = ('description','boutique','contact','telephone','address','remerciement','slogan')
         for i in need:
             value = self.db_instance.settings.get(i)
             info.update({i:value})
         info.update({'username':param.get('username')})
+        Noteficationsdb(self.db_instance,config=self.config).add({'message':f"Connection de l'utilisateur {param.get('username'),'niveau':'information'}"})
         return info
     
     def all(self,param:dict={}):
@@ -857,7 +856,8 @@ class Arrivagesdb:
                 """
             cursor.execute(text(query),param)
             cursor.commit()
-        
+        Noteficationsdb(self.instance).add({'message':f"Arrivage du produit n° {param.get('produit_id'),'niveau':'information'}"})
+
         return data
 
     def all(self,param:dict={}):
@@ -945,7 +945,7 @@ class Promotionsdb:
                 data.update(d)
         
             cursor.commit()
-        
+        Noteficationsdb(self.instance).add({'message':f"Création de la promotion {param.get('label'),'niveau':'information'}"})
         return data
 
     def delete(self,param):
@@ -1122,3 +1122,137 @@ class Notesdb:
     def change(self,param):
         raise MessagePersonnalise('Fonctionnalité non implémentée')
 
+class Noteficationsdb:
+    def __init__(self,instance:database,first=False,config={}):
+        self.instance = instance
+        if first:
+            with self.instance.cursor() as cursor:
+                query = """
+                    create table if not exists Notifications(
+                    notification_id integer primary key {},
+                    niveau varchar(32),
+                    date datetime,
+                    message Text)
+                    """.format(self.instance.autoincrement)
+                cursor.execute(text(query))
+                #cursor.execute(text("create index if not exists idx_notication on Notes(sujet)"))
+                cursor.commit()
+            
+    def add(self,param):
+        data = {}
+        param = my_objects.NoteObject(param)
+        with self.instance.cursor() as cursor:
+            query = """
+                insert into Notifications(message,niveau,date) 
+                values (:message,:niveau,:date) returning * 
+                """
+            for i in cursor.execute(text(query),param):
+                data.update(i._asdict())
+            cursor.commit()
+        
+        return data
+
+    def delete(self,param):
+        param = my_objects.NotificatiionObject(param)
+        with self.instance.cursor() as cursor:
+            query = """delete from Notes where notification_id == :notification_id """
+            cursor.execute(text(query),param)
+            cursor.commit()
+        
+    def all(self,param={}):
+        param.update(my_objects.NoteObject(param))
+        data = {}
+        with self.instance.cursor() as cursor:
+            query = """
+                select * from Notifications 
+                """
+            if param.get('isreport'):
+                param['from'] = to_date(param.get('from'))
+                param['to'] = to_date(param.get('to'))
+                query += " and date between date(:from) and date(:to) "
+            for i in cursor.execute(text(query),param):
+                d = i._asdict()
+                data[d.get('note_id')] = d
+
+        return data
+    
+    def get(self,param):
+        param = my_objects.NoteObject(param)
+        d = {}
+        with self.instance.cursor() as cursor:
+            query = """
+                select * from Notifications notification_id == :notification_id
+                """
+            for i in cursor.execute(text(query),param):
+                d.update(i._asdict())
+    
+        return d
+    
+    def change(self,param):
+        raise MessagePersonnalise('Fonctionnalité non implémentée')
+
+class Graphique:
+    def __init__(self,instance:database,config={}):
+        self.instance = instance
+        self.config = config
+
+    def all(self,param):
+        format = param.get('graphe_fonction')
+        support_format = [
+        'date2n_vente',
+        'client2n_vente',
+        'produit2n_vente',
+        'vendeur2n_vente'
+        ]
+        if not format in support_format:
+            raise MessagePersonnalise("Le format de graphique n'est oas supporté")
+
+        items_vente_dict = {}
+        
+        for id_ , values in Ventesdb(self.instance,config=self.config).all(param).items():
+            if format == 'date2n_vente':
+                discriminant = self.model_date(values.get('date'),param.get('date_fonction','day2day'))
+            elif format == 'client2n_vente':
+                discriminant = values.get('client_id')
+            elif format == 'vendeur2n_vente':
+                discriminant = values.get('vendeur')
+            elif format == 'produit2n_vente':
+                discriminant = 'produit_'
+
+            if discriminant != 'produit_':
+                if not discriminant in items_vente_dict.keys():
+                    items_vente_dict.update({discriminant:0})
+                items_vente_dict[discriminant] += 1
+                continue
+
+            for p_name, quantite_prix in values.get('maarchandises').items():
+                items_vente_dict[p_name] += quantite_prix[0]
+
+        return items_vente_dict
+    
+    def get(self,param):
+        raise MessagePersonnalise('Fonctionnalité non implémentée') 
+    
+    def model_date(self,date, format): 
+        date = date.split(sep=' ')[0]
+        support_format = [
+            'day2day',
+            'month2month'
+        ]
+        if not format in support_format:
+            raise MessagePersonnalise("Le format de date n'est pas pris en charge")
+
+        if format == 'day2day':
+            return date
+        if format == 'month2month':
+            return date[:-3]
+        
+    def add(self,param):
+        raise MessagePersonnalise('Fonctionnalité non implémentée') 
+    
+    def change(self,param):
+        raise MessagePersonnalise('Fonctionnalité non implémentée') 
+    
+    def delete(self,param):
+        raise MessagePersonnalise('Fonctionnalité non implémentée') 
+    
