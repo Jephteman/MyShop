@@ -428,13 +428,13 @@ class VentePage(Frame):
         """anulle le entrees utulisateur"""
         clean_variable(self.frames['Home'])
         self.frames['Home'].setvar('var_piece','1')
-        self.tmp_march.clear()
         
         lc_temp = self.frames['Home'].nametowidget('frame_gauche.frame_tableau_panier.tableau_panier')
 
         for i in self.tmp_march.keys():
             lc_temp.delete(i)
 
+        self.tmp_march.clear()     
 
     def insert_tab(self):
         l_march = self.frames['Home'].nametowidget('frame_gauche.frame_list.list_march')
@@ -537,6 +537,8 @@ class VentePage(Frame):
             data = self.ventes.get(int(id_))
         except IndexError:
             alert_wn("Veillez d'abord selectionner")
+        except Exception as e:
+            alert_wn(e)
         else:
             Printer(data)
 

@@ -132,7 +132,6 @@ class InventairePage(Frame):
                 item = lc.insert('','end',iid=info.get('vente_id'),values=p)
                 self.exist_item.append(item)
 
-
 class StockPage(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
@@ -167,16 +166,21 @@ class StockPage(Frame):
             clean_variable(frame)
         if action:
             tab = self.frames['Home'].nametowidget('body.tableau')
-            id_ = tab.selection()[0]
-            data = self.data.get(id_)
+            try:
+                id_ = tab.selection()[0]
+                data = self.data.get(id_)
 
-            frame.setvar('var_produit_label',data.get('label'))
-            frame.setvar('var_produit_id',data.get('produit_id'))
-            frame.setvar('var_cat_label',data.get('cat_label'))
-            frame.setvar('var_prix',data.get('prix'))
-            frame.setvar('var_code_barre',data.get('code_barre'))
-            frame.setvar('var_photo',data.get('photo'))
-            frame.children['body'].children['description'].insert('1.0',data.get('description'))
+                frame.setvar('var_produit_label',data.get('label'))
+                frame.setvar('var_produit_id',data.get('produit_id'))
+                frame.setvar('var_cat_label',data.get('cat_label'))
+                frame.setvar('var_prix',data.get('prix'))
+                frame.setvar('var_code_barre',data.get('code_barre'))
+                frame.setvar('var_photo',data.get('photo'))
+                frame.children['body'].children['description'].insert('1.0',data.get('description'))
+            except IndexError:
+                alert_wn("Veillez d'abord selectionner l'item")
+            except Exception as e:
+                alert_wn(e)
             
         frame.tkraise()
         
@@ -282,7 +286,7 @@ class StockPage(Frame):
             api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
             api.delete(id_)
         except IndexError:
-            pass
+            alert_wn("Veillez d'abord selectionner l'item")
         except Exception as e:
             alert_wn(e)
         else:
@@ -527,8 +531,7 @@ class ArrivagePage(Frame):
 
             for id_ , info in produits.items():
                 self.produits_label_id.update({info.get('label'):id_})
-        
-        
+          
     def search(self,event):
         tab = self.frames['Home'].nametowidget('body.tableau')
         def filtre():
@@ -668,13 +671,12 @@ class ArrivagePage(Frame):
             api = API(setting.get('url'),'arrivages',cookie=temp_setting.cookie)
             api.delete(id_)
         except IndexError:
-            pass
+            alert_wn("Veillez d'abord selectionner l'item")
         except Exception as e:
             alert_wn(e)
         else:
             tab.delete(id_)
             self.temp_index.remove(id_)
-
 
 class PromotionPage(Frame):
     def __init__(self, parent, controller):
@@ -733,6 +735,8 @@ class PromotionPage(Frame):
                 list_prod.config(state='disabled')
                 button_plus.config(state='disabled')
                 button_moins.config(state='disabled')
+            except IndexError:
+                alert_wn("Veillez d'abord selectionner l'item")
             except Exception as e:
                 alert_wn(e)
             else:

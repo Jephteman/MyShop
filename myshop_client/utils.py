@@ -234,7 +234,7 @@ class AboutPage(Frame):
         
         return frame
 
-def save_cookie(): # save cookie in permenante setting
+def save_cookie(): 
     setting.set('cookie',temp_setting.get('cookie'))
 
 def clean_variable(frame):
@@ -252,7 +252,7 @@ def clean_variable(frame):
         elif hasattr(child,'winfo_children'):
             clean_variable(child)
 
-def selecteur_date(variable_name,frame_object):#,entry_object):
+def selecteur_date(variable_name,frame_object):
     """Fenetre pour permettre à l'utilisateur de fournir la date """
     def fermeture():
         frame_object.focus_set()
@@ -752,7 +752,7 @@ class Graphique:
             file_save = self.path.get()
             diagram_type = self.diag_form.get()
             if diagram_type == 'circulaire':
-                plt.pie(data_raw.values(),label=data_raw.keys())
+                plt.pie(data_raw.values(),labels=data_raw.keys())
             elif diagram_type == 'baton':
                 plt.bar(data_raw.keys(),data_raw.values())
             else: # dans le cas des courbes
@@ -760,9 +760,9 @@ class Graphique:
                 plt.plot(data_raw.keys(),data_raw.values())
                 plt.xlabel(xlabel)
                 plt.ylabel("Nombres de vente")
+                plt.gcf().autofmt_xdate()
             
             plt.title("Graphique des ventes")
-            #plt.gcf().autofmt_xdate()
 
             try:
                 plt.savefig(file_save,format='pdf',bbox_inches='tight',)
@@ -778,11 +778,11 @@ class Exporte:
         win = Toplevel(background='skyblue')
         win.resizable(False,False)
 
-        self.res = StringVar()
-        self.path = StringVar()
+        self.res = StringVar(win,name='var_ressource')
+        self.path = StringVar(win,name='var_path')
 
-        self.origine = StringVar()
-        self.fin = StringVar()
+        self.origine = StringVar(win,name='var_origine_date')
+        self.fin = StringVar(win,name='var_fin_date')
 
         #win.title('Exportation des donnees')
         Label(win,text='Exportation des donnees',font=('',17),padx=5,pady=5,background='skyblue').pack()
@@ -794,11 +794,11 @@ class Exporte:
 
         f2 = Frame(win,background='skyblue')
         entry1 = PlaceholderEntry(f2,textvariable=self.origine,placeholder='A partir du ')
-        entry1.bind('<FocusIn>', lambda event: selecteur_date(self.origine,f1,entry1)) 
+        entry1.bind('<FocusIn>', lambda event: selecteur_date('var_origine_date',win)) 
         entry1.pack(side='left')
         
         entry2 = PlaceholderEntry(f2,textvariable=self.fin, placeholder='Au')
-        entry2.bind('<FocusIn>', lambda event: selecteur_date(self.fin,f2,entry2)) 
+        entry2.bind('<FocusIn>', lambda event: selecteur_date('var_fin_date',win)) 
         entry2.pack(side='right')
         f2.pack()
         
@@ -827,7 +827,7 @@ class Exporte:
         except Exception as e:
             alert_wn(e)
         else:
-            serilise_data = data.values()
+            serilise_data = list(data.values())
 
             csv_file = self.path.get()
             if not serilise_data:
@@ -954,7 +954,7 @@ class Printer:
             f.pack(padx=3,pady=3)
 
         f8 = Frame(f_dev,background='skyblue')
-        lc_temp = ttk.Treeview(f8,columns=('produit','quantite','prix'))#,height=50)
+        lc_temp = ttk.Treeview(f8,columns=('produit','quantite','prix_initial','prix_total'))#,height=50)
         lc_temp.heading('produit',text='Produits')
         lc_temp.column('produit',width=80)
         lc_temp.heading('quantite',text='Quantite')

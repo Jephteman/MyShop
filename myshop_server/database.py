@@ -251,7 +251,7 @@ class Sessionsdb():
             value = self.db_instance.settings.get(i)
             info.update({i:value})
         info.update({'username':param.get('username')})
-        Noteficationsdb(self.db_instance,config=self.config).add({'message':f"Connection de l'utilisateur {param.get('username'),'niveau':'information'}"})
+        Noteficationsdb(self.db_instance).add({'message':f"Connection de l'utilisateur {param.get('username')}",'niveau':'information'})
         return info
     
     def all(self,param:dict={}):
@@ -657,6 +657,8 @@ class Ventesdb():
                 resp.update(d)
         
             for march , quant in marchandises.items():  # nous retranchons les produits vendus du stock
+                if not str(quant).isnumeric():
+                    raise MessagePersonnalise('La quantité doit etre un nombre positif')
                 query = """
                     update Produits set quantite = quantite - :quantite where produit_id = :produit_id
                     """
@@ -1140,7 +1142,8 @@ class Noteficationsdb:
             
     def add(self,param):
         data = {}
-        param = my_objects.NoteObject(param)
+        param = my_objects.NotificatiionObject(param)
+        
         with self.instance.cursor() as cursor:
             query = """
                 insert into Notifications(message,niveau,date) 
@@ -1225,7 +1228,9 @@ class Graphique:
                 items_vente_dict[discriminant] += 1
                 continue
 
-            for p_name, quantite_prix in values.get('maarchandises').items():
+            for p_name, quantite_prix in values.get('marchandises').items():
+                if not p_name in items_vente_dict.keys():
+                    items_vente_dict.update({p_name:0})
                 items_vente_dict[p_name] += quantite_prix[0]
 
         return items_vente_dict

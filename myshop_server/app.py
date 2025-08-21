@@ -19,7 +19,8 @@ def error(e:Exception):
     """
         S'occupe d'appeller la methode ^message^ de la classe de l'exception
     """
-    return e.message() if 'message' in dir(e) else str(e),302
+    print(e,'except ')
+    return e.message() if hasattr(e,'message') else ("Une erreur côté serveur est survenue ",302)
 
 @app.errorhandler(404)
 def page_not_found(err):

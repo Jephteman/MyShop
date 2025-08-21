@@ -205,26 +205,21 @@ class UserPage(Frame):
         
         return frame
 
-    #def set_file(self):
-    #    t = [('Image File','*.png'),('Image File','*.jpg')]
-    #    askfile_open(self.var_photo,t) ### cette portion de code ne fonctionne pas
-
     def delete(self):
-        def ret():
-            try:
-                lc = self.frames['Home'].nametowidget('body.tableau')
-                i = lc.selection()
-                if not i:
-                    return
-        
-                user_id = i[0]
-                api = API(setting.get('url'),'users',cookie=temp_setting.cookie)
-                api.delete(user_id)
-            except Exception as e:
-                alert_wn(e)
-            else:
-                alert_wn('Utilisateur suprimé avec success')
-                lc.delete(user_id)
+        try:
+            lc = self.frames['Home'].nametowidget('body.tableau')
+            i = lc.selection()
+            if not i:
+                return
+     
+            user_id = i[0]
+            api = API(setting.get('url'),'users',cookie=temp_setting.cookie)
+            api.delete(user_id)
+        except Exception as e:
+            alert_wn(e)
+        else:
+            alert_wn('Utilisateur suprimé avec success')
+            lc.delete(user_id)
                 
         
         """
@@ -363,7 +358,6 @@ class UserPage(Frame):
         
         return frame
 
-
 class SessionPage(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
@@ -463,13 +457,11 @@ class SessionPage(Frame):
             lc.set(session,'statut','bloquer')
 
     def delete(self):
-        lc = self.frames['Home'].nametowidget('body.tableau')
-        i = lc.selection()
-        if not i:
-            return
-        
-        session = i[0]
         try:
+            lc = self.frames['Home'].nametowidget('body.tableau')
+            i = lc.selection()
+        
+            session = i[0]
             api = API(setting.get('url'),'sessions',cookie=temp_setting.cookie)
             api.delete(session)
         except Exception as e:
@@ -477,8 +469,6 @@ class SessionPage(Frame):
         else:
             lc.delete(session)
  
-
-
 class MonitorPage(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
@@ -509,7 +499,6 @@ class MonitorPage(Frame):
         if cont != 'Home':
             clean_variable(frame)
         frame.tkraise()
-
 
     def Home(self,contenair):
         frame = Frame(contenair,name='frame_home',background='skyblue')

@@ -171,6 +171,7 @@ def valide_data(donnees: dict) -> bool:
                 raise TypeEntreException(label)
             if t == 'type':
                 if value == int:
+                    print(data,label)
                     if not str(data).isnumeric():
                         raise TypeEntreException(label)
                     continue
