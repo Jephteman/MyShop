@@ -150,12 +150,12 @@ class ClientPage(Frame):
         mail = StringVar(frame,name='var_mail')
         r_client = StringVar(frame,name='var_r_client')
 
-        PlaceholderEntry(frame,textvariable=noms,placeholder="Nom du client").pack()
-        PlaceholderEntry(frame,textvariable=tel,placeholder="Numero de telephone").pack()
-        PlaceholderEntry(frame,textvariable=r_client,placeholder="Code du parrain (facultatif)").pack()
-        PlaceholderEntry(frame,textvariable=addr,placeholder='Addresse ').pack()
-        PlaceholderEntry(frame,textvariable=mail,placeholder="Adresse mail").pack()
-        
+        EntryWithLabel(frame,variable_text='var_noms',label_text="Nom du client :")
+        EntryWithLabel(frame,variable_text='var_tel',label_text="Numero de telephone :")
+        EntryWithLabel(frame,variable_text='var_r_client',label_text="Code du parrain (facultatif) :")
+        EntryWithLabel(frame,variable_text='var_addr',label_text='Addresse :')
+        EntryWithLabel(frame,variable_text='var_mail',label_text="Adresse mail :")
+    
         f1 = Frame(frame,padx=15,pady=15,background='skyblue')
         Label(f1,text="Sexe : ",padx=8,font=('',15),background='skyblue').pack(side='left')
         ttk.Combobox(f1,textvariable=sexe,values=['M','F'],validate='focusin').pack(side='right')
@@ -302,16 +302,13 @@ class VentePage(Frame):
         # le frame de gauche qui contient la liste
         f_left = Frame(frame,width=20,padx=15,pady=15,background='skyblue',name='frame_gauche')
 
-        f6 = Frame(f_left,background='skyblue')
-        Label(f6,text="Id du client  :",border='5',background='skyblue').pack(side='left')
-        PlaceholderEntry(f6,textvariable=client_id,placeholder="ex : 0991374833").pack(side='left')
-        f6.pack()
+        EntryWithLabel(f_left,textvariable=client_id,label_text="Id du client  :")
 
         f7 = Frame(f_left,background='skyblue')
         Label(f7,text="Marchandises :",border='5',background='skyblue').pack(side='left')
         f7.pack()
 
-        f8 = Frame(f_left,height=90,width=135,background='skyblue',name='frame_tableau_panier')
+        f8 = Frame(f_left,height=110,width=165,background='skyblue',name='frame_tableau_panier')
         lc_temp = ttk.Treeview(f8,columns=('produit','quantite','prix'),name='tableau_panier')#,height=50)
         lc_temp.heading('produit',text='Produits')
         lc_temp.column('produit',width=80)
@@ -323,7 +320,7 @@ class VentePage(Frame):
         lc_temp.bind('<Control-D>',self.del_temp)
         lc_temp.bind('<Control-d>',self.del_temp)
 
-        lc_temp.pack(fill=Y,expand=1)
+        lc_temp.pack(fill='both',expand=1)
         f8.pack()
 
         f9 = Frame(f_left,border=5,background='skyblue')

@@ -2,7 +2,7 @@ from tkinter import ttk
 from tkinter import *
 
 
-class PlaceholderEntry(Entry):
+class placeholderEntry(Entry):
     def __init__(self, master, placeholder='', cnf={}, fg='black',
                  fg_placeholder='grey50', *args, **kw):
         super().__init__(master, cnf={}, bg='white', *args, **kw)
@@ -36,3 +36,42 @@ class PlaceholderEntry(Entry):
             return ''
         return content
 
+def EntryWithLabel(parent, label_text, textvariable='',variable_text='',label_cnf={},entry_cnf={},backgroud='skyblue',frame_name=''):
+    if frame_name:
+        frame = Frame(parent,name=frame_name,background=backgroud)
+    else:
+        frame = Frame(parent,background=backgroud)
+
+    frame.pack(pady=5)
+    
+    label = Label(frame, text=label_text, width=20, anchor="e",cnf=label_cnf,background=backgroud)
+    label.pack(side="left", padx=(0, 10))
+    if textvariable:
+        entry = Entry(frame,textvariable=textvariable,width=30,cnf=entry_cnf)
+    else:
+        entry = Entry(frame,textvariable=variable_text,width=30,cnf=entry_cnf)
+
+    entry.pack(side="left", fill="x", expand=True)
+    
+    return entry
+
+def ComboboxWithLabel(parent, label_text, textvariable='',variable_text='',label_cnf={},combox_cnf={},backgroud='skyblue',frame_name=''):
+    if frame_name:
+        frame =  Frame(parent,name=frame_name,background=backgroud)
+    else:
+        frame = Frame(parent,background=backgroud)
+
+    frame.pack(pady=5)
+    
+    label = Label(frame, text=label_text, width=20, anchor="e",cnf=label_cnf,background=backgroud)
+    label.pack(side="left", padx=(0, 10))
+    if textvariable:
+        combox = ttk.Combobox(frame,textvariable=textvariable,width=30)
+    else:
+        combox = Entry(frame,textvariable=variable_text,width=30)
+        
+    combox.config(combox_cnf)
+
+    combox.pack(side="left", fill="x", expand=True)
+    
+    return combox

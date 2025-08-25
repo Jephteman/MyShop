@@ -1,6 +1,7 @@
 - [ ] Optimser le code
 - [ ] documenter l'interface graphique
-- [] j rencontre un soucis avec PlaceholderEntry:,; j'arrive pas à combler le cas d'utisation qui est le mien 
+A faire :
+    * mettre en place la date d'expiration coté server et client (et le prendre en compte dans les notifications)
 
 
 - [] App pour le scan

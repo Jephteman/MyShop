@@ -45,11 +45,11 @@ class InventairePage(Frame):
         f_entry = Frame(f_top,background='skyblue',name='body')
         for name, message in (('vendeur','Vendeur'),('client_id','Id du client'),('from','Date depart') ,('to','Date fin')):
             variable = StringVar(frame,name=f'var_{name}')
-            entry = PlaceholderEntry(f_entry,textvariable=variable,placeholder=message,name=f'entry_{name}')
-            entry.pack(side='left',padx=5,pady=5)
+            entry = EntryWithLabel(f_entry,variable_text=f'var_{name}',label_text=message,entry_cnf={'name':f'entry_{name}'},frame_name=f'frame_{name}')
+            #entry.pack(padx=5,pady=5)
             
-        f_entry.nametowidget('entry_from').bind('<FocusIn>', lambda event: selecteur_date('var_from',frame))#,entry)) 
-        f_entry.nametowidget('entry_to').bind('<FocusIn>', lambda event: selecteur_date('var_to',frame))#,entry)) 
+        f_entry.nametowidget('frame_from.entry_from').bind('<FocusIn>', lambda event: selecteur_date('var_from',frame))#,entry)) 
+        f_entry.nametowidget('frame_to.entry_to').bind('<FocusIn>', lambda event: selecteur_date('var_to',frame))#,entry)) 
         
         Button(f_entry,name='b_search',text= 'Chercher',command = lambda : self.actualise()).pack(side='right',padx=5,pady=5)
         f_entry.pack()
@@ -359,15 +359,15 @@ class StockPage(Frame):
         code = StringVar(frame,name='var_code_barre')
         photo = StringVar(frame,name='var_photo')
         p_id = StringVar(frame,name='var_produit_id')
-        
-        ff = Frame(frame,name='body',background='skyblue')
 
-        Label(ff,text='Inserer un nouveau produit ',height=3,font=('Arial',15),background='skyblue').pack()
+        Label(frame,text='Inserer un nouveau produit ',height=3,font=('Arial',15),background='skyblue').pack()
+
+        EntryWithLabel(frame,variable_text='var_produit_label',label_text='Nom du produit :')
+        EntryWithLabel(frame,variable_text='var_prix',label_text='Prix :')
+        EntryWithLabel(frame,variable_text='var_code_barre',label_text="Code barre :")
+
+        ff = Frame(frame,name='body',background='skyblue')
         
-        PlaceholderEntry(ff,textvariable=n_produit,placeholder='Nom du produit').pack()
-        PlaceholderEntry(ff,textvariable=prix,placeholder='Prix').pack()
-        PlaceholderEntry(ff,textvariable=code,placeholder="Code barre").pack()
-                
         f2 = Frame(ff,name='categorie',background='skyblue')
         Label(f2,text="Categorie :",background='skyblue').pack(side='left')
         cat = ttk.Combobox(f2,textvariable=categorie,name='list_cat')
@@ -421,14 +421,11 @@ class StockPage(Frame):
                 self.show_frame('Add')
 
         frame = Frame(contenair,name='frame_cat_add',background='skyblue')
-        label = StringVar(frame)
+        label = StringVar(frame,name='var_label')
 
         Label(frame,text="Ajouter une nouvelle categorie",height=3,font=('Arial',15),background='skyblue').pack()
         
-        f1 = Frame(frame)
-        Label(f1,text="Label : ",background='skyblue').pack(side='left')
-        Entry(f1,textvariable=label).pack(side='right')
-        f1.pack()
+        EntryWithLabel(frame,variable_text='var_label',label_text='Label ;')
 
         f2 = Frame(frame)
         Label(f2,text="Description : ",background='skyblue').pack()
@@ -631,19 +628,12 @@ class ArrivagePage(Frame):
         
         produit = StringVar(frame)
         piece = IntVar(frame)
-        
-        #for id_ , data in self.data.items(): ### il faut eliminer cette boucle
-        #    label = data.get('label')
-        #    produits.update({label:id_})
             
         Label(frame,text="Inserer les arrivages",height=3,font=('Arial',15),background='skyblue').pack()
 
-        f1 = Frame(frame,background='skyblue',name='f1')
-        Label(f1,text="Produit :",background='skyblue').pack(side='left')
-        entry = Entry(f1,textvariable=produit)
+        entry = EntryWithLabel(frame,variable_text='var_produit',label_text="Produit :")
         entry.bind('<KeyRelease>',check)
         entry.pack(side='right')
-        f1.pack()
         
         f2 = Frame(frame,border=4,background='skyblue',name='f2')
         l_march = Listbox(f2,height=10,width=25)
@@ -651,10 +641,7 @@ class ArrivagePage(Frame):
         l_march.pack()
         f2.pack()
 
-        f3 = Frame(frame,background='skyblue',name='f3')
-        Label(f3,text='Pieces :',background='skyblue').pack(side='left')
-        Entry(f3,textvariable=piece).pack()
-        f3.pack()
+        EntryWithLabel(frame,variable_text='var_piece',label_text="Pieces :").pack()
         
         f4 = Frame(frame,background='skyblue',name='f4')
         Button(f4,text="Inserer",command=ret).pack(side='left')
@@ -883,26 +870,16 @@ class PromotionPage(Frame):
         date_f = StringVar(frame,name='var_date_f')
         date_d = StringVar(frame,name='var_date_d')
         
+        EntryWithLabel(frame,variable_text='var_name',label_text="Titre :")
+        EntryWithLabel(frame,variable_text='var_reduction',label_text='% de la reduction :')
+        entry_debut = EntryWithLabel(frame,variable_text='var_date_d',label_text="Date du debut :")
+        entry_debut.bind('<FocusIn>', lambda event: selecteur_date('var_date_d',frame))
+
+        entry_fin = EntryWithLabel(frame,variable_text='var_date_f',label_text="Date de fin :")
+        entry_fin.bind('<FocusIn>', lambda event: selecteur_date('var_date_f',frame))
+
         f_body = Frame(frame,background='skyblue',name='body')
-        #Label(f_body,text="Nom :",background='skyblue',padx=3,pady=3).grid(column=0,row=2)
-        PlaceholderEntry(f_body,textvariable=name,placeholder="Titre").grid(column=1,row=2)
-        
-        #Label(f_body,text="Reduction (%):",background='skyblue',padx=3,pady=3).grid(column=0,row=3)
-        PlaceholderEntry(f_body,textvariable=reduction,placeholder='% de la reduction').grid(column=1,row=3)
-        
-        #Label(f_body,text="Debut :",background='skyblue',padx=3,pady=3).grid(column=0,row=4)
-        entry_debut = PlaceholderEntry(f_body,textvariable=date_d,placeholder="Date du debut")
-        entry_debut.bind('<FocusIn>', lambda event: selecteur_date('var_date_d',frame))#,entry)) 
-        entry_debut.grid(column=1,row=4)
-        
-        #Label(f_body,text="Fin :",background='skyblue',padx=3,pady=3).grid(column=0,row=5)
-        #Entry(f_body,textvariable=date_f).grid(column=1,row=5)
-        entry_fin = PlaceholderEntry(f_body,textvariable=date_f,placeholder="Date de fin")
-        entry_fin.bind('<FocusIn>', lambda event: selecteur_date('var_date_f',frame))#,entry)) 
-        entry_fin.grid(column=1,row=5)
-        
         Label(f_body,text="Produits :",background='skyblue',padx=3,pady=3).grid(column=0,row=6)
-        
         p_list = Listbox(f_body,height=8,width=20,name='list_produit')
         p_list.grid(column=1,row=6)
         Button(f_body,padx=5,pady=5,text='+',height=3,width=3,command=add_produit,name='button_plus').grid(column=2,row=6)

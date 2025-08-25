@@ -159,36 +159,14 @@ class UserPage(Frame):
 
         Label(frame,text="Création d'un compte",font=('',29),pady=15,background='skyblue').pack()
 
-        f_noms = Frame(frame,background='skyblue')
-        #Label(f_noms,text="Noms : ",font=('',15),background='skyblue').pack(side='left')
-        PlaceholderEntry(f_noms,textvariable=var_noms,placeholder="Noms").pack()
-        f_noms.pack()
+        EntryWithLabel(frame,label_text='Nom :',variable_text='var_noms')
+        EntryWithLabel(frame,label_text="Nom d'utilisateur :",variable_text='var_uname')
+        EntryWithLabel(frame,label_text="Mot de pass :",variable_text='var_passwd',entry_cnf={'show':'*'})
+        ComboboxWithLabel(frame,textvariable=var_role,combox_cnf={'values':('admin','vendeur','moniteur')},label_text='Role : ')
 
-        f_uname = Frame(frame,background='skyblue')
-        PlaceholderEntry(f_uname,textvariable=var_uname,placeholder="Nom d'utilisateur").pack()
-        f_uname.pack()
-
-        f_pass = Frame(frame,background='skyblue')
-        PlaceholderEntry(f_pass,textvariable=var_passwd,placeholder="Mot de pass").pack()
-        f_pass.pack()
-
-        f_role = Frame(frame,background='skyblue')
-        Label(f_role,text="Role : ",font=('',15),background='skyblue').pack(side='left')
-        ttk.Combobox(f_role,textvariable=var_role,values=('admin','vendeur','moniteur')).pack(side='right')
-        f_role.pack()
-
-        f_addr = Frame(frame,background='skyblue')
-        PlaceholderEntry(f_addr,textvariable=var_addr,placeholder="Adresse").pack()
-        f_addr.pack()
-
-        f_num = Frame(frame,background='skyblue')
-        PlaceholderEntry(f_num,textvariable=var_tel,placeholder="Telephone").pack()
-        f_num.pack()
-
-        f_mail = Frame(frame,background='skyblue')
-        Label(f_mail,text="Email : ",font=('',15),background='skyblue').pack(side='left')
-        Entry(f_mail,textvariable=var_email).pack(side='right')
-        f_mail.pack()
+        EntryWithLabel(frame,label_text='Addresse :',variable_text='var_addr')
+        EntryWithLabel(frame,label_text='Telephone :',variable_text='var_tel')
+        EntryWithLabel(frame,label_text='Email :',variable_text='var_email')
 
         #f_photo = Frame(frame,background='skyblue')
         #Label(f_photo,text="Photo : ",font=('',15),background='skyblue').pack(side='left')
@@ -200,7 +178,7 @@ class UserPage(Frame):
         f3 = Frame(frame,background='skyblue')
         Button(f3,text="Creer le compte",command=ret,pady=10,width=20).pack(side='left')
         Button(f3,text='Annuler',padx=10,pady=10,width=15,command=lambda: self.show_frame('Home')).pack(side='right')
-        f3.pack(padx=10,pady=10)
+        f3.pack(padx=10,pady=10,side='bottom')
 
         
         return frame
@@ -279,30 +257,11 @@ class UserPage(Frame):
 
         Label(frame,text="Modification d'un compte",font=('',29),pady=15,background='skyblue').pack()
 
-        f_noms = Frame(frame,background='skyblue')
-        Label(f_noms,text="Noms : ",font=('',15),background='skyblue').pack(side='left')
-        Entry(f_noms,textvariable=var_noms).pack(side='right')
-        f_noms.pack()
-
-        f_role = Frame(frame,background='skyblue')
-        Label(f_role,text="Role : ",font=('',15),background='skyblue').pack(side='left')
-        ttk.Combobox(f_role,textvariable=var_role,values=('admin','vendeur','moniteur')).pack(side='right')
-        f_role.pack()
-
-        f_addr = Frame(frame,background='skyblue')
-        Label(f_addr,text="Addrese : ",font=('',15),background='skyblue').pack(side='left')
-        Entry(f_addr,textvariable=var_addr).pack(side='right')
-        f_addr.pack()
-
-        f_num = Frame(frame,background='skyblue')
-        Label(f_num,text="Numero : ",font=('',15),background='skyblue').pack(side='left')
-        Entry(f_num,textvariable=var_tel).pack(side='right')
-        f_num.pack()
-
-        f_mail = Frame(frame,background='skyblue')
-        Label(f_mail,text="Email : ",font=('',15),background='skyblue').pack(side='left')
-        Entry(f_mail,textvariable=var_email).pack(side='right')
-        f_mail.pack()
+        EntryWithLabel(frame,label_text='Nom :',variable_text='var_noms')
+        ComboboxWithLabel(frame,textvariable=var_role,combox_cnf={'values':('admin','vendeur','moniteur')},label_text='Role : ')
+        EntryWithLabel(frame,label_text='Addresse :',variable_text='var_addr')
+        EntryWithLabel(frame,label_text='Telephone :',variable_text='var_tel')
+        EntryWithLabel(frame,label_text='Email :',variable_text='var_email')
 
         #f_photo = Frame(frame,background='skyblue')
         #Label(f_photo,text="Photo : ",font=('',15),background='skyblue').pack(side='left')
@@ -341,14 +300,9 @@ class UserPage(Frame):
         var_passwd = StringVar(frame,name='var_passwd')
         var_confim_passwd = StringVar(frame,name='var_confirm_passwd')
         Label(frame,text="Changement de mot de passe",font=('',15),background='skyblue').pack()
-        f1 = Frame(frame,background='skyblue')
-        Label(f1,text="Mot de passe :",background='skyblue').pack(side='left')
-        Entry(f1,textvariable=var_passwd,show='*').pack(side='right')
-        f1.pack()
-        f2 = Frame(frame,background='skyblue')
-        Label(f2,text="Confirmer le :",background='skyblue').pack(side='left')
-        Entry(f2,textvariable=var_confim_passwd,show='*').pack(side='right')
-        f2.pack()
+
+        EntryWithLabel(frame,label_text="Mot de passe :",variable_text='var_passwd')
+        EntryWithLabel(frame,label_text="Confirmer le :",variable_text='var_confirm_passwd',entry_cnf={'show':'*'})
         
         f3 = Frame(frame,background='skyblue')
         Button(f3,text='Envoyer',padx=10,pady=10,width=15,command=ret).pack(side='left')

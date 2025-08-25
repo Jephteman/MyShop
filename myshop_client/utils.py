@@ -164,10 +164,8 @@ class LoginPage(Frame):
         photo = ImageTk.PhotoImage(img)
         
         Label(frame,image=photo).pack(padx=5,pady=5)
-        f1 = Frame(frame,padx=8,pady=8,background='skyblue')
-        PlaceholderEntry(f1,textvariable=u,placeholder="Nom d'utilisateur").pack()
-        PlaceholderEntry(f1,textvariable=p,placeholder="Mot de passe",show='*').pack()
-        f1.pack()
+        EntryWithLabel(frame,variable_text='username',label_text="Nom d'utilisateur")
+        EntryWithLabel(frame,variable_text='password',label_text="Mot de passe",entry_cnf={'show':'*'})
 
         Button(frame,text='Connecter',command=check,padx=8,pady=8,width=15).pack()
         
@@ -544,15 +542,11 @@ class NotePage(Frame):
 
         var_sujet = StringVar(frame,name='var_sujet')
 
-        f1 = Frame(frame,padx=5,pady=5,background='skyblue',name='top')
-        PlaceholderEntry(f1,textvariable=var_sujet,placeholder='Sujet').pack()
-        f1.pack()
+        EntryWithLabel(frame,variable_text='var_sujet',label_text='Sujet')
 
-        #f3 = Frame(frame,background='skyblue',name='middle')
         Label(frame,text='Contenu : ',background='skyblue').pack()#side='left')
         var_contenu = Text(frame,name='wigdet_contenu',width=30,height=15)
         var_contenu.pack(fill="both", expand=True,pady=5,padx=5)#side='right')
-        #f3.pack()
         
         f4 = Frame(frame,name='bottom',background='skyblue')
         Button(f4,text='Envoyer',width=10,padx=5,pady=5,command=ret,name='send_btn').pack(side='left')
@@ -685,12 +679,6 @@ class Graphique:
         self.window.title('Graphique')
         self.window.resizable(False,False)
         
-        # en-tete  
-        self.origine = StringVar(name='var_origine')
-        self.fin = StringVar(name='var_fin')
-        self.path = StringVar(name='var_path')
-        self.type_ = StringVar(name='var_type')
-        self.diag_form = StringVar(name='var_diag_form')
         graphic_type = (
             'date2n_vente',
             'client2n_vente',
@@ -702,38 +690,36 @@ class Graphique:
             'circulaire',
             'courbe'
         )
+        frame = Frame(self.window,background='skyblue')
+        # en-tete  
+        self.origine = StringVar(frame,name='var_origine')
+        self.fin = StringVar(frame,name='var_fin')
+        self.path = StringVar(frame,name='var_path')
+        self.type_ = StringVar(frame,name='var_type')
+        self.diag_form = StringVar(frame,name='var_diag_form')
 
-        Label(self.window,text="Graphique",font=('',15),background='skyblue').pack()
+        Label(frame,text="Graphique",font=('',15),background='skyblue').pack()
 
-        f1 = Frame(self.window,padx=15,pady=15,background='skyblue')
-        Label(f1,text="Type : ",padx=8,font=('',15),background='skyblue').pack(side='left')
-        ttk.Combobox(f1,textvariable=self.type_,values=graphic_type,validate='focusin').pack(side='right')
-        f1.pack()
+        ComboboxWithLabel(frame,textvariable=self.type_,combox_cnf={'values':graphic_type},label_text='Type : ')
 
-        f2 = Frame(self.window,padx=15,pady=15,background='skyblue')
-        Label(f2,text="Diagramme : ",padx=8,font=('',15),background='skyblue').pack(side='left')
-        ttk.Combobox(f2,textvariable=self.diag_form,values=diagram_type,validate='focusin').pack(side='right')
-        f2.pack()
+        ComboboxWithLabel(frame,textvariable=self.diag_form,combox_cnf={'values':diagram_type},label_text='Diaramme : ')
 
-
-        f1 = Frame(self.window,background='skyblue')
-        entry1 = PlaceholderEntry(f1,textvariable=self.origine,placeholder='A partir du ')
-        entry1.bind('<FocusIn>', lambda event: selecteur_date('var_origine',self.window)) 
-        entry1.pack(side='left')
+        entry1 = EntryWithLabel(frame,textvariable=self.origine,label_text='A partir du :')
+        entry1.bind('<FocusIn>', lambda event: selecteur_date('var_origine',frame)) 
         
-        entry2 = PlaceholderEntry(f1,textvariable=self.fin, placeholder='Au')
-        entry2.bind('<FocusIn>', lambda event: selecteur_date('var_fin',self.window)) 
+        entry2 = EntryWithLabel(frame,textvariable=self.fin, label_text='Au : ')
+        entry2.bind('<FocusIn>', lambda event: selecteur_date('var_fin',frame)) 
         entry2.pack(side='right')
-        f1.pack()
 
-        f2 = Frame(self.window,background='skyblue')
-        Label(f2,text='Emplacement : ',background='skyblue').pack(side='left')
-        Entry(f2,textvariable=self.path,state='readonly').pack(side='left')
+        f2 = Frame(frame,background='skyblue')
+        EntryWithLabel(f2,label_text='Emplacement : ',textvariable=self.path,entry_cnf={'state':'readonly'}).pack(side='left')
         Button(f2,text='parcourir',command=set_file,background='skyblue').pack(side='right')
 
         f2.pack()
 
-        Button(self.window,text="Generer",command=self.find).pack(side='bottom')
+        Button(frame,text="Generer",command=self.find).pack(side='bottom')
+
+        frame.pack()
 
     def find(self):
         try:
@@ -778,37 +764,33 @@ class Exporte:
         win = Toplevel(background='skyblue')
         win.resizable(False,False)
 
-        self.res = StringVar(win,name='var_ressource')
-        self.path = StringVar(win,name='var_path')
+        frame = Frame(win,background='skyblue')
 
-        self.origine = StringVar(win,name='var_origine_date')
-        self.fin = StringVar(win,name='var_fin_date')
+        self.res = StringVar(frame,name='var_ressource')
+        self.path = StringVar(frame,name='var_path')
+
+        self.origine = StringVar(frame,name='var_origine_date')
+        self.fin = StringVar(frame,name='var_fin_date')
 
         #win.title('Exportation des donnees')
-        Label(win,text='Exportation des donnees',font=('',17),padx=5,pady=5,background='skyblue').pack()
+        Label(frame,text='Exportation des donnees',font=('',17),padx=5,pady=5,background='skyblue').pack()
 
-        f1 = Frame(win,background='skyblue')
-        Label(f1,text='Ressource : ',background='skyblue').pack(side='left')
-        ttk.Combobox(f1,textvariable=self.res,values=('ventes','logs','arrivages','produits','notes','sessions')).pack(side='right')
-        f1.pack()
+        ComboboxWithLabel(frame,textvariable=self.res,combox_cnf={'values':('ventes','logs','arrivages','produits','notes','sessions')},label_text='Ressource : ')
 
-        f2 = Frame(win,background='skyblue')
-        entry1 = PlaceholderEntry(f2,textvariable=self.origine,placeholder='A partir du ')
-        entry1.bind('<FocusIn>', lambda event: selecteur_date('var_origine_date',win)) 
-        entry1.pack(side='left')
+        entry1 = EntryWithLabel(frame,variable_text='var_origine_date',label_text='A partir du :')
+        entry1.bind('<FocusIn>', lambda event: selecteur_date('var_origine_date',frame)) 
         
-        entry2 = PlaceholderEntry(f2,textvariable=self.fin, placeholder='Au')
-        entry2.bind('<FocusIn>', lambda event: selecteur_date('var_fin_date',win)) 
+        entry2 = EntryWithLabel(frame,variable_text='var_fin_date', label_text='Au :')
+        entry2.bind('<FocusIn>', lambda event: selecteur_date('var_fin_date',frame)) 
         entry2.pack(side='right')
-        f2.pack()
         
-        f3 = Frame(win,background='skyblue')
-        Label(f3,text='Emplacement : ',background='skyblue').pack(side='left')
-        Entry(f3,textvariable=self.path,state='readonly').pack(side='left')
+        f3 = Frame(frame,background='skyblue')
+        EntryWithLabel(f3,textvariable=self.path,label_text='Emplacement :',entry_cnf={'state':'readonly'}).pack(side='left')
         Button(f3,text='Parcourir',command=self.set_file).pack(side='right')
         f3.pack()
 
-        Button(win,text='Generer',padx=5,pady=5,command=self.generer).pack()
+        Button(frame,text='Generer',padx=5,pady=5,command=self.generer).pack()
+        frame.pack()
 
     def set_file(self):
         file_t = [('File text','*.csv')]
