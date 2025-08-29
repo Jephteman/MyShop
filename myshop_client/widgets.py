@@ -66,12 +66,10 @@ def ComboboxWithLabel(parent, label_text, textvariable='',variable_text='',label
     label = Label(frame, text=label_text, width=20, anchor="e",cnf=label_cnf,background=backgroud)
     label.pack(side="left", padx=(0, 10))
     if textvariable:
-        combox = ttk.Combobox(frame,textvariable=textvariable,width=30)
+        combox = ttk.Combobox(frame,textvariable=textvariable,width=30,**combox_cnf)
     else:
-        combox = Entry(frame,textvariable=variable_text,width=30)
+        combox = ttk.Combobox(frame,extvariable=variable_text,width=30,**combox_cnf)
         
-    combox.config(combox_cnf)
-
     combox.pack(side="left", fill="x", expand=True)
     
     return combox

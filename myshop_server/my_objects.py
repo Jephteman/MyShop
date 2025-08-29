@@ -1,4 +1,4 @@
-from .utils import get_timestamp
+from .utils import get_timestamp, sep_prix
 
 class ModelObject(dict):
     def __init__(self,attributs:list,param:dict={}):
@@ -96,9 +96,16 @@ class ProduitObject(ModelObject):
     """
     def __init__(self, param = {}):
         super().__init__(
-            ['produit_id','label','categorie_id','prix',
-            'quantite','code_barre','description','photo'],param
+            ['produit_id','label','categorie_id','prix_achat','prix_vente',
+            'quantite','code_barre','description','photo','date_expiration','date_modification'],param
         )
+        prix , devise = sep_prix(self.get('prix_achat'))
+        self['prix_achat'] = f'{prix} {devise}'
+
+        prix , devise = sep_prix(self.get('prix_vente'))
+        self['prix_vente'] = f'{prix} {devise}'
+
+        self['date_modification'] = get_timestamp()
 
     def __repr__(self):
         return f"<Produit id={self.get('produit_id')}>"
@@ -112,6 +119,9 @@ class VenteObject(ModelObject):
         super().__init__(
             ['vente_id','client_id','login_id','marchandises','prix','date','vendor'],param
         )
+        if not self.get('client_id'):
+            self['client_id'] = 0
+        
     def __repr__(self):
         return f"<Vente id={self.get('vente_id')} >"
     

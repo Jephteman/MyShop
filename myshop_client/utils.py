@@ -702,7 +702,7 @@ class Graphique:
 
         ComboboxWithLabel(frame,textvariable=self.type_,combox_cnf={'values':graphic_type},label_text='Type : ')
 
-        ComboboxWithLabel(frame,textvariable=self.diag_form,combox_cnf={'values':diagram_type},label_text='Diaramme : ')
+        ComboboxWithLabel(frame,textvariable=self.diag_form,combox_cnf={'values':diagram_type},label_text='Diagramme : ')
 
         entry1 = EntryWithLabel(frame,textvariable=self.origine,label_text='A partir du :')
         entry1.bind('<FocusIn>', lambda event: selecteur_date('var_origine',frame)) 
@@ -713,7 +713,7 @@ class Graphique:
 
         f2 = Frame(frame,background='skyblue')
         EntryWithLabel(f2,label_text='Emplacement : ',textvariable=self.path,entry_cnf={'state':'readonly'}).pack(side='left')
-        Button(f2,text='parcourir',command=set_file,background='skyblue').pack(side='right')
+        Button(f2,text='parcourir',command=set_file).pack(side='right')
 
         f2.pack()
 

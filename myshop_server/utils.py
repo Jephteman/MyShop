@@ -113,8 +113,10 @@ def sep_prix(prix: str) -> tuple:
         num += i
 
     dev = prix_raw.replace(num, '')
-    if num == '':
+    if dev and (not num) :
         raise MessagePersonnalise('Veuillez insérer le prix au format correct')
+    elif not (dev and num) :
+        return '',''
     return num, dev
 
 def valide_data(donnees: dict) -> bool:

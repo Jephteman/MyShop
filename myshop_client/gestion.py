@@ -164,6 +164,7 @@ class StockPage(Frame):
         frame = self.frames[cont]
         if cont == 'Add':
             clean_variable(frame)
+            frame.setvar('var_produit_id','')
         if action:
             tab = self.frames['Home'].nametowidget('body.tableau')
             try:
@@ -173,7 +174,9 @@ class StockPage(Frame):
                 frame.setvar('var_produit_label',data.get('label'))
                 frame.setvar('var_produit_id',data.get('produit_id'))
                 frame.setvar('var_cat_label',data.get('cat_label'))
-                frame.setvar('var_prix',data.get('prix'))
+                frame.setvar('var_prix_vente',data.get('prix_vente'))
+                frame.setvar('var_prix_achat',data.get('prix_achat'))
+                frame.setvar('var_date_expiration',data.get('date_expiration'))
                 frame.setvar('var_code_barre',data.get('code_barre'))
                 frame.setvar('var_photo',data.get('photo'))
                 frame.children['body'].children['description'].insert('1.0',data.get('description'))
@@ -200,7 +203,8 @@ class StockPage(Frame):
                 produit.get('label'),
                 produit.get('cat_label'),
                 produit.get('quantite'),
-                produit.get('prix')
+                produit.get('prix_vente'),
+                produit.get('date_modification')
             )
             self.temp_index.append(produit.get('produit_id'))
             if not tab.exists(int(i)):
@@ -219,13 +223,14 @@ class StockPage(Frame):
         Label(frame,text="Stock",font=('',15),background='skyblue').pack(padx=5,pady=5)
 
         f1 = Frame(frame,background='skyblue',name='body')
-        tab = ttk.Treeview(f1,columns=('id','marchandise','categorie','quantite','prix'),name='tableau')
+        tab = ttk.Treeview(f1,columns=('id','marchandise','categorie','quantite','prix_vente','date_modification'),name='tableau')
 
         tab.heading('id',text='ID produit')
         tab.heading('marchandise',text='Nom produit')
         tab.heading('categorie',text='Categorie')
         tab.heading('quantite',text='Quantite')
-        tab.heading('prix',text='Prix')
+        tab.heading('prix_vente',text='Prix Vente')
+        tab.heading('date_modification',text='Date Modification')
         
         tab['show'] = 'headings'
 
@@ -320,17 +325,13 @@ class StockPage(Frame):
                 api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
                 cat_id = self.name_id_categories.get(categorie.get())
                 param = {
-                    'label':name,'prix':prix.get(),'categorie_id':cat_id,
+                    'label':name,'prix_achat':prix_achat.get(),'prix_vente':prix_vente.get(),'date_expiration':date_expiration.get(),'categorie_id':cat_id,
                     'code_barre':code.get(),'photo':photo.get(),'description':desc.get('1.0','end-1c')
                     }
-                #if param.get('photo'):
-                #    with open(param.get('photo'),'rb') as f:
-                #        f = base64.encodebytes(f.read())
-                #        param['photo'] = f.decode()
                 if not p_id.get():
                     data = api.add(param)
                 else:
-                    param.set('produit_id',p_id.get())
+                    param.update({'produit_id':p_id.get()})
                     data = api.change(param)
             except Exception as e:
                 alert_wn(e)
@@ -344,18 +345,26 @@ class StockPage(Frame):
                     data.get('label'),
                     data.get('cat_label'),
                     data.get('quantite'),
-                    data.get('prix'),
+                    data.get('prix_vente'),
+                    data.get('date_modification')
                 )
                 self.temp_index.append(data.get('produit_id'))
+                
+                if p_id.get():
+                    i = tab.selection()
+                    tab.delete(i[0])
+
                 tab.insert('','end',iid=data.get('produit_id'),values=p)
 
-                alert_wn("Ajouter du produit '{}' avec success".format(n_produit.get()))
+                alert_wn("Insertion des infos du produit '{}' avec success".format(n_produit.get()))
                 self.show_frame('Home')
         
         frame = Frame(contenair,name='frame_add',background='skyblue')
         n_produit = StringVar(frame,name='var_produit_label')
         categorie = StringVar(frame,name='var_cat_label')
-        prix = StringVar(frame,name='var_prix') 
+        prix_achat = StringVar(frame,name='var_prix_achat') 
+        prix_vente = StringVar(frame,name='var_prix_vente') 
+        date_expiration = StringVar(frame,name='var_date_expiration') 
         code = StringVar(frame,name='var_code_barre')
         photo = StringVar(frame,name='var_photo')
         p_id = StringVar(frame,name='var_produit_id')
@@ -363,32 +372,17 @@ class StockPage(Frame):
         Label(frame,text='Inserer un nouveau produit ',height=3,font=('Arial',15),background='skyblue').pack()
 
         EntryWithLabel(frame,variable_text='var_produit_label',label_text='Nom du produit :')
-        EntryWithLabel(frame,variable_text='var_prix',label_text='Prix :')
+        EntryWithLabel(frame,variable_text='var_prix_achat',label_text="Prix  d'achat:")
+        EntryWithLabel(frame,variable_text='var_prix_vente',label_text="Prix  de vente:")
+        date_ex = EntryWithLabel(frame,variable_text='var_date_expiration',label_text="Date expiration:")
+        date_ex.bind('<FocusIn>', lambda event: selecteur_date('var_date_expiration',frame)) 
         EntryWithLabel(frame,variable_text='var_code_barre',label_text="Code barre :")
 
         ff = Frame(frame,name='body',background='skyblue')
+
+        ComboboxWithLabel(ff,label_text='Catagorie :',frame_name='categorie',textvariable=categorie,combox_cnf={'name':'list_cat'})
+        Button(ff,text='Ajouter une categorie',command=lambda: self.show_frame('AddCat')).pack(side='right')
         
-        f2 = Frame(ff,name='categorie',background='skyblue')
-        Label(f2,text="Categorie :",background='skyblue').pack(side='left')
-        cat = ttk.Combobox(f2,textvariable=categorie,name='list_cat')
-        cat.pack(side='left')
-        Button(f2,text='Ajouter une categorie',command=lambda: self.show_frame('AddCat')).pack(side='right')
-        f2.pack()
-        
-        #f3 = Frame(ff,background='skyblue')
-        #Label(f3,text="Prix :",background='skyblue').pack(side='left')
-
-        #f3.pack()
-
-        #Label(ff,text="Photo :").grid(row=4,column=0)
-        #Entry(ff,textvariable=photo,state='readonly').grid(row=4,column=1)
-        #Button(ff,text='parcourir',command=set_photo).grid(row=4,column=2)
-        #Button(ff,text=" Voir ",command=voir).grid(row=4,column=3)
-        
-        #f4 = Frame(ff,background='skyblue')
-
-        #f4.pack()
-
         Label(ff,text="Description :",background='skyblue').pack()
         desc = Text(ff,height=15,width=25,name='description')
         desc.pack()
@@ -425,7 +419,7 @@ class StockPage(Frame):
 
         Label(frame,text="Ajouter une nouvelle categorie",height=3,font=('Arial',15),background='skyblue').pack()
         
-        EntryWithLabel(frame,variable_text='var_label',label_text='Label ;')
+        EntryWithLabel(frame,variable_text='var_label',label_text='Label :')
 
         f2 = Frame(frame)
         Label(f2,text="Description : ",background='skyblue').pack()
@@ -626,8 +620,8 @@ class ArrivagePage(Frame):
 
         frame = Frame(contenair,background='skyblue',name='frame_add')
         
-        produit = StringVar(frame)
-        piece = IntVar(frame)
+        produit = StringVar(frame,name='var_produit')
+        piece = IntVar(frame,name='var_piece')
             
         Label(frame,text="Inserer les arrivages",height=3,font=('Arial',15),background='skyblue').pack()
 

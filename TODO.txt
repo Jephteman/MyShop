@@ -1,7 +1,5 @@
 - [ ] Optimser le code
 - [ ] documenter l'interface graphique
-A faire :
-    * mettre en place la date d'expiration coté server et client (et le prendre en compte dans les notifications)
 
 
 - [] App pour le scan

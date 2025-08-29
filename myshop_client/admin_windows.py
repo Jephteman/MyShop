@@ -18,7 +18,7 @@ class UserPage(Frame):
         self.frames = {}
         
         # Création des différentes frames
-        for F in (self.Home, self.Add, self.Change, self.ResetPasswd):
+        for F in (self.Home, self.Add, self.ResetPasswd):
             frame = F(container)
             self.frames[F.__name__] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -26,11 +26,11 @@ class UserPage(Frame):
         # Afficher la première frame
         self.show_frame("Home")
         
-    def show_frame(self, cont):
+    def show_frame(self, cont, action=''):
         """Affiche la frame demandée"""
         frame = self.frames[cont]
         clean_variable(frame)
-        if not cont in [ 'Home', 'Add']:
+        if action or cont == 'ResetPasswd':
             tab = self.frames['Home'].nametowidget('body.tableau')
             try:
                 login_id = tab.selection()[0]
@@ -38,20 +38,25 @@ class UserPage(Frame):
                 alert_wn(e)
                 return
                 
-            if cont == 'Change':
+            if action == 'see':
+                entry_passwd = self.frames['Add'].nametowidget('frame_password.entry_password').config(state='readonly')
+                entry_username = self.frames['Add'].nametowidget('frame_username.entry_username').config(state='readonly')
                 data = self.data.get(login_id)
             
-                frame.setvar('var_uname',data.get('uname'))
-                frame.setvar('var_passwd',data.get('*******'))
+                frame.setvar('var_uname',data.get('username'))
+                frame.setvar('var_passwd',data.get('password',''))
                 frame.setvar('var_addr',data.get('addr'))
                 frame.setvar('var_noms',data.get('noms'))
-                frame.setvar('var_tel',data.get('telephone'))
-                frame.setvar('var_email',data.get('email'))
+                frame.setvar('var_tel',data.get('telephone',''))
+                frame.setvar('var_email',data.get('email',''))
                 #frame.setvar('var_photo',data.get('photo'))
                 frame.setvar('var_role',data.get('role'))
                 
-            if cont == 'ResetPasswd':
-                frame.setvar('var_login_id',login_id)
+            frame.setvar('var_login_id',login_id)
+
+        elif (cont == 'Add') and not action :
+            entry_passwd = self.frames['Add'].nametowidget('frame_password.entry_password').config(state='normal')
+            entry_username = self.frames['Add'].nametowidget('frame_username.entry_username').config(state='normal')
                 
         frame.tkraise()
         
@@ -104,7 +109,7 @@ class UserPage(Frame):
 
         f_both = Frame(frame,padx=10,pady=10,background='skyblue')
         Button(f_both,text='Ajouter',command=lambda : self.show_frame('Add')).pack(side='left')
-        Button(f_both,text='Change',command=lambda : self.show_frame('Change')).pack(side='left')
+        Button(f_both,text='Change',command=lambda : self.show_frame('Add',action='see')).pack(side='left')
         Button(f_both,text="Changer le mdp",command=lambda : self.show_frame('ResetPasswd')).pack(side='left')
         Button(f_both,text='Delete',command=self.delete).pack(side='right')
 
@@ -118,6 +123,7 @@ class UserPage(Frame):
             param = {
                 'noms':var_noms.get(),
                 'username':var_uname.get(),
+                'login_id':var_login_id.get(),
                 'password':var_passwd.get(),
                 'addr':var_addr.get(),
                 'role':var_role.get(),
@@ -132,15 +138,21 @@ class UserPage(Frame):
 
             try:
                 api = API(setting.get('url'),'users',cookie=temp_setting.cookie)
-                data = api.add(param)
+                if var_login_id.get():
+                    api.change(param)
+                else:
+                    data = api.add(param)
             except Exception as e:
                 alert_wn(e)
             else:
-                data.update(param)
                 self.data[str(data.get('login_id'))] = data
                 lc = self.frames['Home'].nametowidget('body.tableau')
                 i_ = str(data.get('login_id'))
-                x = lc.insert('','end',iid=i_,values=(
+                if param.get('login_id'):
+                    i = lc.selection()
+                    lc.delete(i[0])
+
+                lc.insert('','end',iid=i_,values=(
                     i_,data.get('username'),
                     data.get('noms'),data.get('role'),
                     'actif'))
@@ -148,6 +160,7 @@ class UserPage(Frame):
                 self.show_frame('Home')
 
         frame = Frame(container,name='frame_add',background='skyblue')
+        var_login_id = StringVar(frame,name='var_login_id')
         var_role = StringVar(frame,name='var_role')
         var_uname = StringVar(frame,name='var_uname')
         var_passwd = StringVar(frame,name='var_passwd')
@@ -160,23 +173,16 @@ class UserPage(Frame):
         Label(frame,text="Création d'un compte",font=('',29),pady=15,background='skyblue').pack()
 
         EntryWithLabel(frame,label_text='Nom :',variable_text='var_noms')
-        EntryWithLabel(frame,label_text="Nom d'utilisateur :",variable_text='var_uname')
-        EntryWithLabel(frame,label_text="Mot de pass :",variable_text='var_passwd',entry_cnf={'show':'*'})
+        EntryWithLabel(frame,label_text="Nom d'utilisateur :",variable_text='var_uname',entry_cnf={'name':'entry_username'},frame_name='frame_username')
+        EntryWithLabel(frame,label_text="Mot de pass :",variable_text='var_passwd',entry_cnf={'show':'*','name':'entry_password'},frame_name='frame_password')
         ComboboxWithLabel(frame,textvariable=var_role,combox_cnf={'values':('admin','vendeur','moniteur')},label_text='Role : ')
 
         EntryWithLabel(frame,label_text='Addresse :',variable_text='var_addr')
         EntryWithLabel(frame,label_text='Telephone :',variable_text='var_tel')
         EntryWithLabel(frame,label_text='Email :',variable_text='var_email')
-
-        #f_photo = Frame(frame,background='skyblue')
-        #Label(f_photo,text="Photo : ",font=('',15),background='skyblue').pack(side='left')
-        #Button(f_photo,text='parcourir',command=self.set_file).pack(side='right') #   parcourir nest pas implementer
-        #Entry(f_photo,textvariable=var_photo,state='readonly').pack(side='right')
-        #f_photo.pack()
-
         
         f3 = Frame(frame,background='skyblue')
-        Button(f3,text="Creer le compte",command=ret,pady=10,width=20).pack(side='left')
+        Button(f3,text="Envoyer",command=ret,pady=10,width=20).pack(side='left')
         Button(f3,text='Annuler',padx=10,pady=10,width=15,command=lambda: self.show_frame('Home')).pack(side='right')
         f3.pack(padx=10,pady=10,side='bottom')
 
@@ -213,70 +219,6 @@ class UserPage(Frame):
         return frame
         """
 
-    def Change(self,container):
-        def ret():
-            param = {
-                'login_id':var_login_id.get(),
-                'user_id':var_login_id.get(),
-                'noms':var_noms.get(),
-                'addr':var_addr.get(),
-                'role':var_role.get(),
-                'telephone':var_tel.get(),
-                'email':var_email.get(),
-                #'photo':'' # nous devons avoir une foction qui encode en base64 limage 
-            }
-
-            try:
-                api = API(setting.get('url'),'users',cookie=temp_setting.cookie)
-                api.change(param)
-            except Exception as e:
-                alert_wn(e)
-            else:
-                lc = self.frames['Home'].nametowidget('body.tableau')
-                i = lc.selection()
-                self.show_frame('Home')
-                lc.delete(i[0])
-                lc.insert(
-                    '',i[0],iid=i[0],values=(
-                        i[0],api.get('username'),
-                        param.get('noms'),param.get('role'),
-                        'actif' if api.get('statut') else 'bloquer')
-                    )
-                
-                alert_wn("Le compte a ete modifier avec success")
-                self.show_frame('Home')
-        
-        frame = Frame(container,name='frame_change',background='skyblue')
-        var_login_id = StringVar(frame,name='var_login_id')
-        var_role = StringVar(frame,name='var_role')
-        var_addr = StringVar(frame,name='var_addr')
-        var_noms = StringVar(frame,name='var_noms')
-        var_tel = StringVar(frame,name='var_tel')
-        var_email = StringVar(frame,name='var_email')
-        #var_photo = StringVar(frame,name='var_photo')
-
-        Label(frame,text="Modification d'un compte",font=('',29),pady=15,background='skyblue').pack()
-
-        EntryWithLabel(frame,label_text='Nom :',variable_text='var_noms')
-        ComboboxWithLabel(frame,textvariable=var_role,combox_cnf={'values':('admin','vendeur','moniteur')},label_text='Role : ')
-        EntryWithLabel(frame,label_text='Addresse :',variable_text='var_addr')
-        EntryWithLabel(frame,label_text='Telephone :',variable_text='var_tel')
-        EntryWithLabel(frame,label_text='Email :',variable_text='var_email')
-
-        #f_photo = Frame(frame,background='skyblue')
-        #Label(f_photo,text="Photo : ",font=('',15),background='skyblue').pack(side='left')
-        #Button(f_photo,text='parcourir').pack(side='right') #   parcourir nest pas implementer
-        #Entry(f_photo,textvariable=var_photo,state='readonly').pack(side='right')
-        
-        #f_photo.pack()
-        
-        f3 = Frame(frame,background='skyblue')
-        Button(f3,text="Modifier",command=ret,pady=10,padx=10,width=10).pack(side='left')
-        Button(f3,text='Annuler',padx=10,pady=10,width=15,command=lambda: self.show_frame('Home')).pack(side='right')
-        f3.pack(side='bottom',padx=10,pady=10)
-        
-        return frame
-
     def ResetPasswd(self,container):
         def ret():
             if var_confim_passwd.get() != var_passwd.get():
@@ -301,7 +243,7 @@ class UserPage(Frame):
         var_confim_passwd = StringVar(frame,name='var_confirm_passwd')
         Label(frame,text="Changement de mot de passe",font=('',15),background='skyblue').pack()
 
-        EntryWithLabel(frame,label_text="Mot de passe :",variable_text='var_passwd')
+        EntryWithLabel(frame,label_text="Mot de passe :",variable_text='var_passwd',entry_cnf={'show':'*'})
         EntryWithLabel(frame,label_text="Confirmer le :",variable_text='var_confirm_passwd',entry_cnf={'show':'*'})
         
         f3 = Frame(frame,background='skyblue')

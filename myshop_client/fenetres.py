@@ -459,7 +459,7 @@ class VentePage(Frame):
         p_id = march.get('produit_id')
 
         if lc_temp.exists(p_id):
-            pr, dev = march.get('prix').split(sep=' ')
+            pr, dev = march.get('prix_vente').split(sep=' ')
             pr = int(pr)
             pr -= (reduction*pr)//100
 
@@ -467,26 +467,26 @@ class VentePage(Frame):
             
             pr = pr * int(self.tmp_march[p_id]['quantite'])
             
-            self.tmp_march[p_id]['prix'] = f"{pr} {dev}"
+            self.tmp_march[p_id]['prix_vente'] = f"{pr} {dev}"
             lc_temp.delete(p_id)
             lc_temp.insert('','end',iid=p_id,values=(march.get('label'),self.tmp_march[p_id]['quantite'],self.tmp_march[p_id]['prix']))
         else:
             self.tmp_march[p_id] = {'quantite':0,'prix':''}
-            pr, dev = march.get('prix').split(sep=' ')
+            pr, dev = march.get('prix_vente').split(sep=' ')
             pr = int(pr)
             pr -= (reduction*pr)//100 
             pr = pr * int(quatite)
             prix = f'{pr} {dev}'
 
             self.tmp_march[p_id]['quantite'] = int(quatite)
-            self.tmp_march[p_id]['prix'] = prix
+            self.tmp_march[p_id]['prix_vente'] = prix
 
             lc_temp.insert('','end',iid=p_id,values=(march.get('label'),quatite,prix))
 
         t = {}
         
         for id_ , d in self.tmp_march.items(): # nous faisons la sommes des prix en espectant les devices
-            pr , dev = d['prix'].split(sep=' ')
+            pr , dev = d['prix_vente'].split(sep=' ')
             if dev in t :
                 t[dev] += int(pr)
             else:

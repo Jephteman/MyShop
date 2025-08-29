@@ -163,7 +163,7 @@ class Loginsdb():
                 data.update(i._asdict())
 
             cursor.commit()
-        Noteficationsdb(self.instance,config=self.config).add({'message':f"Création de l'utilisateur {param.get('username'),'niveau':'information'}"})
+        Noteficationsdb(self.instance,config=self.config).add({'message':f"Création de l'utilisateur {param.get('username')},'niveau':'information'"})
         return data
 
     def change(self,param):
@@ -589,8 +589,6 @@ class Ventesdb():
 
     def add(self,data):
         data = my_objects.VenteObject(data)
-        if not data.get('client_id'):
-            data['client_id'] = 0
 
         marchandises = data['marchandises']
         
@@ -605,7 +603,7 @@ class Ventesdb():
             
             q = int(quantite)
             data['produit_id'] = march
-            prixi, devise = info.get('prix').split(sep=' ')
+            prixi, devise = info.get('prix_vente').split(sep=' ')
             prix = int(prixi)
 
             for i, d in promotions.items():
@@ -738,7 +736,10 @@ class Produitsdb():
                 produit_id integer primary key {},
                 label char(24) not null unique,
                 categorie_id integer not null,
-                prix char(32),
+                prix_achat char(32),
+                prix_vente char(32) not null,
+                date_expiration datetime,
+                date_modification datetime,
                 quantite integer unsigned default 0, 
                 code_barre integer default 000000,
                 description Text,
@@ -754,13 +755,11 @@ class Produitsdb():
     def add(self,param):
         param = my_objects.ProduitObject(param)
         data = {}
-        prix , devise = sep_prix(param.get('prix'))
-        param['prix'] = f'{prix} {devise}'
 
         with self.instance.cursor() as cursor:
             query = """
-                insert into Produits (label,categorie_id,prix,photo,description,code_barre) 
-                values(:label,:categorie_id,:prix,:photo,:description,:code_barre) returning *
+                insert into Produits (label,categorie_id,prix_achat, prix_vente,date_expiration,date_modification,photo,description,code_barre) 
+                values(:label,:categorie_id,:prix_achat, :prix_vente,:date_expiration,:date_modification,:photo,:description,:code_barre) returning *
                 """
             for i in cursor.execute(text(query),param):
                 data.update(i._asdict())
@@ -771,12 +770,11 @@ class Produitsdb():
     def change(self,param):
         param = my_objects.ProduitObject(param)
         data = {}
-        prix , devise = sep_prix(param.get('prix'))
-        param['prix'] = f'{prix} {devise}'
 
         with self.instance.cursor() as cursor:
             query = """
-                update Produits set label = :label, categorie_id = :categorie_id, prix = :prix, 
+                update Produits set label = :label, categorie_id = :categorie_id, prix_vente = :prix_vente,prix_achat = :prix_achat,
+                date_expiration = :date_expiration, date_modification = :date_modification, 
                 photo = :photo,description = :description,code_barre = :code_barre 
                 where produit_id == :produit_id returning *
                 """
@@ -799,7 +797,7 @@ class Produitsdb():
         with self.instance.cursor() as cursor:
             query = """
                 select produit_id,produits.label as label, Categories.label as cat_label, 
-                Categories.categorie_id as categorie_id,prix , quantite, code_barre, 
+                Categories.categorie_id as categorie_id,prix_vente, prix_achat, date_expiration, date_modification , quantite, code_barre, 
                 photo blob, Produits.description as description 
                 from Produits join Categories where Produits.categorie_id == Categories.categorie_id and
                 produit_id == :produit_id
@@ -814,7 +812,7 @@ class Produitsdb():
         with self.instance.cursor() as cursor:
             query = """
                 select produit_id,Produits.label as label, Categories.label as cat_label, 
-                Categories.categorie_id as categorie_id,prix , quantite, code_barre, 
+                Categories.categorie_id as categorie_id,prix_achat, prix_vente,date_expiration,date_modification , quantite, code_barre, 
                 Produits.description as description, photo from Produits 
                 join Categories where Produits.categorie_id == Categories.categorie_id
                 """
@@ -844,7 +842,6 @@ class Arrivagesdb:
     def add(self,param):
         param = my_objects.ArrivageObject(param)
         data = {}
-        param['date'] = get_timestamp()
         with self.instance.cursor() as cursor:
             query = """
                 insert into Arrivages (produit_id,date,quantite) 
@@ -858,12 +855,11 @@ class Arrivagesdb:
                 """
             cursor.execute(text(query),param)
             cursor.commit()
-        Noteficationsdb(self.instance).add({'message':f"Arrivage du produit n° {param.get('produit_id'),'niveau':'information'}"})
-
+        Noteficationsdb(self.instance).add({'message':f"Arrivage du produit n° {param.get('produit_id')}",'niveau':'information'})
         return data
 
     def all(self,param:dict={}):
-        param.update(my_objects.ProduitObject(param).to_like())
+        param.update(my_objects.ArrivageObject(param).to_like())
         data = {}
         with self.instance.cursor() as cursor:
             query = """
@@ -892,7 +888,7 @@ class Arrivagesdb:
         return data
 
     def delete(self,param):
-        param = param = my_objects.PromotionObject(param)
+        param = param = my_objects.ArrivageObject(param)
         with self.instance.cursor() as cursor:
             query = """
                 delete from Arrivages where arrivage_id == :arrivage_id 
@@ -1020,7 +1016,7 @@ class Promotionsdb:
         return data
     
     def valide(self,param): 
-        #param = my_objects.PromotionObject(param)
+        param = my_objects.PromotionObject(param)
         data = {}
         with self.instance.cursor() as cursor:
             query = """
@@ -1137,7 +1133,6 @@ class Noteficationsdb:
                     message Text)
                     """.format(self.instance.autoincrement)
                 cursor.execute(text(query))
-                #cursor.execute(text("create index if not exists idx_notication on Notes(sujet)"))
                 cursor.commit()
             
     def add(self,param):
@@ -1163,7 +1158,7 @@ class Noteficationsdb:
             cursor.commit()
         
     def all(self,param={}):
-        param.update(my_objects.NoteObject(param))
+        param.update(my_objects.NotificatiionObject(param))
         data = {}
         with self.instance.cursor() as cursor:
             query = """
@@ -1180,7 +1175,7 @@ class Noteficationsdb:
         return data
     
     def get(self,param):
-        param = my_objects.NoteObject(param)
+        param = my_objects.NotificatiionObject(param)
         d = {}
         with self.instance.cursor() as cursor:
             query = """

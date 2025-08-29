@@ -118,12 +118,12 @@ class Users:
             raise PermissionException(f"Vous n'etes pas autoriser a mener cette action")
         
         try:
-            Agentsdb(self.db_instance).change(data)
+            ret = Agentsdb(self.db_instance).change(data)
             Loginsdb(self.db_instance,config=self.config).change(data)
 
             data['message'] = f"une modification ds informations par {self.user_info.get('username')} sur l'utilisateur {data.get('login_id')} "
             Logsdb(self.db_instance).add(data)
-            return 'success',200
+            return ret,200
         except KeyError as e:
 
             data['message'] = f"une requete mal ecrite de modification d'information"
