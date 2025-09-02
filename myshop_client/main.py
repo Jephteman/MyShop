@@ -33,7 +33,7 @@ class App(tk.Tk):
         self.frames = {}
         
         # Création des différentes frames
-        for F in (VentePage, LoginPage,NotePage, ParametrePage, ArrivagePage, StockPage, SessionPage, MonitorPage,UserPage, ClientPage, PromotionPage, AboutPage, SetupPage, InventairePage):
+        for F in (VentePage, LoginPage,NotePage, ParametrePage, ArrivagePage, StockPage, SessionPage, MonitorPage,UserPage, ClientPage, PromotionPage, AboutPage, SetupPage, InventairePage, NoticePage):
             frame = F(container, self)
             self.frames[F.__name__] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -88,6 +88,7 @@ class App(tk.Tk):
         menu_outils = Menu(menu,tearoff=0)
         menu_outils.add_command(label="Graphique",command=Graphique) 
         menu_outils.add_command(label="Notes",command=lambda : self.show_frame('NotePage'))
+        menu_outils.add_command(label="Notification",command=lambda : self.show_frame('NoticePage'))
         menu.add_cascade(menu=menu_outils,label="Outils")
         
         return menu

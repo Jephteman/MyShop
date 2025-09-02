@@ -207,8 +207,10 @@ class StockPage(Frame):
                 produit.get('date_modification')
             )
             self.temp_index.append(produit.get('produit_id'))
-            if not tab.exists(int(i)):
-                tab.insert('','end',iid=produit.get('produit_id'),values=p)
+            if tab.exists(int(i)):
+                tab.delete(int(i))
+                
+            tab.insert('','end',iid=produit.get('produit_id'),values=p)
 
         for i, d in self.data_cat.items():
             self.name_id_categories.update({d.get('label'):d.get('categorie_id')})
@@ -355,9 +357,8 @@ class StockPage(Frame):
                     tab.delete(i[0])
 
                 tab.insert('','end',iid=data.get('produit_id'),values=p)
-
-                alert_wn("Insertion des infos du produit '{}' avec success".format(n_produit.get()))
                 self.show_frame('Home')
+                alert_wn("Insertion des infos du produit '{}' avec success".format(n_produit.get()))
         
         frame = Frame(contenair,name='frame_add',background='skyblue')
         n_produit = StringVar(frame,name='var_produit_label')
@@ -504,6 +505,7 @@ class ArrivagePage(Frame):
     def actualise(self):
         try:
             api = API(setting.get('url'),'arrivages',cookie=temp_setting.cookie)
+            self.data.clear()
             self.data.update(api.all())
 
             api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
@@ -511,14 +513,19 @@ class ArrivagePage(Frame):
         except Exception as e:
             alert_wn(e)
         else:
+            self.produits_label_id.clear()
+            self.temp_index.clear()
+
             tab = self.frames['Home'].nametowidget('body.tableau')
             for i , d in self.data.items():
                 p = (
                     d.get('arrivage_id'),d.get('label'),d.get('quantite'),d.get('date'),
                 )
                 if not tab.exists(int(i)):
-                    tab.insert('','end',iid=d.get('arrivage_id'),values=p)
-                    self.temp_index.append(d.get('arrivage_id'))
+                    tab.delete(int(i))
+
+                tab.insert('','end',iid=d.get('arrivage_id'),values=p)
+                self.temp_index.append(d.get('arrivage_id'))
 
             for id_ , info in produits.items():
                 self.produits_label_id.update({info.get('label'):id_})
@@ -744,6 +751,7 @@ class PromotionPage(Frame):
         except Exception as e:
             alert_wn(e)
         else:
+            self.data.clear()
             self.data.update(data)
             tab = self.frames['Home'].nametowidget('body.tableau')
             list_prod = self.frames['Add'].nametowidget('body.list_produit')
@@ -758,7 +766,9 @@ class PromotionPage(Frame):
                      ' | '.join(d.get('produits_label')),d.get('reduction'), d.get('date_fin'))
                 
                 if not tab.exists(int(i)):
-                    tab.insert('','end',iid=d.get('promotion_id'),values=p)
+                    tab.delete(int(i))
+
+                tab.insert('','end',iid=d.get('promotion_id'),values=p)
                     
     def Home(self,container):
         frame = Frame(container,name='frame_home',background='skyblue')

@@ -51,12 +51,14 @@ class ClientPage(Frame):
     def actualise(self):
         try:
             api = API(setting.get('url'),'clients',cookie=temp_setting.cookie)
+            self.data.clear()
             self.data.update(api.all())
         except Exception as e:
             alert_wn(e)
         
         tab = self.frames['Home'].nametowidget('body.tableau')
-        
+        self.temp_index.clear()
+
         for i , d in self.data.items():
             p = (
                 d.get('client_id'),d.get('noms'),d.get('point'),d.get('addr'),
@@ -64,8 +66,10 @@ class ClientPage(Frame):
                 d.get('telephone')
             )
             if not tab.exists(int(i)):
-                tab.insert('','end',iid=d.get('client_id'),values=p)
-                self.temp_index.append(d.get('client_id'))
+                tab.delete(int(i))
+
+            tab.insert('','end',iid=d.get('client_id'),values=p)
+            self.temp_index.append(d.get('client_id'))
         
     def Home(self,container):
         frame  = Frame(container,name='frame_home',background='skyblue')
@@ -383,6 +387,7 @@ class VentePage(Frame):
             alert_wn(e)
         else:
             self.data.clear()
+            self.n_id.clear()
             self.data.update(data)
             for i , d in self.data.items():
                 self.n_id.update({d.get('label'):i})

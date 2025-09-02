@@ -90,14 +90,15 @@ def askfile_open(var,file_type): # il ne fonctionne plus, nous ne lui renvoyons 
     if x:
         var.set(x)
 
-def alert_wn(message):
-    print(message)
+def alert_wn(message:Exception|str):
     f = Toplevel()
     f.title("Alert")
     f.geometry("550x100")
     f.resizable(False,False)
     Label(f,text=message,height=3,relief='solid',wraplength=540).pack()
     Button(f,text='OK',command=f.destroy).pack(side='bottom')
+    if not (type(message) is str):
+        raise message
 
 class LoginPage(Frame):
     def __init__(self, parent, controller):
@@ -559,10 +560,12 @@ class NotePage(Frame):
         tab = self.frames['Home'].nametowidget('body.tableau')
         try:
             api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
-            self.notes.update(api.all())
+            data = api.all()
         except Exception as e:
             alert_wn(e)
-        
+
+        self.notes.clear()
+        self.notes.update(api.all())
         for i , data in self.notes.items():
             n_id = str(data.get('note_id'))
             p = (n_id,data.get('sujet'),data.get('username'),data.get('date'))
@@ -647,15 +650,20 @@ class NoticePage(Frame):
         tab = self.frames['Home'].nametowidget('body.tableau')
         try:
             api = API(setting.get('url'),'notifications',cookie=temp_setting.cookie)
-            self.notes.update(api.all())
+            data = api.all()
         except Exception as e:
             alert_wn(e)
         
+        self.notifications.clear()
+        self.notifications.update(data)
+
         for i , data in self.notifications.items():
             n_id = str(data.get('notification_id'))
             p = (n_id,data.get('message'),data.get('niveau'),data.get('date'))
-            if not tab.exists(int(n_id)):
-                tab.insert('','end',iid=n_id,values=p)
+            if tab.exists(int(n_id)):
+                tab.delete(int(n_id))
+
+            tab.insert('','end',iid=n_id,values=p)
 
     def delete(self):
         try:

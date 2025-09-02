@@ -163,7 +163,7 @@ class Loginsdb():
                 data.update(i._asdict())
 
             cursor.commit()
-        Noteficationsdb(self.instance,config=self.config).add({'message':f"Création de l'utilisateur {param.get('username')},'niveau':'information'"})
+        Notificationsdb(self.instance,config=self.config).add({'message':f"Création de l'utilisateur {param.get('username')},'niveau':'information'"})
         return data
 
     def change(self,param):
@@ -251,7 +251,7 @@ class Sessionsdb():
             value = self.db_instance.settings.get(i)
             info.update({i:value})
         info.update({'username':param.get('username')})
-        Noteficationsdb(self.db_instance).add({'message':f"Connection de l'utilisateur {param.get('username')}",'niveau':'information'})
+        Notificationsdb(self.db_instance).add({'message':f"Connection de l'utilisateur {param.get('username')}",'niveau':'information'})
         return info
     
     def all(self,param:dict={}):
@@ -855,7 +855,7 @@ class Arrivagesdb:
                 """
             cursor.execute(text(query),param)
             cursor.commit()
-        Noteficationsdb(self.instance).add({'message':f"Arrivage du produit n° {param.get('produit_id')}",'niveau':'information'})
+        Notificationsdb(self.instance).add({'message':f"Arrivage du produit n° {param.get('produit_id')}",'niveau':'information'})
         return data
 
     def all(self,param:dict={}):
@@ -943,7 +943,7 @@ class Promotionsdb:
                 data.update(d)
         
             cursor.commit()
-        Noteficationsdb(self.instance).add({'message':f"Création de la promotion {param.get('label'),'niveau':'information'}"})
+        Notificationsdb(self.instance).add({'message':f"Création de la promotion {param.get('label'),'niveau':'information'}"})
         return data
 
     def delete(self,param):
@@ -1120,7 +1120,7 @@ class Notesdb:
     def change(self,param):
         raise MessagePersonnalise('Fonctionnalité non implémentée')
 
-class Noteficationsdb:
+class Notificationsdb:
     def __init__(self,instance:database,first=False,config={}):
         self.instance = instance
         if first:
@@ -1164,10 +1164,6 @@ class Noteficationsdb:
             query = """
                 select * from Notifications 
                 """
-            if param.get('isreport'):
-                param['from'] = to_date(param.get('from'))
-                param['to'] = to_date(param.get('to'))
-                query += " and date between date(:from) and date(:to) "
             for i in cursor.execute(text(query),param):
                 d = i._asdict()
                 data[d.get('note_id')] = d

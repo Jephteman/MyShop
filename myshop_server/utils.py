@@ -68,6 +68,7 @@ def is_permited(role: str, action: str) -> bool:
             'Ventes': ['all', 'get', 'add', 'change', 'delete'],
             'Promotions': ['all', 'get', 'add', 'change', 'delete'],
             'Notes': ['all', 'get', 'add', 'change', 'delete'],
+            'Notifications': ['all', 'get', 'add', 'change', 'delete'],
             'Settings': ['all', 'get', 'add', 'change', 'delete'],
             'Graphiques':['all']
         },
@@ -78,6 +79,7 @@ def is_permited(role: str, action: str) -> bool:
             'Users': ['all'],
             'Promotions': ['all'],
             'Notes': ['all'],
+            'Notifications': ['all','delete'],
             'Graphiques':['all']
         }
     }

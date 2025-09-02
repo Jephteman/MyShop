@@ -80,9 +80,11 @@ class UserPage(Frame):
         else:
             lc = self.frames['Home'].nametowidget('body.tableau')
             for index, info in self.data.items() : 
-                if not lc.exists(int(index)):
-                    p = (int(index),info.get('username'),info.get('noms'),info.get('role'),'actif' if info.get('statut') else 'bloquer')
-                    x = lc.insert('','end',iid=index,values=p )    
+                if lc.exists(int(index)):
+                    lc.delete(int(index))
+                    
+                p = (int(index),info.get('username'),info.get('noms'),info.get('role'),'actif' if info.get('statut') else 'bloquer')
+                lc.insert('','end',iid=index,values=p )    
         
     def Home(self,container):
         frame = Frame(container,name='frame_home',background='skyblue')
@@ -333,8 +335,10 @@ class SessionPage(Frame):
                     'actif' if d.get('statut') == 1 else 'bloquer',
                     d.get('ip_addr')
                     )
-                if not lc.exists(int(i)):
-                    lc.insert('','end',iid=d.get('session_id'),values=p)
+                if lc.exists(int(i)):
+                    lc.delete(int(i))
+                
+                lc.insert('','end',iid=d.get('session_id'),values=p)
 
     def block(self):
         lc = self.frames['Home'].nametowidget('body.tableau')

@@ -1,11 +1,11 @@
 from flask import Flask, request, send_file
-from .backends import Logs, Sessions, Users, Agents, Clients, Categories, Notes, Produits, Ventes, Arrivages, Promotions, Graphiques, database, cleaner, initiale_action
+from .backends import Logs, Sessions, Users, Agents, Clients, Categories, Notes, Produits, Ventes, Arrivages, Promotions, Graphiques, database, Notifications,cleaner, initiale_action
 from .utils import * 
 
 app = Flask(__name__)
 
 list_ressource = {
-    'logs':Logs,'sessions':Sessions,'users':Users,'agents':Agents,
+    'logs':Logs,'sessions':Sessions,'users':Users,'agents':Agents,'notifications':Notifications,
     'clients':Clients,'categories':Categories,'notes':Notes,'graphiques':Graphiques,
     'produits':Produits,'ventes':Ventes,'arrivages':Arrivages,'promotions':Promotions
     }
@@ -19,16 +19,14 @@ def error(e:Exception):
     """
         S'occupe d'appeller la methode ^message^ de la classe de l'exception
     """
-    print(e,'except ')
     return e.message() if hasattr(e,'message') else ("Une erreur côté serveur est survenue ",302)
 
 @app.errorhandler(404)
 def page_not_found(err):
     """
-        Message pour les points de terminaison non prevu, code 444
+        Message pour les points de terminaison non prevu, code 404
     """
-    m =  message(("page not found",404))
-    return m
+    return ("page not found",404)
 
 @app.route('/logo')
 def get_logo():

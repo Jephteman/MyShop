@@ -6,7 +6,7 @@ from .utils import *
 list_db = {
     'Logs':Logsdb,'Logins':Loginsdb,'Sessions':Sessionsdb,'Users':Loginsdb,'Notes':Notesdb,
     'Clients':Clientsdb,'Categories':Categoriesdb,'Promotions':Promotionsdb,'Graphiques':Graphique,
-    'Produits':Produitsdb,'Ventes':Ventesdb,'Arrivages':Arrivagesdb,'Agents':Agentsdb
+    'Produits':Produitsdb,'Ventes':Ventesdb,'Arrivages':Arrivagesdb,'Agents':Agentsdb,'Notifications':Notificationsdb
     }
 
 class Users: 
@@ -322,6 +322,10 @@ class Notes(ModeleDB):
     """ Sert de couche d'abstraction pour communiquer avec notes """    
     namedb = 'Notes'
 
+class Notifications(ModeleDB):
+    """ Sert de couche d'abstraction pour communiquer avec notifications """    
+    namedb = 'Notifications'
+
 class Graphiques(ModeleDB):
     """ Sert de couche d'abstraction pour generer des graphiqque des ventes """    
     namedb = 'Graphiques'
@@ -349,7 +353,7 @@ def initiale_action(instance:database,config={}): # effectue les actions d'initi
     Arrivagesdb(instance,first=True)
     Promotionsdb(instance,first=True)
     Notesdb(instance,first=True)
-    Noteficationsdb(instance,first=True)
+    Notificationsdb(instance,first=True)
     
     if not logins.all(): # cree le 1er compte sur le serveur
         p = {'username':'MyShop','password':'MyShop','role':'admin'}
