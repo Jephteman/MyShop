@@ -1,7 +1,7 @@
 from .utils import alert_wn, API, setting, temp_setting, clean_variable, Printer, selecteur_date, askfile_open
 from .widgets import *
 
-class InventairePage(Frame):
+class VentePage(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
@@ -40,7 +40,7 @@ class InventairePage(Frame):
         somme = IntVar(frame,name='var_somme')
         
         f_top = Frame(frame,background='skyblue',name='frame_top')
-        Label(f_top,text="Inventaire",font=('',15),background='skyblue').pack(padx=5,pady=5)
+        Label(f_top,text="Ventes",font=('',15),background='skyblue').pack(padx=5,pady=5)
         
         f_entry = Frame(f_top,background='skyblue',name='body')
         for name, message in (('vendeur','Vendeur'),('client_id','Id du client'),('from','Date depart') ,('to','Date fin')):
@@ -521,7 +521,7 @@ class ArrivagePage(Frame):
                 p = (
                     d.get('arrivage_id'),d.get('label'),d.get('quantite'),d.get('date'),
                 )
-                if not tab.exists(int(i)):
+                if tab.exists(int(i)):
                     tab.delete(int(i))
 
                 tab.insert('','end',iid=d.get('arrivage_id'),values=p)

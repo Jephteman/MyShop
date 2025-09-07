@@ -617,7 +617,7 @@ class Ventesdb():
             else:
                 price[devise] = prix
 
-            data['marchandises'].update({info['label']:(q,f"{prix} {devise}")})
+            data['marchandises'].update({info['label']:(q,info.get('prix_vente'),f"{prix} {devise}")})
             
             if q > info['quantite']:
                 raise StockInsuffisantException(info['label'])
@@ -676,6 +676,7 @@ class Ventesdb():
         return resp
 
     def get(self,param):
+        param = my_objects.VenteObject(param)
         l = {}
         with self.instance.cursor() as cursor:
             query = """
@@ -690,28 +691,18 @@ class Ventesdb():
 
     def all(self,param:dict={}): 
         """ renvoi les elements de la tables ventes """
-        if param.get('isform',False) == False:
-            param['today'] = time.strftime("%Y-%m-%d")
-            req = """
-                select vente_id ,client_id,username as vendeur,marchandises ,prix, date 
-                from Ventes join Logins where Ventes.login_id == Logins.login_id and 
-                date(date) == date(:today) order by date
-                """
-        else:
-            param['to'] = to_date(param.get('to'))
-            param['from'] = to_date(param.get('from'))
-            req = """
+        param = my_objects.VenteFiltreObject(param)
+        req = """
                 select vente_id ,client_id ,username as vendeur,marchandises ,prix, date 
                 from Ventes join Logins where (Ventes.login_id == Logins.login_id) and 
                 (Ventes.login_id like :login_id) and (client_id like :client_id) and
                 (Logins.username like :vendor) and
                 date(date) between date(:from) and date(:to) order by date
                 """
-            param.update(my_objects.VenteObject(param).to_like())
             
         ventes = {}
         with self.instance.cursor() as cursor:
-            for i in cursor.execute(text(req),param):
+            for i in cursor.execute(text(req),param.to_like()):
                 d = i._asdict()
                 d['marchandises'] = JSONDecoder().decode(d.get('marchandises'))
                 ventes[d.get('vente_id')] = d
@@ -859,12 +850,12 @@ class Arrivagesdb:
         return data
 
     def all(self,param:dict={}):
-        param.update(my_objects.ArrivageObject(param).to_like())
+        param.update(my_objects.ArrivageObject(param))
         data = {}
         with self.instance.cursor() as cursor:
             query = """
                 select arrivage_id , label , Arrivages.quantite as quantite,date from Arrivages 
-                join Produits where (label like :label) and Arrivages.produit_id == Produits.produit_id
+                join Produits where Arrivages.produit_id == Produits.produit_id
                 """
             if param.get('isreoort'):
                 query += " and date between date(:from) and date(:to) "

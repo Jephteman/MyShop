@@ -65,7 +65,7 @@ class ClientPage(Frame):
                 'Detaillant' if d.get('type') == 'D' else 'Grossiste',
                 d.get('telephone')
             )
-            if not tab.exists(int(i)):
+            if tab.exists(int(i)):
                 tab.delete(int(i))
 
             tab.insert('','end',iid=d.get('client_id'),values=p)
@@ -258,7 +258,7 @@ class ClientPage(Frame):
         
         Button(window,text="Chercher",command=filtre).pack(padx=5,pady=5)
 
-class VentePage(Frame):
+class MainPage(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
         self.controller = controller
@@ -313,13 +313,15 @@ class VentePage(Frame):
         f7.pack()
 
         f8 = Frame(f_left,height=110,width=165,background='skyblue',name='frame_tableau_panier')
-        lc_temp = ttk.Treeview(f8,columns=('produit','quantite','prix'),name='tableau_panier')#,height=50)
+        lc_temp = ttk.Treeview(f8,columns=('produit','quantite','prix_unitaire','prix_total'),name='tableau_panier')#,height=50)
         lc_temp.heading('produit',text='Produits')
         lc_temp.column('produit',width=80)
         lc_temp.heading('quantite',text='Quantite')
         lc_temp.column('quantite',width=60)
-        lc_temp.heading('prix',text='Prix')
-        lc_temp.column('prix',width=80)
+        lc_temp.heading('prix_unitaire',text='Prix')
+        lc_temp.column('prix_unitaire',width=80)
+        lc_temp.heading('prix_total',text='Total')
+        lc_temp.column('prix_total',width=80)
         lc_temp['show'] = 'headings'
         lc_temp.bind('<Control-D>',self.del_temp)
         lc_temp.bind('<Control-d>',self.del_temp)
@@ -474,7 +476,7 @@ class VentePage(Frame):
             
             self.tmp_march[p_id]['prix_vente'] = f"{pr} {dev}"
             lc_temp.delete(p_id)
-            lc_temp.insert('','end',iid=p_id,values=(march.get('label'),self.tmp_march[p_id]['quantite'],self.tmp_march[p_id]['prix']))
+            lc_temp.insert('','end',iid=p_id,values=(march.get('label'),self.tmp_march[p_id]['quantite'],march.get('prix_vente'),self.tmp_march[p_id]['prix_vente']))
         else:
             self.tmp_march[p_id] = {'quantite':0,'prix':''}
             pr, dev = march.get('prix_vente').split(sep=' ')
@@ -486,7 +488,7 @@ class VentePage(Frame):
             self.tmp_march[p_id]['quantite'] = int(quatite)
             self.tmp_march[p_id]['prix_vente'] = prix
 
-            lc_temp.insert('','end',iid=p_id,values=(march.get('label'),quatite,prix))
+            lc_temp.insert('','end',iid=p_id,values=(march.get('label'),quatite,march.get('prix_vente'),prix))
 
         t = {}
         
@@ -516,7 +518,7 @@ class VentePage(Frame):
             pass
         else:
             item = int(item)
-            prix = self.tmp_march.get(item)['prix']
+            prix = self.tmp_march.get(item)['prix_vente']
             chif, dev = prix.split(sep=' ')
 
             del self.tmp_march[item]
@@ -530,7 +532,7 @@ class VentePage(Frame):
                 
                 str_price += f'+ {prix} {dev}'
 
-            self.frames['Home'].setvar('var_t_prix',str_price)
+            self.frames['Home'].setvar('var_t_prix',str_price[1:])
 
     def print(self,event):
         lc = self.frames['Home'].nametowidget('frame_droit.tableau_fact')

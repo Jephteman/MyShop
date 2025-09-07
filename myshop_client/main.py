@@ -33,7 +33,7 @@ class App(tk.Tk):
         self.frames = {}
         
         # Création des différentes frames
-        for F in (VentePage, LoginPage,NotePage, ParametrePage, ArrivagePage, StockPage, SessionPage, MonitorPage,UserPage, ClientPage, PromotionPage, AboutPage, SetupPage, InventairePage, NoticePage):
+        for F in (MainPage, LoginPage,NotePage, ParametrePage, ArrivagePage, StockPage, SessionPage, MonitorPage,UserPage, ClientPage, PromotionPage, AboutPage, SetupPage, VentePage, NoticePage):
             frame = F(container, self)
             self.frames[F.__name__] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -45,7 +45,7 @@ class App(tk.Tk):
             self.show_frame('LoginPage')
         else:
             self.islogin()
-            self.show_frame("VentePage")
+            self.show_frame("MainPage")
     
     def show_frame(self, cont):
         """Affiche la frame demandée"""
@@ -61,7 +61,7 @@ class App(tk.Tk):
 
         #       menu option
         menu_option = Menu(menu,tearoff=0)
-        menu_option.add_command(label="Accueil",command=lambda : self.show_frame('VentePage')) 
+        menu_option.add_command(label="Accueil",command=lambda : self.show_frame('MainPage')) 
         menu_option.add_command(label="Exporter ",command=Exporte)
         menu_option.add_command(label="Parametre",command=lambda : self.show_frame('ParametrePage')) 
         menu_option.add_command(label="A propos",command=lambda : self.show_frame('AboutPage'))
@@ -70,7 +70,7 @@ class App(tk.Tk):
         
         #       menu gestion
         menu_gestion = Menu(menu,tearoff=0)
-        menu_gestion.add_command(label="Inventaire",command=lambda : self.show_frame('InventairePage')) 
+        menu_gestion.add_command(label="Vente",command=lambda : self.show_frame('VentePage')) 
         menu_gestion.add_command(label="Arrivage",command=lambda : self.show_frame('ArrivagePage'))
         menu_gestion.add_command(label="Stock",command=lambda : self.show_frame('StockPage'))
         menu_gestion.add_command(label="Clients",command=lambda : self.show_frame('ClientPage'))

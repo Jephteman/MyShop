@@ -175,7 +175,6 @@ def valide_data(donnees: dict) -> bool:
                 raise TypeEntreException(label)
             if t == 'type':
                 if value == int:
-                    print(data,label)
                     if not str(data).isnumeric():
                         raise TypeEntreException(label)
                     continue
@@ -226,7 +225,8 @@ def to_date(param: str) -> str:
         MessagePersonnalise: Si le format de la date est incorrect.
     """
     if not param:
-        raise MessagePersonnalise('Le format de la date est incorrect')
+        return ''
+        #raise MessagePersonnalise('Le format de la date est incorrect')
     d = param.split('/')
     date = datetime.date(int(d[2]), int(d[1]), int(d[0]))
     return date.strftime('%Y-%m-%d')

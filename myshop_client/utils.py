@@ -185,7 +185,7 @@ class LoginPage(Frame):
             
         temp_setting.set('is_login','yes')
         temp_setting.update_cookie()
-        self.controller.show_frame('VentePage')
+        self.controller.show_frame('MainPage')
         self.controller.islogin()
 
 class AboutPage(Frame):
@@ -904,7 +904,7 @@ class ParametrePage(Frame):
     def quit(self):
         """Abbandon des modifications"""
         if temp_setting.get('islogin') == 'yes':
-            self.controller.show_frame('VentePage')
+            self.controller.show_frame('MainPage')
         else:
             self.controller.show_frame('LoginPage')
 
@@ -931,7 +931,7 @@ class Printer:
         self.window.resizable(False,False)
         self.data = data
 
-        Label(self.window,text="Facture",font=('',24),width=24,background='skyblue').pack(side=TOP,padx=5,pady=5)
+        Label(self.window,text="Facture",font=('',24),width=24,background='skyblue',underline=1).pack(side=TOP,padx=5,pady=5)
 
         f_dev = Frame(self.window,background='skyblue')
         
@@ -939,8 +939,8 @@ class Printer:
             if name in ('marchandises') :
                 continue
             f = Frame(f_dev,background='skyblue')
-            Label(f,text=f"{name.capitalize()} : ",font=('',15),background='skyblue').pack(side='left')
-            Label(f,text=value,font=('',15),background='skyblue').pack()
+            Label(f,text=f"{name.capitalize()} : ",background='skyblue').pack(side='left')
+            Label(f,text=value,background='skyblue').pack()
             f.pack(padx=3,pady=3)
 
         f8 = Frame(f_dev,background='skyblue')
@@ -1021,8 +1021,8 @@ class Printer:
 
         # 2. Infos boutique
         story.append(Paragraph(param.get("boutique"), style_bold))
-        story.append(Paragraph(param.get("address"), style_centered))
-        story.append(Paragraph(param.get("telephone"), style_centered))
+        story.append(Paragraph(param.get("address",''), style_centered))
+        story.append(Paragraph(param.get("telephone",''), style_centered))
         story.append(Spacer(1, 10))
 
         # 3. Infos client (cadre gris)
