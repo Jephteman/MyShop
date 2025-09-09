@@ -200,26 +200,15 @@ class UserPage(Frame):
      
             user_id = i[0]
             api = API(setting.get('url'),'users',cookie=temp_setting.cookie)
+
+            if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
+                return 
             api.delete(user_id)
         except Exception as e:
             alert_wn(e)
         else:
             alert_wn('Utilisateur suprimé avec success')
             lc.delete(user_id)
-                
-        
-        """
-        frame = Frame(container,name='frame_add',background='skyblue')
-
-        Label(frame,text=f"Voullez-vous supprimer l'utilisateur {self.data[user_id].get('username')} ?",padx=10,font=('',13),).pack()
-
-        f1 = Frame(frame,background='skyblue')
-        Button(f1,text="  OUI  ",font=('',9),command=ret,pady=6,width=10).pack(side=LEFT)
-        Button(f1,text='  NON  ',command=window.destroy,font=('',9),pady=6,width=10).pack(side=RIGHT)
-        f1.pack()
-        
-        return frame
-        """
 
     def ResetPasswd(self,container):
         def ret():
@@ -363,6 +352,10 @@ class SessionPage(Frame):
         
             session = i[0]
             api = API(setting.get('url'),'sessions',cookie=temp_setting.cookie)
+            
+            if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
+                return
+            
             api.delete(session)
         except Exception as e:
             alert_wn(e)

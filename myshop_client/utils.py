@@ -577,8 +577,11 @@ class NotePage(Frame):
             tab = self.frames['Home'].nametowidget('body.tableau')
             id_ = tab.selection()[0]
             api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
-            api.delete(id_)
+
+            if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
+                return
             
+            api.delete(id_)
             tab.delete(id_)
             self.notes.pop(id_)
         except Exception as e:
@@ -670,8 +673,11 @@ class NoticePage(Frame):
             tab = self.frames['Home'].nametowidget('body.tableau')
             id_ = tab.selection()[0]
             api = API(setting.get('url'),'notifications',cookie=temp_setting.cookie)
-            api.delete(id_)
+
+            if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
+                return
             
+            api.delete(id_)
             tab.delete(id_)
             self.notifications.pop(id_)
         except Exception as e:

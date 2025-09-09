@@ -182,6 +182,10 @@ class ClientPage(Frame):
             tab = self.frames['Home'].nametowidget('body.tableau')
             id_ = tab.selection()[0]
             api = API(setting.get('url'),'clients',cookie=temp_setting.cookie)
+            
+            if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
+                return
+            
             api.delete(id_)
         except IndexError:
             pass

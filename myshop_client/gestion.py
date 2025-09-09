@@ -281,11 +281,15 @@ class StockPage(Frame):
 
         Button(win,text="Chercher",padx=5,pady=5,command=filtre).pack()
 
-    def delete(self): # je dois implementer la confirmation
+    def delete(self):
         tab = self.frames['Home'].nametowidget('body.tableau')
         try:
             id_ = tab.selection()[0]
             api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
+
+            if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
+                return
+            
             api.delete(id_)
         except IndexError:
             alert_wn("Veillez d'abord selectionner l'item")
@@ -647,11 +651,15 @@ class ArrivagePage(Frame):
         
         return frame
 
-    def delete(self): # je dois implementer la confirmation
+    def delete(self): 
         try:
             tab = self.frames['Home'].nametowidget('body.tableau')
             id_ = tab.selection()[0]
             api = API(setting.get('url'),'arrivages',cookie=temp_setting.cookie)
+
+            if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
+                return
+            
             api.delete(id_)
         except IndexError:
             alert_wn("Veillez d'abord selectionner l'item")
@@ -659,7 +667,7 @@ class ArrivagePage(Frame):
             alert_wn(e)
         else:
             tab.delete(id_)
-            self.temp_index.remove(id_)
+            self.temp_index.remove(int(id_))
 
 class PromotionPage(Frame):
     def __init__(self, parent, controller):
@@ -899,11 +907,15 @@ class PromotionPage(Frame):
         
         return frame
 
-    def delete(self): # je dois implementer la confirmation
+    def delete(self): 
         try:
             tab = self.frames['Home'].nametowidget('body.tableau')
             id_ = tab.selection()[0]
             api = API(setting.get('url'),'promotions',cookie=temp_setting.cookie)
+
+            if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
+                return
+            
             api.delete(id_)
         except IndexError:
             alert_wn("Veillez selectionner la promotion a supprimée")
