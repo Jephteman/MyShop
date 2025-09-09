@@ -1,6 +1,6 @@
 from tkinter import ttk
 from tkinter import *
-from tkinter.messagebox import askquestion
+from tkinter.messagebox import askquestion, showinfo
 
 
 class placeholderEntry(Entry):

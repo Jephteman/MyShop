@@ -148,7 +148,7 @@ def valide_data(donnees: dict) -> bool:
         "type": {'type': str, 'values': ['D', 'G'], 'required': True},
         "role": {'type': str, 'values': ['admin', 'moniteur', 'vendeur'], 'required': True},
         "username": {'type': str, 'max': 32, 'min': 3, 'required': True},
-        "password": {'type': str, 'min': 6, 'required': True},
+#        "password": {'type': str, 'min': 6, 'required': True},
         "noms": {"type": str, "max": 62},
         "telephone": {"type": int, 'max': 15},
         "email": {"type": str, "regex": r"^[^@]+@[^@]+\.[^@]+$"},

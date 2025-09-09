@@ -1,4 +1,4 @@
-from .utils import get_timestamp, sep_prix, to_date
+from .utils import get_timestamp, sep_prix, to_date,MessagePersonnalise
 
 class ModelObject(dict):
     def __init__(self,attributs:list,param:dict={}):

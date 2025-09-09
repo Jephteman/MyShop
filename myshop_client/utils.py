@@ -91,12 +91,7 @@ def askfile_open(var,file_type): # il ne fonctionne plus, nous ne lui renvoyons 
         var.set(x)
 
 def alert_wn(message:Exception|str):
-    f = Toplevel()
-    f.title("Alert")
-    f.geometry("550x100")
-    f.resizable(False,False)
-    Label(f,text=message,height=3,relief='solid',wraplength=540).pack()
-    Button(f,text='OK',command=f.destroy).pack(side='bottom')
+    showinfo("Alerte",message)
     if not (type(message) is str):
         raise message
 

@@ -67,7 +67,7 @@ class Logsdb():
             cursor.commit()
         
     def get(self,param):
-        param = my_objects.LoginObject(param)
+        param = my_objects.LogObject(param)
         data = {}
         with self.instance.cursor() as cursor :
             query = """select * from Logs where log_id = :log_id"""
@@ -151,6 +151,10 @@ class Loginsdb():
         param = my_objects.LoginObject(param)
         salt = self.config.get('salt')
         data = {}
+
+        if not len(self['password']).__lt__(6):
+            raise MessagePersonnalise("Le mot de passe doit contenir 6 ou plus des caracteres")
+
         param['password'] = bytes(salt+param['password'],'utf-8')
         param['password'] = sha256(param['password']).hexdigest()
         with self.instance.cursor() as cursor:
