@@ -1,0 +1,4 @@
+Flask
+waitress
+SQLAlchemy
+setuptools

@@ -105,11 +105,6 @@ class VentePage(Frame):
                 except:
                     continue
 
-            if not param:
-                param = {'isform':False}
-            else:
-                param['isform'] = True
-
             api = API(setting.get('url'),'ventes',cookie=temp_setting.cookie)
             data = api.all(param=param)
         except Exception as e:

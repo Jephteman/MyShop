@@ -1,0 +1,4 @@
+configparser
+matplotlib
+reportlab
+setuptools
