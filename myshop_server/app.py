@@ -71,6 +71,25 @@ def login():
     else:
         return message(res)
 
+@app.route('/api/v1/disconnect',methods=['GET'])
+def disconnect():
+    try:
+        data = {}
+        ##param =  serialise(param)
+        data['ip_addr'] = request.access_route[0]
+        data['action'] = 'deconnexion'
+        data['date'] = get_timestamp()
+
+        valide_data(data)
+        
+        instance = environment.get('instance')
+        config = environment.get('configurations')
+        res = Users(instance,config=config).disconnect(data)
+    except Exception as e:
+        return error(e)
+    else:
+        return message(res)
+
 @app.route('/api/v1/reset_passwd',methods=['POST'])
 def reset_passwd():
     """

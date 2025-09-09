@@ -14,6 +14,8 @@ class Users:
         self.config = config
         self.db_instance = instance
         self.cookie = cookie
+        self.user_info = {}
+
         if self.cookie:
             self.user = self.is_login()
             if self.user:
@@ -182,6 +184,13 @@ class Users:
             param['message'] = 'Une requete mal ecrite'
             Logsdb(self.db_instance).add(param)
             raise AbsenceParametreException(e)
+        
+    def disconnect(self,param):
+        Sessionsdb(self.db_instance).delete(self.cookie)
+        param['message'] = f"Deconnexion de l'utilisateur {self.user_info.get('username')}"
+        Logsdb(self.db_instance).add(param)
+        return 'success',200
+        
 
 class ModeleDB :
     """ Sert de modele de base pour implementer l'authentification et l'autorisation sur les requetes envoyee"""
@@ -341,7 +350,6 @@ def cleaner(instance:database,config={}):
         time.sleep(int(sleep_time))
 
 def initiale_action(instance:database,config={}): # effectue les actions d'initialisation
-    print("[-] Creation des tables sur la base de donnees ")
     Logsdb(instance,first=True)
     logins = Loginsdb(instance,first=True, config=config)
     Sessionsdb(instance,first=True)
@@ -358,12 +366,10 @@ def initiale_action(instance:database,config={}): # effectue les actions d'initi
     if not logins.all(): # cree le 1er compte sur le serveur
         p = {'username':'MyShop','password':'MyShop','role':'admin'}
         logins.add(p)
-        print("[-] Creation du compte par defaut ")
 
     if not clients.all(): # creation du 1er client (client par defaut)
         p = {'noms': 'Client par defaut','date':get_timestamp()}
         clients.add(p)
-        print("[-] Creation du client par defaut ")
 
     ### d'autres actions
 
