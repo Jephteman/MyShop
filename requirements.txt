@@ -1,9 +1,0 @@
-Flask
-SQLAlchemy
-
-configparser
-matplotlib
-reportlab
-setuptools
-
-waitress
