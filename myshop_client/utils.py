@@ -44,6 +44,9 @@ class Config:
             else:
                 self.config_dir = os.path.expanduser("~/.config/myshop")
 
+            if not pathlib.Path(self.config_dir).exists():
+                os.mkdir(self.config_dir)
+
             self.filename = os.path.join(self.config_dir, "config.txt")
             self.conf_file = pathlib.Path(self.filename)
             self.config.read(self.conf_file)
@@ -62,6 +65,7 @@ class Config:
         with open(self.conf_file,'w') as f:
             self.config.write(f)
             alert_wn("Paramtres sauvegarder avec success")
+        self.reload()
 
     def get(self,param:str):
         return self.config.get('CLIENT',param) if self.config.has_option('CLIENT',param) else ''
@@ -77,6 +81,17 @@ class Config:
     def update_cookie(self):
         cookie = self.get('cookie')
         self.cookie = JSONDecoder().decode(cookie)
+    
+    def update_logo(self):
+        path_name = setting.get('logo')
+        try:
+            api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
+            data = api.image()
+        except Exception as e:
+            alert_wn(e)
+        else:
+            with open(path_name,'wb') as file:
+                file.write(data)
 
 def askfile_save(var,file_type): # il ne fonctionne plus, nous ne lui renvoyons plus var
     x = asksaveasfile(filetypes=file_type)
@@ -146,17 +161,11 @@ class LoginPage(Frame):
         Label(frame,text="Connection au serveur",font=('',15),wraplength=540,padx=10,pady=10,background='skyblue').pack()
         
         img_name = setting.get('logo')
-        if img_name and pathlib.Path(img_name).exists():
-            img_file = img_name
-        else:
-            try:
-                img_file = pkg_resources.resource_filename('myshop','myshop_client/logo.gif')
-            except ModuleNotFoundError:
-                img_file = pathlib.Path(__file__).parent.joinpath('logo.png')
-            except Exception as e:
-                alert_wn(e)
 
-        img = Image.open(img_file)
+        if not img_name or not pathlib.Path(img_name).exists():
+            img_file = pkg_resources.resource_filename('myshop_client','logo.gif')
+        
+        img = Image.open((img_file))
         photo = ImageTk.PhotoImage(img)
         
         Label(frame,image=photo).pack(padx=5,pady=5)
@@ -212,15 +221,16 @@ class AboutPage(Frame):
         frame = Frame(container,background='skyblue')
         Label(frame,text='\nCe programme a été developpé sous license GNU/Linux \n',background='skyblue').pack()
         Label(frame,text='Pour asurrer la gestion d\'une boutique ou quelque chose du genre ',background='skyblue').pack()
-        
-        try:
-            img_file = pkg_resources.resource_filename('myshop','myshop_client/logo.gif')
-        except ModuleNotFoundError:
-            img_file = pathlib.Path(__file__).parent.joinpath('logo.gif')
 
-        img = Image.open(img_file)
+        img_name = setting.get('logo')
+
+        if not img_name or not pathlib.Path(img_name).exists():
+            img_file = pkg_resources.resource_filename('myshop_client','logo.gif')
+        
+        img = Image.open((img_file))
         photo = ImageTk.PhotoImage(img)
         Label(frame,image=photo).pack(padx=5,pady=5)
+
         """Quelques ajout"""
         Label(frame,text="Contact : Jephte Mangenda ( tech5industrie@gmail.com ) ",background='skyblue').pack(side='bottom')
         Label(frame,text="Disponible sur : https://github.com/Jephteman/MyShop",background='skyblue').pack(side='bottom')
@@ -408,6 +418,7 @@ class SetupPage(Frame):
         setting.config['CLIENT']['url'] = self.getvar('url')
         setting.config['CLIENT']['proxy'] = self.getvar('proxy')
         setting.config['CLIENT']['auto_login'] = self.getvar('auto_login')
+        setting.config['CLIENT']['logo'] = f'{setting.config_dir}/logo.gif'
         #setting['CLIENT']['theme'] = self.getvar('theme')
 
         try:
@@ -423,6 +434,7 @@ class SetupPage(Frame):
             b_next.configure(state='disabled')
             b_prev.configure(state='disabled')
             b_fin.configure(state='active')
+            setting.update_logo()           
 
 class NotePage(Frame):
     def __init__(self, parent, controller):
@@ -867,7 +879,7 @@ class ParametrePage(Frame):
         if cont != 'Home':
             clean_variable(frame)
         frame.tkraise()
-
+    
     def Home(self,contenair):
         frame = Frame(contenair,name='frame_home',background='skyblue')
         Label(frame,text='Parametre',font=('',24),background='skyblue').pack(padx=5,pady=5)

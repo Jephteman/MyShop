@@ -8,18 +8,18 @@ setup(
     author_email='tech5industrie@gmail.com',
     packages=find_packages(),
     package_data={
-         'myshop':['myshop_server/.env','myshop_client/logo.ico']
+         'myshop':['myshop_server/.env','myshop_client/logo.gif']
     },
     include_package_data=True,
-    requires=[
-        'sqlalchemy',
-        'configparser',
-        'flask',
-        'matplotlib',
-        'win32print',
-        'reportlab',
-        'waitress'
-    ],
+    #requires=[
+    #    'sqlalchemy',
+    #    'configparser',
+    #    'flask',
+    #    'matplotlib',
+    #    'win32print',
+    #    'reportlab',
+    #    'waitress'
+    #],
     entry_points={
         "console_scripts": [
             "myshop_server = myshop_server.console:main",

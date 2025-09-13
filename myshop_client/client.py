@@ -103,5 +103,12 @@ class API():
             return resp
         raise PersonaliseException(req.text)
 
+    def image(self): 
+        url = f"{self.base_url}/logo"
+        req = requests.get(url,cookies=self.cookie)
+        if req.status_code == 200:
+            return req._content
+        raise PersonaliseException(req.text)
+
 
 

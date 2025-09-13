@@ -7,19 +7,12 @@ from .utils import *
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        img_name = setting.get('logo')
+        img_file = setting.get('logo')
         
-        if img_name and pathlib.Path(img_name).exists():
-            img_file = img_name
-        else:
-            try:
-                img_file = pkg_resources.resource_filename('myshop','myshop_client/logo.gif')
-            except ModuleNotFoundError:
-                img_file = pathlib.Path(__file__).parent.joinpath('logo.gif')
-            except Exception as e:
-                alert_wn(e)
-
-        img = Image.open(img_file)
+        if not img_file or not pathlib.Path(img_file).exists():
+            img_file = pkg_resources.resource_filename('myshop_client','logo.gif')
+            
+        img = Image.open((img_file))
         photo = ImageTk.PhotoImage(img)
         self.iconphoto(False,photo)
         
