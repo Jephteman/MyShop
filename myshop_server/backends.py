@@ -1,12 +1,17 @@
 from .exceptions import *
 from .database import *
 from .utils import *
-
+from .generations import *
 # regroupe les differentes ressources qui sont disponibles dans le backend
 list_db = {
     'Logs':Logsdb,'Logins':Loginsdb,'Sessions':Sessionsdb,'Users':Loginsdb,'Notes':Notesdb,
-    'Clients':Clientsdb,'Categories':Categoriesdb,'Promotions':Promotionsdb,'Graphiques':Graphique,
+    'Clients':Clientsdb,'Categories':Categoriesdb,'Promotions':Promotionsdb,
     'Produits':Produitsdb,'Ventes':Ventesdb,'Arrivages':Arrivagesdb,'Agents':Agentsdb,'Notifications':Notificationsdb
+    }
+
+list_services = {
+    'Graphique':GraphiqueGen,
+    'Inventaire':InventaireGen
     }
 
 class Users: 
@@ -214,8 +219,8 @@ class ModeleDB :
             raise PermissionException(f"Vous ne pouvez pas acceder a la ressource {self.namedb}")
         
         try:
-            data = list_db[self.namedb](self.db_instance).all(param=param) # pour certaines ressources le param est facultatif
-            param['message'] = f"Une tentative interdite de suppression de l'utilisateur"
+            data = list_db[self.namedb](self.db_instance).all(param=param) 
+            param['message'] = f""
             Logsdb(self.db_instance).add(param)
             return data,200
         except KeyError as e:
@@ -248,7 +253,7 @@ class ModeleDB :
             raise PermissionException(f"vous n'etes pas autorise à modifier la ressource {self.namedb.lower()}")
         try:
             data = list_db[self.namedb](self.db_instance).change(param)
-            param['message'] = f"Modification de la resource '{self.namedb}' numero {id_} par l'utilisateur {self.user.user_info.get('username')}"
+            param['message'] = f"Modification de la ressource '{self.namedb}' numero {id_} par l'utilisateur {self.user.user_info.get('username')}"
             Logsdb(self.db_instance).add(param)
             return data,200
         except KeyError as e:
@@ -286,7 +291,36 @@ class ModeleDB :
             return data,200
         except KeyError as e:
             raise AbsenceParametreException(e)
-
+        
+class ModeleGen :
+    """ Sert de modele de base pour implementer l'authentification et l'autorisation sur les requetes envoyee"""
+    name = ''
+    def __init__(self,instance:database,cookie:dict = {},config={}):
+        self.config = config
+        self.db_instance = instance
+        self.cookie = cookie
+        self.user = Users(instance,cookie = self.cookie, config=config)
+        is_login = self.user.is_login()
+        if not is_login : # nous verifions si l'utilisateur est cnnecter
+            raise NonConnecterException()
+        else:
+            self.user.user_info = Loginsdb(self.db_instance,config=self.config).get(is_login)
+                 
+    def do(self,param):
+        if not is_permited(self.user.user_info['role'],f'{self.namedb}.do'):
+            # l'uilisateur na pas le droit d'effetuer l action
+            param['message'] = f"Une tentative interdite de generation sur la resource '{self.name}'"
+            Logsdb(self.db_instance).add(param)
+            raise PermissionException(f"Vous ne pouvez pas acceder a la ressource {self.name}")
+        
+        try:
+            data = list_services[self.name](self.db_instance).do(param=param) # pour certaines ressources le param est facultatif
+            param['message'] = f"Generation d'un rendu sur le serveice {self.name} par l'utilisateur {self.user.user_info.get('username')}"
+            Logsdb(self.db_instance).add(param)
+            return data,200
+        except KeyError as e:
+            raise AbsenceParametreException(e)
+    
 class Ventes(ModeleDB):
     """ Sert de couche d'abstraction pour communiquer avec vente """    
     namedb = 'Ventes'
@@ -335,9 +369,13 @@ class Notifications(ModeleDB):
     """ Sert de couche d'abstraction pour communiquer avec notifications """    
     namedb = 'Notifications'
 
-class Graphiques(ModeleDB):
+class Graphique(ModeleGen):
     """ Sert de couche d'abstraction pour generer des graphiqque des ventes """    
-    namedb = 'Graphiques'
+    name = 'Graphique'
+
+class Inventaire(ModeleGen):
+    """ Sert de couche d'abstraction pour generer des inventaire des ventes """    
+    name = 'Inventaire'
 
 def cleaner(instance:database,config={}):
     """

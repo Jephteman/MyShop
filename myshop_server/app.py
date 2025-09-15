@@ -1,13 +1,19 @@
 from flask import Flask, request, send_file
-from .backends import Logs, Sessions, Users, Agents, Clients, Categories, Notes, Produits, Ventes, Arrivages, Promotions, Graphiques, database, Notifications,cleaner, initiale_action
+from .backends import (Logs, Sessions, Users, Agents,Clients, Categories, 
+            Notes, Produits, Ventes, Arrivages, Promotions, Inventaire,
+           Graphique, database, Notifications,cleaner, initiale_action)
 from .utils import * 
 
 app = Flask(__name__)
 
 list_ressource = {
     'logs':Logs,'sessions':Sessions,'users':Users,'agents':Agents,'notifications':Notifications,
-    'clients':Clients,'categories':Categories,'notes':Notes,'graphiques':Graphiques,
+    'clients':Clients,'categories':Categories,'notes':Notes,
     'produits':Produits,'ventes':Ventes,'arrivages':Arrivages,'promotions':Promotions
+    }
+
+list_generation = {
+    'graphique':Graphique,'inventaire':Inventaire
     }
 
 environment = {
@@ -114,6 +120,32 @@ def reset_passwd():
         return error(e)
     else:
         return message(res)
+
+@app.route('/api/v1/generation/<ressource>',methods=['POST'])
+def generer(ressource):
+    """
+        generation de rendu sur une ressource specifique
+    """
+    try:
+        param = request.data.decode()
+        param = JSONDecoder().decode(param)
+        ##param =  serialise(param)
+        param['ip_addr'] = request.access_route[0]
+        param['action'] = 'generation'
+        param['date'] = get_timestamp()
+
+        valide_data(param)
+        cookie = request.cookies.to_dict()
+        instance = environment.get('instance')
+        config = environment.get('configurations')
+        resource_class = list_generation.get(ressource)
+        if resource_class is None:
+            raise MessagePersonnalise(("Resource not found", 404))
+        req = resource_class(instance, cookie=cookie, config=config).do(param)
+    except Exception as e:
+        return error(e)
+    else:
+        return message(req)
 
 @app.route('/api/v1/<ressource>/add',methods=['POST'])
 def add(ressource):

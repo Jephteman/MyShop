@@ -219,7 +219,7 @@ class SettingObject(ModelObject):
 
 class VenteFiltreObject(ModelObject):
     """
-    Une classe héritant de dict pour représenter un paramètre de la table Settings.
+    Une classe héritant de dict pour représenter 
     Permet une sérialisation facile et un accès par attribut.
     """
     def __init__(self, param = {}):
@@ -238,3 +238,25 @@ class VenteFiltreObject(ModelObject):
 
     def __repr__(self):
         return f"<VenteFiltreObject >"
+
+class InventaireObject(ModelObject):
+    """
+    Une classe héritant de dict pour représenter un paramètre de la 
+    Permet une sérialisation facile et un accès par attribut.
+    """
+    def __init__(self, param = {}):
+        super().__init__(
+            ['login_id', 'client_id','vendor','date'],param
+        )
+
+        self['to'] = to_date(param.get('to'))
+        self['from'] = to_date(param.get('from'))
+
+        if not self['to']:
+            self['to'] = self['date']
+        if not self['from']:
+            self['from'] = self['date']
+
+
+    def __repr__(self):
+        return f"<InventaireObject >"

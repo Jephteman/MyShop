@@ -240,3 +240,15 @@ def get_timestamp() -> str:
         str: Horodatage actuel.
     """
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+def somme_prix(prix1,prix2):
+    if not prix1 :
+        return prix2
+    if not prix2 :
+        return prix1
+    
+    chiffre_prix1 , devise_prix1 = sep_prix(prix1)
+    chiffre_prix2 , devise_prix2 = sep_prix(prix2)
+
+    return f'{chiffre_prix1 + chiffre_prix2} {devise_prix1}'
+    
