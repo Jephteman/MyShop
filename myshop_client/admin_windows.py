@@ -1,4 +1,4 @@
-from .utils import alert_wn, API, setting, temp_setting, clean_variable
+from .utils import alert_wn, API, setting, temp_setting, clean_variable, api
 from .widgets import *
 
 
@@ -63,8 +63,8 @@ class UserPage(Frame):
     def actualise(self):
         self.data = {}
         try:
-            data1 = API(setting.get('url'),'users',cookie=temp_setting.cookie).all()
-            data2 = API(setting.get('url'),'agents',cookie=temp_setting.cookie).all()
+            data1 = api.all('users')
+            data2 = api.all('agents')
             for i in data1.keys():
                 d = data1.get(i)
 
@@ -139,11 +139,10 @@ class UserPage(Frame):
             #    param['photo'] = photo
 
             try:
-                api = API(setting.get('url'),'users',cookie=temp_setting.cookie)
                 if var_login_id.get():
                     api.change(param)
                 else:
-                    data = api.add(param)
+                    data = api.add('users',param)
             except Exception as e:
                 alert_wn(e)
             else:
@@ -199,11 +198,10 @@ class UserPage(Frame):
                 return
      
             user_id = i[0]
-            api = API(setting.get('url'),'users',cookie=temp_setting.cookie)
 
             if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
                 return 
-            api.delete(user_id)
+            api.delete('users',user_id)
         except Exception as e:
             alert_wn(e)
         else:
@@ -218,7 +216,6 @@ class UserPage(Frame):
             
             param = {'password':var_passwd.get(),'confirm_password':var_confim_passwd.get(),'login_id':var_login_id.get()}
             try:
-                api = API(setting.get('url'),'',cookie=temp_setting.cookie)
                 api.reset_passwd(param)
             except Exception as e:
                 alert_wn(e)
@@ -310,8 +307,7 @@ class SessionPage(Frame):
 
     def actualise(self):
         try:
-            api = API(setting.get('url'),'sessions',cookie=temp_setting.cookie)
-            data = api.all()
+            data = api.all('sessions')
         except Exception as e:
             alert_wn(e)
         else:
@@ -338,8 +334,7 @@ class SessionPage(Frame):
         session = i[0]
         param = {'session_id':session}
         try:
-            api = API(setting.get('url'),'sessions',cookie=temp_setting.cookie)
-            api.change(param)
+            api.change('sessions',param)
         except Exception as e:
             alert_wn(e)
         else:
@@ -351,12 +346,11 @@ class SessionPage(Frame):
             i = lc.selection()
         
             session = i[0]
-            api = API(setting.get('url'),'sessions',cookie=temp_setting.cookie)
             
             if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
                 return
             
-            api.delete(session)
+            api.delete('sessions',session)
         except Exception as e:
             alert_wn(e)
         else:
@@ -420,8 +414,7 @@ class MonitorPage(Frame):
 
     def actualise(self):
         try:
-            api = API(setting.get('url'),'logs',cookie=temp_setting.cookie)
-            data = api.all()
+            data = api.all('logs')
         except Exception as e:
             alert_wn(e)
         else:

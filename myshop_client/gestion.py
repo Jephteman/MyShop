@@ -1,4 +1,4 @@
-from .utils import alert_wn, API, setting, temp_setting, clean_variable, Printer, selecteur_date, askfile_open
+from .utils import alert_wn, API, setting, temp_setting, clean_variable, Printer, selecteur_date, askfile_open, api
 from .widgets import *
 
 class VentePage(Frame):
@@ -105,8 +105,7 @@ class VentePage(Frame):
                 except:
                     continue
 
-            api = API(setting.get('url'),'ventes',cookie=temp_setting.cookie)
-            data = api.all(param=param)
+            data = api.all('ventes',param=param)
         except Exception as e:
             alert_wn(e)
         else:
@@ -186,9 +185,9 @@ class StockPage(Frame):
         tab = self.frames['Home'].nametowidget('body.tableau')
         list_cat = self.frames['Add'].nametowidget('body.categorie.list_cat')
         try:
-            data_cat = API(setting.get('url'),'categories',cookie=temp_setting.cookie).all()
-            api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
-            self.data.update(api.all())
+            data_cat = api.all('categories')
+            data = api.all('produits')
+            self.data.update(data)
             self.data_cat.update(data_cat)
         except Exception as e:
             alert_wn(e)
@@ -285,7 +284,6 @@ class StockPage(Frame):
         tab = self.frames['Home'].nametowidget('body.tableau')
         try:
             id_ = tab.selection()[0]
-            api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
 
             if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
                 return
@@ -296,7 +294,7 @@ class StockPage(Frame):
         except Exception as e:
             alert_wn(e)
         else:
-            tab.delete(id_)
+            tab.delete('produits',id_)
             self.temp_index.remove(id_)
 
     def Add(self,contenair):
@@ -323,14 +321,13 @@ class StockPage(Frame):
                 return
 
             try:
-                api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
                 cat_id = self.name_id_categories.get(categorie.get())
                 param = {
                     'label':name,'prix_achat':prix_achat.get(),'prix_vente':prix_vente.get(),'date_expiration':date_expiration.get(),'categorie_id':cat_id,
                     'code_barre':code.get(),'photo':photo.get(),'description':desc.get('1.0','end-1c')
                     }
                 if not p_id.get():
-                    data = api.add(param)
+                    data = api.add('produits',param)
                 else:
                     param.update({'produit_id':p_id.get()})
                     data = api.change(param)
@@ -402,9 +399,8 @@ class StockPage(Frame):
                 return
             
             try:
-                api = API(setting.get('url'),'categories',cookie=temp_setting.cookie)
                 param = {'label':label.get(),'description':desc.get('1.0','end-1c')}
-                data = api.add(param)
+                data = api.add('categories',param)
             except IndexError as e:
                 alert_wn(e)
             else:
@@ -503,12 +499,9 @@ class ArrivagePage(Frame):
 
     def actualise(self):
         try:
-            api = API(setting.get('url'),'arrivages',cookie=temp_setting.cookie)
             self.data.clear()
-            self.data.update(api.all())
-
-            api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
-            produits = api.all()
+            self.data.update(api.all('arrivages'))
+            produits = api.all('produits')
         except Exception as e:
             alert_wn(e)
         else:
@@ -536,7 +529,7 @@ class ArrivagePage(Frame):
                 param = {
                     'label':label.get(),
                 }
-                arrivages = API(setting.get('url'),'arrivages',cookie=temp_setting.cookie).all(param=param)
+                arrivages = api.all('arrivages',param=param)
             except Exception as e:
                 alert_wn(e)
                 return
@@ -606,8 +599,7 @@ class ArrivagePage(Frame):
 
             try:
                 p = {'produit_id':produit_id,'quantite':piece.get()}
-                api = API(setting.get('url'),'arrivages',cookie=temp_setting.cookie)
-                data = api.add(p)
+                data = api.add('arrivages',p)
                 alert_wn(f"{p.get('quantite')} pieces du produit '{produit.get()}' ont été ajouté")
             except Exception as e:
                 alert_wn(e)
@@ -655,12 +647,11 @@ class ArrivagePage(Frame):
         try:
             tab = self.frames['Home'].nametowidget('body.tableau')
             id_ = tab.selection()[0]
-            api = API(setting.get('url'),'arrivages',cookie=temp_setting.cookie)
 
             if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
                 return
             
-            api.delete(id_)
+            api.delete('arrivages',id_)
         except IndexError:
             alert_wn("Veillez d'abord selectionner l'item")
         except Exception as e:
@@ -745,11 +736,9 @@ class PromotionPage(Frame):
         
     def actualise(self):
         try:
-            api = API(setting.get('url'),'promotions',cookie=temp_setting.cookie)
-            data = api.all()
+            data = api.all('promotions')
  
-            api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
-            dt = api.all()
+            dt = api.all('produits')
             self.produits.update(dt)
         except Exception as e:
             alert_wn(e)
@@ -846,8 +835,7 @@ class PromotionPage(Frame):
             }
 
             try:
-                api = API(setting.get('url'),'promotions',cookie=temp_setting.cookie)
-                data = api.add(param)
+                data = api.add('promotions',param)
                 #data.update({'produits_label':' || '.join(p_labels)})
             except Exception as e:
                 alert_wn(e)
@@ -911,12 +899,11 @@ class PromotionPage(Frame):
         try:
             tab = self.frames['Home'].nametowidget('body.tableau')
             id_ = tab.selection()[0]
-            api = API(setting.get('url'),'promotions',cookie=temp_setting.cookie)
 
             if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
                 return
             
-            api.delete(id_)
+            api.delete('promotions',id_)
         except IndexError:
             alert_wn("Veillez selectionner la promotion a supprimée")
         except Exception as e:

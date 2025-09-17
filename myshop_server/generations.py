@@ -6,7 +6,7 @@ class GraphiqueGen:
         self.instance = instance
         self.config = config
 
-    def do(self,param):
+    def get(self,param):
         format = param.get('graphe_fonction')
         support_format = [
         'date2n_vente',
@@ -61,7 +61,7 @@ class InventaireGen:
         self.instance = instance
         self.config = config
 
-    def do(self,param):
+    def get(self,param):
         param = my_objects.InventaireObject(param)
         ventes = Ventesdb(self.instance,self.config).all(param)
         produits = Produitsdb(self.instance,config=self.config).all()

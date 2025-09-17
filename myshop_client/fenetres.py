@@ -1,5 +1,5 @@
 import time 
-from .utils import alert_wn, API, setting, temp_setting, clean_variable, Printer
+from .utils import alert_wn, API, setting, temp_setting, clean_variable, Printer, api
 from tkinter import *
 from .widgets import *
 
@@ -50,9 +50,8 @@ class ClientPage(Frame):
         
     def actualise(self):
         try:
-            api = API(setting.get('url'),'clients',cookie=temp_setting.cookie)
             self.data.clear()
-            self.data.update(api.all())
+            self.data.update(api.all('clients'))
         except Exception as e:
             alert_wn(e)
         
@@ -123,8 +122,7 @@ class ClientPage(Frame):
                 param['client_id'] = tel.get()
 
             try:
-                api = API(setting.get('url'),'clients',cookie=temp_setting.cookie)
-                data = api.add(param)
+                data = api.add('clients',param)
             except Exception as e:
                 alert_wn(e)
             else:
@@ -177,16 +175,15 @@ class ClientPage(Frame):
         
         return frame
 
-    def delete(self): # je dois implementer la confirmation
+    def delete(self): 
         try:
             tab = self.frames['Home'].nametowidget('body.tableau')
             id_ = tab.selection()[0]
-            api = API(setting.get('url'),'clients',cookie=temp_setting.cookie)
             
             if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
                 return
             
-            api.delete(id_)
+            api.delete('clients',id_)
         except IndexError:
             pass
         except Exception as e:
@@ -205,7 +202,7 @@ class ClientPage(Frame):
                     'addr':addr.get(),
                     'telephone':tel.get()
                 }
-                cli = API(setting.get('url'),'clients',cookie=temp_setting.cookie).all(param=param)
+                cli = api.all('clients',param=param)
             except Exception as e:
                 alert_wn(e)
                 return
@@ -386,9 +383,8 @@ class MainPage(Frame):
 
     def actualise(self):
         try:
-            self.promotions = API(setting.get('url'),'promotions',cookie=temp_setting.cookie).all({'valide':True})
-            api = API(setting.get('url'),'produits',cookie=temp_setting.cookie)
-            data = api.all()
+            self.promotions = api.all('promotions',{'valide':True})
+            data = api.all('produits')
         except Exception as e:
             alert_wn(e)
         else:
@@ -413,8 +409,7 @@ class MainPage(Frame):
             param['marchandises'].update({p_id:qprod_idtab['quantite']})
             str_march += f"{n_produit} ({qprod_idtab['quantite']}) || "
         try:
-            api = API(setting.get('url'),'ventes',cookie=temp_setting.cookie)
-            data = api.add(param)
+            data = api.add('ventes',param)
         except Exception as e:
             alert_wn(e)
         else :

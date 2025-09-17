@@ -141,8 +141,9 @@ def generer(ressource):
         resource_class = list_generation.get(ressource)
         if resource_class is None:
             raise MessagePersonnalise(("Resource not found", 404))
-        req = resource_class(instance, cookie=cookie, config=config).do(param)
+        req = resource_class(instance, cookie=cookie, config=config).get(param)
     except Exception as e:
+        print(e)
         return error(e)
     else:
         return message(req)

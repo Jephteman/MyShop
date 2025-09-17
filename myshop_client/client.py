@@ -10,18 +10,17 @@ class PersonaliseException(Exception):
     def __str__(self):
         return self.args[0]
 
-
 class API():
-    def __init__(self,url,ressource,cookie=''):
+    def __init__(self,config):
         """
                 data : un dictionnaire qui contient imperativement
                     * url : str
                     * protocole : str (default http)
                     * cookie : str (dict)
         """
-        self.base_url = url
-        self.cookie = cookie
-        self.name = ressource
+        self.base_url = config.get('url')
+        self.cookie = config.cookie
+        #self.name = ressource
 
     def connect(self,data):
         """login to th server """
@@ -30,6 +29,7 @@ class API():
         if not req.status_code == 200:
            raise PersonaliseException(req.text)
         config = JSONDecoder().decode(req.text)
+        self.cookie = config.get('cookie')
         return config
         
     def check_cookie(self):
@@ -41,44 +41,44 @@ class API():
         config = JSONDecoder().decode(req.text)
         return config
 
-    def add(self,param):
+    def add(self,ressource,param):
         param = JSONEncoder().encode(param)
-        url = f'{self.base_url}/api/v1/{self.name}/add'
+        url = f'{self.base_url}/api/v1/{ressource}/add'
         req = requests.post(url,data=param,cookies=self.cookie)
         if req.status_code == 200:
             return JSONDecoder().decode(req.text)
         raise PersonaliseException(req.text)
 
-    def get(self,id):
+    def get(self,ressource,id):
         """return un seul element"""
-        url = f'{self.base_url}/api/v1/{self.name}/{id}/get'
+        url = f'{self.base_url}/api/v1/{ressource}/{id}/get'
         req = requests.get(url,cookies=self.cookie)
         if req.status_code == 200:
             data = JSONDecoder().decode(req.text)
             return data
         raise PersonaliseException(req.text)
    
-    def all(self,param={}):
+    def all(self,ressource,param={}):
         param = JSONEncoder().encode(param)
-        url = f"{self.base_url}/api/v1/{self.name}/all"
+        url = f"{self.base_url}/api/v1/{ressource}/all"
         req = requests.get(url,cookies=self.cookie,data=param)
         if req.status_code == 200:
             data = JSONDecoder().decode(req.text)
             return data
         raise PersonaliseException(req.text)
    
-    def change(self,param):
+    def change(self,ressource,param):
         data = JSONEncoder().encode(param)
         id_ = f'{self.name[:-1]}_id'
-        url = f"{self.base_url}/api/v1/{self.name}/{param.get(id_)}/change"
+        url = f"{self.base_url}/api/v1/{ressource}/{param.get(id_)}/change"
         req = requests.post(url,cookies=self.cookie,data=data)
         if req.status_code == 200:
             resp= JSONDecoder().decode(req.text)
             return resp
         raise PersonaliseException(req.text)
     
-    def delete(self,id):
-        url = f"{self.base_url}/api/v1/{self.name}/{id}/delete"
+    def delete(self,ressource,id):
+        url = f"{self.base_url}/api/v1/{ressource}/{id}/delete"
         req = requests.get(url,cookies=self.cookie)
         if req.status_code == 200:
             resp= JSONDecoder().decode(req.text)
@@ -110,5 +110,11 @@ class API():
             return req._content
         raise PersonaliseException(req.text)
 
-
+    def generate(self,object_rapport,param:dict):
+        param = JSONEncoder().encode(param)
+        url = f'{self.base_url}/api/v1/generation/{object_rapport}'
+        req = requests.post(url,data=param,cookies=self.cookie)
+        if req.status_code == 200:
+            return JSONDecoder().decode(req.text)
+        raise PersonaliseException(req.text)
 

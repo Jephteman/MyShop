@@ -131,8 +131,8 @@ class LoginPage(Frame):
         temp_setting.set('is_login','no')
         cookie = setting.get('cookie')
         if (setting.get('auto_login') == 'OUI') and cookie:
-            setting.update_cookie()
-            is_valid = API(setting.get('url'),'',cookie=setting.cookie).check_cookie()
+            #setting.update_cookie()
+            is_valid = api.check_cookie()
             if is_valid:
                 self.islogin(is_valid)
             else:
@@ -148,9 +148,8 @@ class LoginPage(Frame):
     def LoginFrame(self,contenair):
         def check():
             data = {'username':frame.getvar('username'),'password':frame.getvar('password')}
-            resp = API(setting.get('url'),'')
             try:
-                config_serv = resp.connect(data)
+                config_serv = api.connect(data)
                 self.islogin(config_serv)
             except Exception as e:
                 alert_wn(e)
@@ -163,9 +162,9 @@ class LoginPage(Frame):
         img_name = setting.get('logo')
 
         if not img_name or not pathlib.Path(img_name).exists():
-            img_file = pkg_resources.resource_filename('myshop_client','logo.gif')
+            img_name = pkg_resources.resource_filename('myshop_client','logo.gif')
         
-        img = Image.open((img_file))
+        img = Image.open((img_name))
         photo = ImageTk.PhotoImage(img)
         
         Label(frame,image=photo).pack(padx=5,pady=5)
@@ -188,7 +187,7 @@ class LoginPage(Frame):
             temp_setting.set(label,value)
             
         temp_setting.set('is_login','yes')
-        temp_setting.update_cookie()
+        #temp_setting.update_cookie()
         self.controller.show_frame('MainPage')
         self.controller.islogin()
 
@@ -225,9 +224,9 @@ class AboutPage(Frame):
         img_name = setting.get('logo')
 
         if not img_name or not pathlib.Path(img_name).exists():
-            img_file = pkg_resources.resource_filename('myshop_client','logo.gif')
+            img_name = pkg_resources.resource_filename('myshop_client','logo.gif')
         
-        img = Image.open((img_file))
+        img = Image.open((img_name))
         photo = ImageTk.PhotoImage(img)
         Label(frame,image=photo).pack(padx=5,pady=5)
 
@@ -531,8 +530,7 @@ class NotePage(Frame):
                 'description' : contenu.get('1.0','end-1c')
             }
             try:
-                api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
-                d = api.add(param)
+                d = api.add('notes',param)
             except Exception  as e:
                 alert_wn(e)
             else:
@@ -566,8 +564,7 @@ class NotePage(Frame):
     def actualise(self):
         tab = self.frames['Home'].nametowidget('body.tableau')
         try:
-            api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
-            data = api.all()
+            data = api.all('notes')
         except Exception as e:
             alert_wn(e)
 
@@ -583,12 +580,11 @@ class NotePage(Frame):
         try:
             tab = self.frames['Home'].nametowidget('body.tableau')
             id_ = tab.selection()[0]
-            api = API(setting.get('url'),'notes',cookie=temp_setting.cookie)
 
             if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
                 return
             
-            api.delete(id_)
+            api.delete('notes',id_)
             tab.delete(id_)
             self.notes.pop(id_)
         except Exception as e:
@@ -659,8 +655,7 @@ class NoticePage(Frame):
     def actualise(self):
         tab = self.frames['Home'].nametowidget('body.tableau')
         try:
-            api = API(setting.get('url'),'notifications',cookie=temp_setting.cookie)
-            data = api.all()
+            data = api.all('notifications')
         except Exception as e:
             alert_wn(e)
         
@@ -679,12 +674,11 @@ class NoticePage(Frame):
         try:
             tab = self.frames['Home'].nametowidget('body.tableau')
             id_ = tab.selection()[0]
-            api = API(setting.get('url'),'notifications',cookie=temp_setting.cookie)
 
             if askquestion('Confirmation','Etes-vous sûr de vouloir effectuer cette action ?') == 'no':
                 return
             
-            api.delete(id_)
+            api.delete('notifications',id_)
             tab.delete(id_)
             self.notifications.pop(id_)
         except Exception as e:
@@ -751,8 +745,7 @@ class Graphique:
             if from_ and to:
                 param = {'from':from_,'to':to,"isform":True,'graphe_fonction':self.type_.get()}
 
-            api = API(setting.get('url'),'graphiques',cookie=temp_setting.cookie)
-            data_raw = api.all(param=param)
+            data_raw = api.generate('graphique',param=param)
         except IndentationError as e:
             alert_wn(e)
         else:                        
@@ -825,8 +818,7 @@ class Exporte:
                 'isreport':True
                 }
             res = self.res.get()
-            api = API(setting.get('url'),res,cookie=temp_setting.cookie)
-            data = api.all(param)
+            data = api.get(res,param)
         except Exception as e:
             alert_wn(e)
         else:
@@ -1085,6 +1077,6 @@ class Printer:
 setting = Config()
 temp_setting = Config(temp_file=True)
 version = '0.0.1a0'
-
+api = API(setting)
 
 
