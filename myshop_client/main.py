@@ -79,7 +79,8 @@ class App(tk.Tk):
 
         #       menu  outils
         menu_outils = Menu(menu,tearoff=0)
-        menu_outils.add_command(label="Graphique",command=Graphique) 
+        menu_outils.add_command(label="Graphique",command=Graphique)
+        menu_outils.add_command(label="Inventaire",command=Inventaire) 
         menu_outils.add_command(label="Notes",command=lambda : self.show_frame('NotePage'))
         menu_outils.add_command(label="Notification",command=lambda : self.show_frame('NoticePage'))
         menu.add_cascade(menu=menu_outils,label="Outils")

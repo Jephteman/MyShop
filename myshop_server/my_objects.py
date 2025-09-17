@@ -226,9 +226,8 @@ class VenteFiltreObject(ModelObject):
         super().__init__(
             ['login_id', 'client_id','vendor','date'],param
         )
-
-        self['to'] = to_date(param.get('to'))
-        self['from'] = to_date(param.get('from'))
+        self['to'] = param.get('to','')
+        self['from'] = param.get('from','')
 
         if not self['to']:
             self['to'] = self['date']

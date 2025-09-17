@@ -835,6 +835,65 @@ class Exporte:
                 writer.writerows(serilise_data)
             alert_wn('Donnees exportees avec success')
 
+class Inventaire:
+    def __init__(self):
+        def set_file():
+            file_t = [('File text','*.csv')]
+            askfile_save(self.path,file_t)
+
+        self.window = Toplevel(width=500,padx=5,pady=5,background='skyblue')
+        self.window.title('Inventaire')
+        self.window.resizable(False,False)
+
+        frame = Frame(self.window,background='skyblue')
+        # en-tete  
+        self.origine = StringVar(frame,name='var_origine')
+        self.fin = StringVar(frame,name='var_fin')
+        self.path = StringVar(frame,name='var_path')
+
+        Label(frame,text="Inventaire",font=('',15),background='skyblue').pack()
+
+        entry1 = EntryWithLabel(frame,textvariable=self.origine,label_text='A partir du :')
+        entry1.bind('<FocusIn>', lambda event: selecteur_date('var_origine',frame)) 
+        
+        entry2 = EntryWithLabel(frame,textvariable=self.fin, label_text='Au : ')
+        entry2.bind('<FocusIn>', lambda event: selecteur_date('var_fin',frame)) 
+        entry2.pack(side='right')
+
+        f2 = Frame(frame,background='skyblue')
+        EntryWithLabel(f2,label_text='Emplacement : ',textvariable=self.path,entry_cnf={'state':'readonly'}).pack(side='left')
+        Button(f2,text='parcourir',command=set_file).pack(side='right')
+
+        f2.pack()
+
+        Button(frame,text="Generer",command=lambda : self.generer()).pack(side='bottom')
+
+        frame.pack()
+
+    def generer(self):   
+        try:
+            param = {
+                'from':self.origine.get(),
+                'to':self.fin.get(),
+                'isreport':True
+                }
+            data = api.generate('inventaire',param)
+        except Exception as e:
+            alert_wn(e)
+        else:
+            serilise_data = list(data.values())
+
+            csv_file = self.path.get()
+            if not serilise_data:
+                alert_wn("Aucune donnee n'est disponible")
+                return
+            
+            with open(csv_file,'w',newline='') as file:
+                writer = csv.DictWriter(file,fieldnames=serilise_data[0].keys())
+                writer.writeheader()
+                writer.writerows(serilise_data)
+            alert_wn('Donnees exportees avec success')
+
 class ParametrePage(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)

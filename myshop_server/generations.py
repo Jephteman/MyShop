@@ -61,25 +61,35 @@ class InventaireGen:
         self.instance = instance
         self.config = config
 
-    def get(self,param):
-        param = my_objects.InventaireObject(param)
-        ventes = Ventesdb(self.instance,self.config).all(param)
+    def get(self,param:dict):
+        param_inventaireobj = my_objects.InventaireObject(param)
+        param.update({'isreport':True})
+        ventes = Ventesdb(self.instance,self.config).all(param_inventaireobj)
         produits = Produitsdb(self.instance,config=self.config).all()
+        arrivages = Arrivagesdb(self.instance,config=self.config).all(param)
         inventaire = {}
+        initial_info = {'nom_produit':'','identifiant_produit':'','arrivage_recu':0,'quantite_vendu': 0,'quantite_stock':'','prix_vente_initaire':'','prix_vente_total':''}
         for vente_id , vente_info in ventes.items():
-            for produit_name, info in vente_info.get('marchandises'):
+            for produit_name, info in vente_info.get('marchandises').items():
                 if not produit_name in inventaire.keys():
-                    put = {'quantite_vendu': 0,'quatite_stock':'','prix_vente_initaire':'','prix_vente_total':''}
-                    inventaire.update({produit_name:put})
-
+                    inventaire.update({produit_name:initial_info.copy()})
+                    inventaire[produit_name]['nom_produit'] = produit_name
                 inventaire[produit_name]['quantite_vendu'] += info[0]
                 inventaire[produit_name]['prix_vente_initaire'] = somme_prix(inventaire[produit_name]['prix_vente_initaire'],info[1])
                 inventaire[produit_name]['prix_vente_total'] = somme_prix(inventaire[produit_name]['prix_vente_total'],info[2])
-
         for produit_id , produit_info in produits.items():
             name = produit_info.get('label')
-            if  name in inventaire.keys():
-                inventaire[name]['quantite_stock'] = produit_info.get('quantite')
-
+            if  not name in inventaire.keys():
+                inventaire.update({name:initial_info.copy()})
+                inventaire[name]['nom_produit'] = name
+            inventaire[name]['quantite_stock'] = produit_info.get('quantite')
+            inventaire[name]['identifiant_produit'] = produit_id
+        
+        for arrivage_id , arrivage_info in arrivages.items():
+            label_produit = arrivage_info.get('label')
+            if not label_produit in inventaire.keys():
+                inventaire.update({label_produit:initial_info.copy()})
+                inventaire[label_produit]['nom_produit'] = label_produit
+            inventaire[label_produit]['arrivage_recu'] += int(arrivage_info.get('quantite'))
         return inventaire
 

@@ -250,5 +250,5 @@ def somme_prix(prix1,prix2):
     chiffre_prix1 , devise_prix1 = sep_prix(prix1)
     chiffre_prix2 , devise_prix2 = sep_prix(prix2)
 
-    return f'{chiffre_prix1 + chiffre_prix2} {devise_prix1}'
+    return f'{int(chiffre_prix1) + int(chiffre_prix2)} {devise_prix1}'
     
