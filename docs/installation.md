@@ -38,8 +38,8 @@
 _____________
 1. Ouvrez le terminal et tapez la commande ``myshop serveur``
 <center>
-    ![config image 1](img/capture_confi_local_1.PNG)
-    ![config image 2](img/capture_confi_local_2.PNG)
+    ![Logo](img/capture_confi_local_1.PNG)
+    ![Logo](img/capture_confi_local_2.PNG)
 </center>
 
     (1) Le mode de connection correspond au type de connection de l'API à la base de donnée.
