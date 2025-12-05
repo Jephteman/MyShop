@@ -47,7 +47,6 @@ def check_cookie():
         data['action'] = 'connection'
         data['date'] = get_timestamp()
         cookie = request.cookies.to_dict()
-        print(cookie)
 
         valide_data(data)
         
@@ -56,7 +55,7 @@ def check_cookie():
         res = Users(instance,config=config,cookie=cookie).is_login(first=True)
         if not res:
             raise MessagePersonnalise("Veillez-vous connecter")
-    except KeyError as e:
+    except Exception as e:
         return error(e)
     else:
         return message((res,200))
@@ -146,7 +145,6 @@ def generer(ressource):
             raise MessagePersonnalise(("Resource not found", 404))
         req = resource_class(instance, cookie=cookie, config=config).get(param)
     except Exception as e:
-        print(e)
         return error(e)
     else:
         return message(req)
@@ -200,17 +198,13 @@ def all(ressource):
         valide_data(param)
 
         cookie = request.cookies.to_dict()
-
-
-        print(cookie)
-        print(param)
         instance = environment.get('instance')
         config = environment.get('configurations')
         resource_class = list_ressource.get(ressource)
         if resource_class is None:
             raise MessagePersonnalise(("Resource not found", 404))
         req = resource_class(instance, cookie=cookie, config=config).all(param)
-    except InterruptedError as e:
+    except Exception as e:
         return error(e)
     else:
         return message(req)
