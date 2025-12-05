@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Jephteman" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Mode d'emploi - My Shop documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Mode d\u0027emploi";
+        var mkdocs_page_input_path = "usage.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> My Shop documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Accuiel</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../installation/">Guide d'installation</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Mode d'emploi</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#interface-utilisateur">Interface Utilisateur</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#serveur-api">Serveur (API)</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../deploy/">Deployement</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../dev/">Developpeurs</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../about/">A propos</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">My Shop documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Mode d'emploi</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/Jephteman/MyShop/edit/master/docs/usage.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="guide-dutilisation">Guide d'utilisation</h2>
+<h3 id="interface-utilisateur">Interface Utilisateur</h3>
+<hr />
+<p>L'interface graphique est super intuitif </p>
+<p>Tout commence par la page de connection où vous devez remplir le nom d'utilisateur et le mot de passe. <br>
+Par defaut, il s'agit de : <br></p>
+<ul>
+<li>
+<p>Nom d'utilisateur : MyShop</p>
+</li>
+<li>
+<p>Mot de passe : MyShop</p>
+<p><img alt="client image 1" src="../img/client_login.PNG" /></p>
+</li>
+</ul>
+<p>Après vous etre bien identifier avec des identifiants valides vous serait alors diriger vers cette page
+<img alt="client image home" src="../img/home.PNG" /></p>
+<h3 id="serveur-api">Serveur (API)</h3>
+<hr />
+<h2 id="description-generale">Description Générale</h2>
+<p>Cette section est le point d'entrée pour la partie serveur de l'application. Il utilise le framework Flask pour fournir une API REST permettant de gérer les utilisateurs, les ressources, et les configurations. Le serveur interagit avec une base de données et utilise des cookies pour authentifier les utilisateurs.</p>
+<hr />
+<h2 id="points-de-terminaison-de-lapi">Points de Terminaison de l'API</h2>
+<ul>
+<li>
+<p><strong><code>GET /api/v1/check_cookie</code></strong></p>
+<ul>
+<li>Vérifie si un utilisateur est connecté via les cookies.</li>
+<li><strong>Réponse</strong> : Statut de la connexion.</li>
+</ul>
+</li>
+<li>
+<p><strong><code>POST /api/v1/login</code></strong></p>
+<ul>
+<li>Authentifie un utilisateur avec ses informations de connexion.</li>
+<li><strong>Données attendues</strong> : <code>{"username":"nom d'utilisateur", {"password":"mot de passe"}</code>.</li>
+<li><strong>Réponse</strong> : Résultat de l'authentification.</li>
+</ul>
+</li>
+<li>
+<p><strong><code>POST /api/v1/reset_passwd</code></strong></p>
+<ul>
+<li>Réinitialise le mot de passe d'un utilisateur.</li>
+<li><strong>Données attendues</strong> : <code>{"username":"nom d'utilisateur", {"password":"mot de passe","password_confirmation":"mot de pass"}</code>.</li>
+</ul>
+</li>
+<li>
+<p><strong><code>POST /api/v1/&lt;ressource&gt;/add</code></strong></p>
+<ul>
+<li>Ajoute une nouvelle entrée dans une ressource (ex. : <code>users</code>, <code>produits</code>).</li>
+<li><strong>Données attendues</strong> : Objet JSON contenant les informations de la ressource.</li>
+</ul>
+</li>
+<li>
+<p><strong><code>GET /api/v1/&lt;ressource&gt;/all</code></strong></p>
+<ul>
+<li>Liste tous les éléments d'une ressource.</li>
+<li><strong>Réponse</strong> : Liste des éléments.</li>
+</ul>
+</li>
+<li>
+<p><strong><code>GET /api/v1/&lt;ressource&gt;/&lt;id&gt;</code></strong></p>
+<ul>
+<li>Récupère un élément spécifique d'une ressource.</li>
+<li><strong>Paramètre attendu dans l'URL</strong> : <code>id</code>.</li>
+</ul>
+</li>
+<li>
+<p><strong><code>POST /api/v1/&lt;ressource&gt;/&lt;id&gt;/change</code></strong></p>
+<ul>
+<li>Modifie un élément spécifique d'une ressource.</li>
+<li><strong>Données attendues</strong> : Objet JSON contenant les nouvelles informations.</li>
+</ul>
+</li>
+<li>
+<p><strong><code>GET /api/v1/&lt;ressource&gt;/&lt;id&gt;/delete</code></strong></p>
+<ul>
+<li>Supprime un élément spécifique d'une ressource.</li>
+<li><strong>Paramètre attendu dans l'URL</strong> : <code>id</code>.</li>
+</ul>
+</li>
+</ul>
+<p>En ce qui concerne les objects attendu par le serveur pour les differentes ressources, nous vous recommandons d'utilisez le client myshop.client et utiliser les objets fournit dans myshop.my_objects ou si vous souhaitez l'utliser sur une architecture non prevu par les developpeurs l'ingenierie invesée est autorisée  :) :) :)</p>
+<h3 id="gestion-des-ressources"><strong>Gestion des Ressources</strong></h3>
+<p>Côte serveur, la ressource correspond à une strcuture de données pouvant etre exploiter par un client.</p>
+<p>Les ressources qui sont pris en charge ou qui peuvet etre exploiter sont :</p>
+<ul>
+<li><em>produits</em>` : Regroupe les produits qui existent </li>
+<li><em>categories</em> : Regroupe les catagories de produits (chaque produit est attaché à uniquement une categorie)</li>
+<li><em>ventes</em> : Regroupe les ventes</li>
+<li><em>arrivages</em> : Regroupe les arrivages</li>
+<li><em>promotions</em> : Regroupe les promotions sur les produits (reduction)</li>
+<li><em>clients</em> : Regroupe les clients presents dans la base de donnée</li>
+<li><em>users</em> : Regroupe les utilisateurs de l'application </li>
+<li><em>logs</em> : Regroupe les logs (journal d'activité)</li>
+<li><em>session</em> : Regroupe les sessions</li>
+<li><em>notes</em> : Regroupe les notes qui peuvent servir pour passer une information aux autres utilisateurs</li>
+<li><em>settings</em> : Qui correspond à la configuration du serveur</li>
+</ul>
+<p>Mais à chaque ressources est attribuer des actions specifiques qui peuvent etre effectuer sur elle. Ainsi nous avous les actions :</p>
+<ul>
+<li><em>add</em>: Qui correspond à une requete de type POST qui ajoute les données dans la table de la ressource</li>
+<li><em>get</em> : Qui recupere par une requete GET le contenu d'une ressources en connaisant ou parfois pas l'identifiant de l'object dans la table</li>
+<li><em>change</em> : Qui modifie par un requete de type POST le contenu d'un ressource </li>
+<li><em>delete</em> : Qui supprime par une requete GET le contenu d'un ressources en specifiant l'identifiant de l'idantifiant de l'objet dans la ressource</li>
+</ul>
+<p>Pour assurer la securité dans la gestion de resssource, une separation de droit a ete fait c'est-à-dire que tous les utilisateurs n'ont pas les mêmes droits ou permissions. Nous disposons de :</p>
+<ul>
+<li>
+<p><em>admin</em> : Qui correspond à l'administrateur qui a tous les droits sur toutes les ressources :)</p>
+</li>
+<li>
+<p><em>vendeur</em> : Qui ne s'occupe que des actions qui sont lier à la vente. Dont les permissions sont de la maniere suivante:
+    <code>{
+        'ventes': ['add'],
+        'stocks': ['all', 'get'],
+        'produits': ['all', 'get'],
+        'sessions': ['change', 'delete'],
+        'categories': ['all', 'get'],
+        'clients': ['add', 'get', 'all'],
+        'promotions': ['all', 'get']
+    }</code></p>
+</li>
+<li><em>moniteur</em> : Qui ne peut que observer ce qui se passe sur la serveur. Il ne peut qu'envoyait des requetes avec l'action <em>all</em> vers les ressources:
+    <code>{
+        "logs": ['all'],
+        'stocks': ['all'],
+        'produits': ['all'],
+        'users': ['all'],
+        'promotions': ['all'],
+        'notes': ['all']
+    }</code></li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../installation/" class="btn btn-neutral float-left" title="Guide d'installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../deploy/" class="btn btn-neutral float-right" title="Deployement">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/Jephteman/MyShop" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../installation/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../deploy/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

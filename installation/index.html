@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Jephteman" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Guide d'installation - My Shop documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Guide d\u0027installation";
+        var mkdocs_page_input_path = "installation.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> My Shop documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Accuiel</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Guide d'installation</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#dependances">Dépendances</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#instructions-detaillees">Instructions Détaillées</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#serveur">Serveur</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#client">Client</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../usage/">Mode d'emploi</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../deploy/">Deployement</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../dev/">Developpeurs</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../about/">A propos</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">My Shop documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Guide d'installation</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/Jephteman/MyShop/edit/master/docs/installation.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h2 id="guide-dinstallation">Guide d'installation</h2>
+<h3 id="dependances">Dépendances</h3>
+<ul>
+<li>Python 3.8 : <a href="https://kinsta.com/fr/base-de-connaissances/installer-python/">Lien de telechargement</a></li>
+</ul>
+<h3 id="instructions-detaillees">Instructions Détaillées</h3>
+<ol>
+<li>Ouvrez un terminal :)</li>
+<li>
+<p>Cloner le repertoire</p>
+<p><code>git clone https://github.com/Jephteman/MyShop.git</code></p>
+</li>
+<li>
+<p>Positionnez vous dans le repertoire</p>
+<p><code>cd MyShop # pour se rendre dans le repertoire</code></p>
+</li>
+<li>
+<p>Exceuter </p>
+<p><code>pip install -r requirements.txt  # selon la version de python utilier pour installer les dependances
+pip install .</code></p>
+</li>
+<li>
+<p>MyShop etant basé sur une arcitecture client/serveur. Vous avez le choix entre utiliser le client (application graphique) ou le serveur (centre des données). Les deux peuvent fonctionner sur la même machine en local </p>
+<p><code>myshop serveur # pour configurer et lancer le serveur
+myshop client # pour lancer l'interface graphique depuis le terminal</code></p>
+</li>
+</ol>
+<h3 id="configuration">Configuration</h3>
+<h4 id="serveur">Serveur</h4>
+<hr />
+<ol>
+<li>Ouvrez le terminal et tapez la commande <code>myshop serveur</code></li>
+</ol>
+<center>
+    ![Logo](img/capture_confi_local_1.PNG)
+    ![Logo](img/capture_confi_local_2.PNG)
+</center>
+
+<pre><code>(1) Le mode de connection correspond au type de connection de l'API à la base de donnée.
+
+* *local* : les données seront sauvegardé avec SQLITE3 dans une configuration local, ceci à l'avantage de vous evitez à devoir mettre en place un base de donnné mais pose un certain nombre de soucis car la base de donnée serait un simple fichier
+
+* *distant* :  les données seront sauvegardé en utilisant un systeme de gestion de base de donnée tel que MySQL en nous offrant les avantages que procurent l'utilisation d'un SDBD
+
+(2) Le nom de la base de donnée (si vous utilisez un SGBD , vous devriez vous assurer que la base de donnée existe dans la SGBD)
+
+(3) Le nom de votre etablissement (exemple : Ma boutique)
+
+(4) La description de votre boutique, elle sera ajouter automatique sur l'en-tête de la facture mais elle est facultatif
+
+(5) Les contacts de votre boutique pour permettre à vos clients de vous contacter, elle sera ajouter automatique sur l'en-tête de la facture mais elle est facultatif
+
+(6) Le chemin vers l'image du logo, il sera ajouter sur la facture mais c'est un element facultatif
+
+
+(7) L'adresse IP du serveur d'hebergement de votre application (si vous n'y connais rien laisser le champ vide)
+
+(8)Le numero de port (si vous n'y connais rien laisser le champ vide)
+</code></pre>
+<hr />
+<h4 id="client">Client</h4>
+<ol>
+<li>Lancer le programme depuis le terminal en tappant <code>myshop client</code>
+<img alt="client image 1" src="../img/client_install_1.PNG" />
+<img alt="client image 2" src="../img/client_install_2.PNG" /></li>
+</ol>
+<p>La premiere image montre la page de presentation qui vous introduit dans l'utilisation de MyShop</p>
+<p>Pour valider et passer à l'etape superieur il faut cliquer sur <strong>Suivant</strong> en faisant ce qui vous est demandé de faire</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Accuiel"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../usage/" class="btn btn-neutral float-right" title="Mode d'emploi">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/Jephteman/MyShop" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../usage/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
