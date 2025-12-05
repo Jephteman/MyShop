@@ -569,7 +569,7 @@ class NotePage(Frame):
             alert_wn(e)
 
         self.notes.clear()
-        self.notes.update(api.all())
+        self.notes.update(api.all('notes'))
         for i , data in self.notes.items():
             n_id = str(data.get('note_id'))
             p = (n_id,data.get('sujet'),data.get('username'),data.get('date'))

@@ -302,7 +302,7 @@ class Sessionsdb():
         
             for i in cursor.execute(text(query),param):
                 user_id.update(i._asdict())
-        if first:
+        if user_id:
             need = ['logo','description','boutique','contact']
             for i in need:
                 value = self.db_instance.settings.get(i)

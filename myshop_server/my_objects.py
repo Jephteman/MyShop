@@ -1,4 +1,4 @@
-from .utils import get_timestamp, sep_prix, to_date,MessagePersonnalise
+from .utils import get_timestamp, sep_prix, to_date,MessagePersonnalise, JSONDecoder
 
 class ModelObject(dict):
     def __init__(self,attributs:list,param:dict={}):
@@ -27,6 +27,10 @@ class CookieObject(ModelObject):
     Une classe héritant de dict pour représenter une cookie 
     """
     def __init__(self, param):
+        #if param:
+        #    print(param)
+        #    print(type(param))
+        #    param = JSONDecoder().decode(param)
         super().__init__(
             ['token','user_id'],
             param
@@ -174,6 +178,9 @@ class SessionObject(ModelObject):
         super().__init__(
             ['session_id','cookies','statut','login_id','ip_addr','date'],param
         )
+        if self.get('cookies'):
+            cookie = JSONDecoder().decode(self.get('cookies'))
+            self['cookies'] = cookie
 
     def __repr__(self):
         return f"<Session id={self.get('session_id')}>"

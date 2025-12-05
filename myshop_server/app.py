@@ -25,7 +25,7 @@ def error(e:Exception):
     """
         S'occupe d'appeller la methode ^message^ de la classe de l'exception
     """
-    return e.message() if hasattr(e,'message') else ("Une erreur côté serveur est survenue ",302)
+    return e.message() if hasattr(e,'message') else ("Une erreur côté serveur est survenue ",500)
 
 @app.errorhandler(404)
 def page_not_found(err):
@@ -47,13 +47,16 @@ def check_cookie():
         data['action'] = 'connection'
         data['date'] = get_timestamp()
         cookie = request.cookies.to_dict()
+        print(cookie)
 
         valide_data(data)
         
         instance = environment.get('instance')
         config = environment.get('configurations')
         res = Users(instance,config=config,cookie=cookie).is_login(first=True)
-    except Exception as e:
+        if not res:
+            raise MessagePersonnalise("Veillez-vous connecter")
+    except KeyError as e:
         return error(e)
     else:
         return message((res,200))
@@ -68,7 +71,7 @@ def login():
         data['date'] = get_timestamp()
 
         valide_data(data)
-        
+
         instance = environment.get('instance')
         config = environment.get('configurations')
         res = Users(instance,config=config).login(data)
@@ -197,13 +200,17 @@ def all(ressource):
         valide_data(param)
 
         cookie = request.cookies.to_dict()
+
+
+        print(cookie)
+        print(param)
         instance = environment.get('instance')
         config = environment.get('configurations')
         resource_class = list_ressource.get(ressource)
         if resource_class is None:
             raise MessagePersonnalise(("Resource not found", 404))
         req = resource_class(instance, cookie=cookie, config=config).all(param)
-    except Exception as e:
+    except InterruptedError as e:
         return error(e)
     else:
         return message(req)
@@ -335,5 +342,5 @@ def run(default=False):
         
         app.run(host=host, port=port)
     else:
-        app.run()
+        app.run(port=5000)
 

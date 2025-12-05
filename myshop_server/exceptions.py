@@ -3,19 +3,19 @@
 class IdentifiantIncorrectException(Exception):
     def message(self):
         text = "Le mot de passe ou le nom d'utilisateur est incorrect"
-        return text,302
+        return text,401
     
 class AbsenceParametreException(Exception):
     def message(self):
         text = f"L'argument '{self.__str__()}' est demande"
         
-        return text,302
+        return text,500
     
 class PermissionException(Exception):
     def message(self):
         text = self.__str__()
         
-        return text,302
+        return text,401
     
 class TypeEntreException(Exception):
     def message(self):
