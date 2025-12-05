@@ -3,6 +3,7 @@ from hashlib import sha3_256 as sha256
 from configparser import ConfigParser
 from pathlib import Path
 from _thread import *
+import pkg_resources
 import datetime
 import os
 import re

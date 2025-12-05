@@ -152,7 +152,7 @@ class Loginsdb():
         salt = self.config.get('salt')
         data = {}
 
-        if not len(self['password']).__lt__(6):
+        if not len(param['password']) <= 6:
             raise MessagePersonnalise("Le mot de passe doit contenir 6 ou plus des caracteres")
 
         param['password'] = bytes(salt+param['password'],'utf-8')

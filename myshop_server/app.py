@@ -295,13 +295,28 @@ def delete(ressource,id):
     else:
         return message(req)
 
-def prepare(config):
+def prepare():
     """
         Prepare le lancement du serveur
     """
 
     db_instance = database()
+    config_file = '.env'
+
+    if not Path(config_file).exists():
+        try:
+            config_file = pkg_resources.resource_filename('myshop_server','.env')
+        except :
+            config_file = Path(__file__).joinpath('.env')
+
+
+    config = ConfigParser()
+    config.read(config_file)
+   
+    print('[+] Lancement du serveur ')
     
+    config = config._sections['GENERAL_SETTING']
+
     db_instance.settings.update(config)
 
     db_instance.connect()
@@ -312,10 +327,13 @@ def prepare(config):
     environment['instance'] = db_instance
     start_new_thread(cleaner,(db_instance,config))
 
-def run(arg=None):
+def run(default=False):
     prepare()
-    if arg and hasattr(arg, 'host') and hasattr(arg, 'port'):
-        app.run(host=arg.host, port=arg.port)
+    if not default:
+        host =  environment['configurations'].get('network')
+        port = environment['configurations'].get('port')
+        
+        app.run(host=host, port=port)
     else:
         app.run()
 
